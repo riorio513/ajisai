@@ -1,0 +1,1404 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>アジサイ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   アジサイ — プロトタイプ（β）
+   就労継続支援B型事業所むけ 利用者・支援員・管理者ツール
+   このファイル1つで動きます（インストール不要）。
+   ・色を変えたいときは下の :root をいじってください。
+   ・本番は Next.js / Supabase を想定。これはその見本（モック）です。
+   ・データはこのブラウザの中だけに保存されます（localStorage）。
+   ============================================================ */
+
+:root{
+  --bg:        #FBF7EE;   /* 背景：明るい木目・和紙のベース */
+  --panel:     #FFFFFF;   /* カード・パネル */
+  --main:      #6B8F5E;   /* メインカラー：葉・苔（緑） */
+  --main-d:    #587A4D;   /* メイン：ホバー時の濃い緑 */
+  --sub:       #F5ECD7;   /* サブ：木肌・和紙（ベージュ） */
+  --accent:    #8A7BAF;   /* アクセント：アジサイの花（青紫） */
+  --accent-d:  #75679A;
+  --text:      #3E2009;   /* テキスト：幹・土（濃い茶色） */
+  --muted:     #8A6F50;   /* 控えめな文字 */
+  --border:    #C4A882;   /* ボーダー：枝・木目（薄茶） */
+  --border-l:  #E6D9BE;   /* 薄いボーダー */
+  --danger:    #B5564B;
+  --ok:        #6B8F5E;
+  --warn:      #C99A3A;
+  --radius:    12px;
+  --shadow:    0 4px 14px rgba(62,32,9,0.08);
+  --shadow-h:  0 8px 22px rgba(62,32,9,0.14);
+  --nav-h:     60px;   /* PC上部メニュー高さ */
+  --tab-h:     64px;   /* スマホ下部タブ高さ */
+  --font: "Noto Sans JP", system-ui, -apple-system, "Hiragino Kaku Gothic ProN", "Meiryo", sans-serif;
+}
+
+*{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+html,body{ margin:0; padding:0; }
+body{
+  font-family:var(--font);
+  color:var(--text);
+  background:
+    repeating-linear-gradient(90deg, rgba(196,168,130,0.05) 0 2px, transparent 2px 26px),
+    linear-gradient(180deg, #FCF9F1, #F6EFE0);
+  background-attachment:fixed;
+  min-height:100vh;
+  font-size:15px;
+  line-height:1.7;
+}
+button{ font-family:var(--font); cursor:pointer; }
+input, textarea, select{ font-family:var(--font); font-size:15px; }
+h1,h2,h3,h4{ font-weight:700; margin:0; }
+a{ color:var(--accent-d); }
+
+/* ===== ボタン共通 ===== */
+.btn{
+  display:inline-flex; align-items:center; justify-content:center; gap:7px;
+  background:var(--main); color:#fff; border:none;
+  border-radius:var(--radius); padding:11px 20px; font-size:15px; font-weight:500;
+  box-shadow:0 3px 0 rgba(88,122,77,0.55); transition:background .18s, transform .06s, box-shadow .06s;
+}
+.btn:hover{ background:var(--main-d); }
+.btn:active{ transform:translateY(2px); box-shadow:0 1px 0 rgba(88,122,77,0.4); }
+.btn:disabled{ background:#cfc9bd; color:#fff; box-shadow:none; cursor:default; transform:none; }
+.btn.accent{ background:var(--accent); box-shadow:0 3px 0 rgba(117,103,154,0.5); }
+.btn.accent:hover{ background:var(--accent-d); }
+.btn.ghost{ background:transparent; color:var(--main); border:1.5px solid var(--main); box-shadow:none; }
+.btn.ghost:hover{ background:rgba(107,143,94,0.08); }
+.btn.danger{ background:var(--danger); box-shadow:0 3px 0 rgba(150,60,50,0.5); }
+.btn.sm{ padding:7px 14px; font-size:13.5px; }
+.btn.block{ width:100%; }
+
+.input, .textarea, .select{
+  width:100%; background:#fff; border:1.5px solid var(--border-l); color:var(--text);
+  border-radius:10px; padding:11px 13px; transition:border-color .15s;
+}
+.input:focus, .textarea:focus, .select:focus{ outline:none; border-color:var(--main); }
+.textarea{ resize:vertical; min-height:90px; line-height:1.8; }
+label.lb{ display:block; font-size:13px; color:var(--muted); margin:14px 0 5px; font-weight:500; }
+
+.card{
+  background:var(--panel); border:1px solid var(--border-l); border-radius:var(--radius);
+  box-shadow:var(--shadow); padding:18px 20px; margin-bottom:14px;
+}
+.tag{ display:inline-block; font-size:12px; padding:2px 10px; border-radius:20px;
+  background:var(--sub); color:var(--muted); border:1px solid var(--border-l); }
+.tag.green{ background:rgba(107,143,94,0.14); color:var(--main-d); border-color:rgba(107,143,94,0.3); }
+.tag.purple{ background:rgba(138,123,175,0.16); color:var(--accent-d); border-color:rgba(138,123,175,0.3); }
+.tag.warn{ background:rgba(201,154,58,0.16); color:#9a7420; border-color:rgba(201,154,58,0.3); }
+.tag.red{ background:rgba(181,86,75,0.14); color:var(--danger); border-color:rgba(181,86,75,0.3); }
+.muted{ color:var(--muted); }
+.center{ text-align:center; }
+.row{ display:flex; gap:10px; align-items:center; }
+.spread{ display:flex; justify-content:space-between; align-items:center; gap:10px; }
+.empty{ text-align:center; color:var(--muted); padding:36px 14px; }
+.divider{ height:1px; background:var(--border-l); margin:14px 0; border:none; }
+
+/* ============================================================
+   ログイン画面
+   ============================================================ */
+#login{ min-height:100vh; display:flex; align-items:center; justify-content:center; padding:24px; }
+.login-box{ width:min(420px,100%); background:var(--panel); border:1px solid var(--border-l);
+  border-radius:18px; box-shadow:var(--shadow-h); padding:34px 30px; }
+.brand{ text-align:center; margin-bottom:8px; }
+.brand .logo-wrap{ width:84px; height:84px; margin:0 auto 10px; display:flex; align-items:center; justify-content:center; }
+.brand img{ max-width:100%; max-height:100%; object-fit:contain; }
+.brand .logo-fallback{ width:84px; height:84px; border-radius:50%;
+  background:linear-gradient(135deg, var(--main), var(--accent)); position:relative;
+  display:flex; align-items:center; justify-content:center; box-shadow:var(--shadow); }
+.brand .logo-fallback svg{ width:52px; height:52px; }
+.brand h1{ font-size:27px; letter-spacing:6px; color:var(--text); }
+.brand p{ margin:4px 0 0; font-size:12.5px; color:var(--muted); letter-spacing:2px; }
+.role-tabs{ display:flex; gap:6px; margin:22px 0 18px; background:var(--sub); padding:5px; border-radius:12px; }
+.role-tab{ flex:1; border:none; background:transparent; color:var(--muted); padding:9px 4px;
+  border-radius:9px; font-size:13.5px; font-weight:500; transition:.15s; }
+.role-tab.on{ background:#fff; color:var(--main-d); box-shadow:0 2px 6px rgba(62,32,9,0.08); }
+.login-hint{ font-size:12px; color:var(--muted); text-align:center; margin-top:16px; line-height:1.8; }
+.demo-pills{ display:flex; flex-wrap:wrap; gap:6px; justify-content:center; margin-top:8px; }
+.demo-pill{ font-size:11.5px; background:var(--sub); border:1px solid var(--border-l); color:var(--muted);
+  padding:3px 10px; border-radius:20px; }
+
+/* ============================================================
+   アプリ本体レイアウト
+   ============================================================ */
+#app{ display:none; min-height:100vh; }
+body.in-app #app{ display:block; }
+body.in-app #login{ display:none; }
+
+/* PC上部固定メニュー */
+#topnav{ position:fixed; top:0; left:0; right:0; height:var(--nav-h); z-index:50;
+  background:rgba(255,255,255,0.92); backdrop-filter:blur(8px);
+  border-bottom:1px solid var(--border-l); display:flex; align-items:center;
+  padding:0 18px; gap:6px; box-shadow:0 2px 10px rgba(62,32,9,0.05); }
+#topnav .nav-brand{ display:flex; align-items:center; gap:9px; margin-right:14px; }
+#topnav .nav-brand .lw{ width:34px; height:34px; display:flex; align-items:center; justify-content:center; }
+#topnav .nav-brand img{ max-width:100%; max-height:100%; }
+#topnav .nav-brand .fb{ width:34px; height:34px; border-radius:50%;
+  background:linear-gradient(135deg,var(--main),var(--accent)); display:flex; align-items:center; justify-content:center; }
+#topnav .nav-brand .fb svg{ width:22px; height:22px; }
+#topnav .nav-brand b{ font-size:18px; letter-spacing:3px; }
+.nav-links{ display:flex; gap:2px; flex:1; overflow-x:auto; scrollbar-width:none; }
+.nav-links::-webkit-scrollbar{ display:none; }
+.nav-link{ border:none; background:transparent; color:var(--muted); padding:8px 13px; border-radius:9px;
+  font-size:14px; font-weight:500; white-space:nowrap; display:flex; align-items:center; gap:6px; transition:.15s; }
+.nav-link:hover{ background:var(--sub); color:var(--text); }
+.nav-link.on{ background:rgba(107,143,94,0.14); color:var(--main-d); }
+.nav-link svg{ width:18px; height:18px; }
+.nav-link .badge{ background:var(--danger); color:#fff; font-size:10px; font-weight:700;
+  min-width:17px; height:17px; border-radius:9px; padding:0 4px; display:inline-flex; align-items:center; justify-content:center; }
+.nav-right{ display:flex; align-items:center; gap:10px; margin-left:8px; }
+.nav-user{ font-size:13px; color:var(--muted); white-space:nowrap; }
+.nav-user b{ color:var(--text); }
+.icon-btn{ border:1px solid var(--border-l); background:#fff; width:38px; height:38px; border-radius:10px;
+  display:flex; align-items:center; justify-content:center; color:var(--main); transition:.15s; }
+.icon-btn:hover{ background:var(--sub); }
+.icon-btn svg{ width:19px; height:19px; }
+
+/* メイン領域 */
+#main{ max-width:880px; margin:0 auto; padding:calc(var(--nav-h) + 22px) 18px 40px; }
+.page-head{ margin-bottom:18px; }
+.page-head h2{ font-size:22px; letter-spacing:1px; display:flex; align-items:center; gap:9px; }
+.page-head h2 svg{ width:24px; height:24px; color:var(--main); }
+.page-head .ph-sub{ font-size:13.5px; color:var(--muted); margin-top:3px; }
+
+/* スマホ下部タブ */
+#tabbar{ display:none; position:fixed; bottom:0; left:0; right:0; height:var(--tab-h); z-index:50;
+  background:rgba(255,255,255,0.96); backdrop-filter:blur(8px); border-top:1px solid var(--border-l);
+  padding-bottom:env(safe-area-inset-bottom); }
+.tabbar-inner{ display:flex; height:var(--tab-h); }
+.tab-item{ flex:1; border:none; background:transparent; color:var(--muted); display:flex;
+  flex-direction:column; align-items:center; justify-content:center; gap:3px; font-size:10.5px; position:relative; }
+.tab-item svg{ width:23px; height:23px; }
+.tab-item.on{ color:var(--main); }
+.tab-item .badge{ position:absolute; top:7px; left:50%; margin-left:6px; background:var(--danger); color:#fff;
+  font-size:9px; font-weight:700; min-width:15px; height:15px; border-radius:8px; padding:0 3px;
+  display:inline-flex; align-items:center; justify-content:center; }
+
+/* ===== レスポンシブ：スマホ ===== */
+@media (max-width:720px){
+  #topnav .nav-links, #topnav .nav-user{ display:none; }
+  #topnav{ justify-content:space-between; }
+  #tabbar{ display:block; }
+  #main{ padding:calc(var(--nav-h) + 16px) 14px calc(var(--tab-h) + 24px); }
+  .page-head h2{ font-size:19px; }
+}
+
+/* ============================================================
+   ホーム
+   ============================================================ */
+.welcome{ background:linear-gradient(135deg, var(--main), #7fa06f); color:#fff;
+  border-radius:16px; padding:22px 24px; margin-bottom:18px; box-shadow:var(--shadow);
+  position:relative; overflow:hidden; }
+.welcome::after{ content:""; position:absolute; right:-20px; top:-20px; width:150px; height:150px;
+  background:radial-gradient(circle, rgba(255,255,255,0.18), transparent 70%); }
+.welcome h2{ font-size:21px; position:relative; }
+.welcome p{ margin:5px 0 0; font-size:13.5px; opacity:.92; position:relative; }
+.shortcut-grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(140px,1fr)); gap:12px; margin-bottom:8px; }
+.shortcut{ background:var(--panel); border:1px solid var(--border-l); border-radius:14px; padding:16px;
+  display:flex; flex-direction:column; gap:8px; box-shadow:var(--shadow); transition:.16s; text-align:left; }
+.shortcut:hover{ transform:translateY(-2px); box-shadow:var(--shadow-h); border-color:var(--main); }
+.shortcut .sc-ic{ width:42px; height:42px; border-radius:12px; background:rgba(107,143,94,0.12);
+  display:flex; align-items:center; justify-content:center; color:var(--main); }
+.shortcut .sc-ic svg{ width:24px; height:24px; }
+.shortcut .sc-ic.purple{ background:rgba(138,123,175,0.16); color:var(--accent); }
+.shortcut b{ font-size:15px; }
+.shortcut span{ font-size:12px; color:var(--muted); }
+
+.section-title{ font-size:15px; font-weight:700; margin:22px 0 11px; display:flex; align-items:center; gap:7px; color:var(--text); }
+.section-title svg{ width:19px; height:19px; color:var(--main); }
+
+.notice{ display:flex; gap:13px; padding:14px 16px; }
+.notice .n-date{ font-size:11.5px; color:var(--muted); min-width:54px; }
+.notice .n-body b{ display:block; font-size:14.5px; margin-bottom:2px; }
+.notice .n-body p{ margin:0; font-size:13px; color:var(--muted); }
+.notice.pin{ border-left:3px solid var(--accent); }
+
+/* ============================================================
+   アンケート（気分スタンプ）
+   ============================================================ */
+.mood-row{ display:flex; gap:10px; flex-wrap:wrap; justify-content:center; margin:6px 0 4px; }
+.mood{ width:70px; height:84px; border:2px solid var(--border-l); background:#fff; border-radius:14px;
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:5px; transition:.14s; }
+.mood:hover{ border-color:var(--main); transform:translateY(-2px); }
+.mood.on{ border-color:var(--main); background:rgba(107,143,94,0.1); box-shadow:0 4px 12px rgba(107,143,94,0.22); }
+.mood .face{ font-size:30px; line-height:1; }
+.mood .ml{ font-size:11.5px; color:var(--muted); }
+.mood.on .ml{ color:var(--main-d); font-weight:600; }
+.done-banner{ text-align:center; padding:30px 16px; }
+.done-banner .big{ font-size:46px; }
+
+/* ============================================================
+   チャット
+   ============================================================ */
+.chat-wrap{ display:flex; flex-direction:column; height:calc(100vh - var(--nav-h) - 90px); min-height:380px; }
+.chat-peers{ display:flex; gap:8px; overflow-x:auto; padding-bottom:10px; margin-bottom:6px; scrollbar-width:none; }
+.chat-peers::-webkit-scrollbar{ display:none; }
+.peer{ flex:0 0 auto; border:1.5px solid var(--border-l); background:#fff; border-radius:30px;
+  padding:7px 15px 7px 8px; display:flex; align-items:center; gap:8px; transition:.14s; }
+.peer.on{ border-color:var(--main); background:rgba(107,143,94,0.1); }
+.peer .av{ width:30px; height:30px; border-radius:50%; background:var(--accent); color:#fff;
+  display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; }
+.peer .pn{ font-size:13.5px; font-weight:500; }
+.chat-log{ flex:1; overflow-y:auto; padding:12px 4px; display:flex; flex-direction:column; gap:10px; }
+.msg{ max-width:74%; padding:10px 14px; border-radius:16px; font-size:14.5px; line-height:1.65; position:relative; }
+.msg .mt{ font-size:10.5px; margin-top:4px; opacity:.7; display:flex; gap:6px; align-items:center; }
+.msg.them{ align-self:flex-start; background:#fff; border:1px solid var(--border-l); border-bottom-left-radius:5px; }
+.msg.me{ align-self:flex-end; background:var(--main); color:#fff; border-bottom-right-radius:5px; }
+.msg.me .mt{ justify-content:flex-end; }
+.read-mark{ font-size:10px; }
+.chat-input{ display:flex; gap:8px; padding-top:10px; border-top:1px solid var(--border-l); }
+.chat-input .input{ border-radius:22px; }
+.chat-input .btn{ flex:0 0 auto; border-radius:22px; padding:11px 18px; }
+.date-sep{ text-align:center; font-size:11.5px; color:var(--muted); margin:6px 0; }
+
+/* ============================================================
+   カレンダー
+   ============================================================ */
+.cal-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
+.cal-head h3{ font-size:18px; }
+.cal-nav{ display:flex; gap:6px; }
+.cal-grid{ display:grid; grid-template-columns:repeat(7,1fr); gap:5px; }
+.cal-dow{ text-align:center; font-size:12px; color:var(--muted); padding:4px 0; font-weight:500; }
+.cal-cell{ min-height:74px; background:#fff; border:1px solid var(--border-l); border-radius:9px; padding:5px;
+  display:flex; flex-direction:column; gap:3px; transition:.12s; }
+.cal-cell:hover{ border-color:var(--main); }
+.cal-cell.other{ background:transparent; border-color:transparent; }
+.cal-cell .dn{ font-size:12px; color:var(--muted); font-weight:500; }
+.cal-cell.today .dn{ background:var(--main); color:#fff; width:21px; height:21px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center; }
+.cal-cell.sun .dn{ color:var(--danger); }
+.cal-cell.sat .dn{ color:var(--accent-d); }
+.ev{ font-size:10.5px; padding:2px 5px; border-radius:5px; line-height:1.4; overflow:hidden;
+  text-overflow:ellipsis; white-space:nowrap; }
+.ev.facility{ background:rgba(107,143,94,0.16); color:var(--main-d); border-left:2px solid var(--main); }
+.ev.personal{ background:rgba(138,123,175,0.16); color:var(--accent-d); border-left:2px solid var(--accent); }
+.cal-legend{ display:flex; gap:16px; margin-top:12px; font-size:12.5px; color:var(--muted); }
+.cal-legend i{ width:11px; height:11px; border-radius:3px; display:inline-block; margin-right:5px; vertical-align:middle; }
+
+/* ============================================================
+   相談フォーム / 受信箱
+   ============================================================ */
+.status-pill{ font-size:11.5px; padding:3px 11px; border-radius:20px; font-weight:600; }
+.status-open{ background:rgba(181,86,75,0.14); color:var(--danger); }
+.status-prog{ background:rgba(201,154,58,0.18); color:#9a7420; }
+.status-done{ background:rgba(107,143,94,0.16); color:var(--main-d); }
+.inbox-item{ cursor:pointer; transition:.14s; }
+.inbox-item:hover{ border-color:var(--main); transform:translateY(-1px); }
+
+/* メモ履歴 */
+.memo-hist{ font-size:12px; color:var(--muted); }
+.hist-item{ padding:8px 0; border-bottom:1px solid var(--border-l); display:flex; justify-content:space-between; gap:10px; }
+.hist-item:last-child{ border:none; }
+
+/* リンク集・マニュアル */
+.link-item{ display:flex; align-items:center; gap:12px; padding:13px 16px; }
+.link-item .li-ic{ width:38px; height:38px; border-radius:10px; background:var(--sub); flex:0 0 auto;
+  display:flex; align-items:center; justify-content:center; color:var(--main); }
+.link-item .li-ic svg{ width:20px; height:20px; }
+.link-item .li-body{ flex:1; min-width:0; }
+.link-item b{ font-size:14.5px; display:block; }
+.link-item span{ font-size:12px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:block; }
+
+/* テーブル風（管理） */
+.list-row{ display:flex; align-items:center; gap:12px; padding:12px 4px; border-bottom:1px solid var(--border-l); }
+.list-row:last-child{ border:none; }
+.avatar{ width:38px; height:38px; border-radius:50%; background:var(--main); color:#fff; flex:0 0 auto;
+  display:flex; align-items:center; justify-content:center; font-weight:700; font-size:15px; }
+.avatar.purple{ background:var(--accent); }
+
+/* ============================================================
+   モーダル / トースト
+   ============================================================ */
+#modal{ position:fixed; inset:0; z-index:80; display:none; align-items:center; justify-content:center;
+  background:rgba(62,32,9,0.42); backdrop-filter:blur(3px); padding:20px; }
+#modal.show{ display:flex; }
+.sheet{ background:var(--panel); border-radius:16px; width:min(480px,100%); max-height:88vh; overflow:auto;
+  padding:24px; box-shadow:var(--shadow-h); animation:rise .26s ease; }
+@keyframes rise{ from{ transform:translateY(16px); opacity:0; } to{ transform:none; opacity:1; } }
+.sheet h3{ font-size:18px; margin-bottom:4px; }
+.sheet .sh-x{ float:right; border:none; background:none; font-size:22px; color:var(--muted); cursor:pointer; line-height:1; }
+
+#toast{ position:fixed; bottom:84px; left:50%; transform:translateX(-50%) translateY(20px); z-index:90;
+  background:var(--text); color:#fff; padding:12px 22px; border-radius:30px; font-size:14px;
+  box-shadow:var(--shadow-h); opacity:0; transition:.3s; pointer-events:none; max-width:88%; text-align:center; }
+#toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
+#toast.ok{ background:var(--main); }
+#toast.err{ background:var(--danger); }
+
+.seg{ display:inline-flex; border:1.5px solid var(--border-l); border-radius:10px; overflow:hidden; }
+.seg button{ border:none; background:#fff; color:var(--muted); padding:8px 14px; font-size:13.5px; }
+.seg button.on{ background:var(--main); color:#fff; }
+</style>
+</head>
+<body>
+
+<!-- ロゴSVG（透過PNGが無いとき用のフォールバック図案：木＋アジサイ） -->
+<svg style="display:none">
+  <symbol id="ajisai-mark" viewBox="0 0 48 48">
+    <g fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M24 42 V26"/>
+      <path d="M24 30 C20 27 15 28 13 24 C18 22 22 23 24 27"/>
+      <path d="M24 28 C28 24 33 25 35 21 C30 19 26 21 24 25"/>
+    </g>
+    <g fill="#fff">
+      <circle cx="20" cy="13" r="3"/><circle cx="27" cy="11" r="3"/>
+      <circle cx="24" cy="17" r="3"/><circle cx="31" cy="16" r="3"/>
+      <circle cx="17" cy="18" r="3"/>
+    </g>
+  </symbol>
+</svg>
+
+<!-- ============================================================
+     ログイン画面
+     ============================================================ -->
+<div id="login">
+  <div class="login-box">
+    <div class="brand">
+      <div class="logo-wrap">
+        <img src="logo.png" alt="アジサイ" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+        <div class="logo-fallback" style="display:none"><svg><use href="#ajisai-mark"/></svg></div>
+      </div>
+      <h1>アジサイ</h1>
+      <p>あなたの毎日に、そっと寄りそう</p>
+    </div>
+
+    <div class="role-tabs" id="role-tabs">
+      <button class="role-tab on" data-role="user">利用者</button>
+      <button class="role-tab" data-role="staff">支援員</button>
+      <button class="role-tab" data-role="admin">管理者</button>
+    </div>
+
+    <div id="login-fields"></div>
+
+    <div class="login-hint" id="login-hint"></div>
+  </div>
+</div>
+
+<!-- ============================================================
+     アプリ本体
+     ============================================================ -->
+<div id="app">
+  <!-- 上部メニュー（PC） -->
+  <nav id="topnav">
+    <div class="nav-brand">
+      <div class="lw">
+        <img src="logo.png" alt="" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+        <div class="fb" style="display:none"><svg><use href="#ajisai-mark"/></svg></div>
+      </div>
+      <b>アジサイ</b>
+    </div>
+    <div class="nav-links" id="nav-links"></div>
+    <div class="nav-right">
+      <span class="nav-user" id="nav-user"></span>
+      <button class="icon-btn" onclick="logout()" title="ログアウト">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/></svg>
+      </button>
+    </div>
+  </nav>
+
+  <main id="main"></main>
+
+  <!-- 下部タブ（スマホ） -->
+  <nav id="tabbar"><div class="tabbar-inner" id="tabbar-inner"></div></nav>
+</div>
+
+<div id="modal"><div class="sheet" id="sheet"></div></div>
+<div id="toast"></div>
+
+<script>
+/* ============================================================
+   アイコン（Lucide風・線画）
+   ============================================================ */
+const IC = {
+  home:'<path d="M3 10.5L12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/>',
+  survey:'<rect x="4" y="3" width="16" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h3"/>',
+  consult:'<path d="M21 11.5a8.4 8.4 0 0 1-9 8.3l-5 1 1.2-4A8.4 8.4 0 1 1 21 11.5z"/>',
+  chat:'<path d="M21 15a2 2 0 0 1-2 2H8l-5 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>',
+  memo:'<path d="M4 4a2 2 0 0 1 2-2h9l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/><path d="M14 2v6h6"/><path d="M9 13h6M9 17h4"/>',
+  calendar:'<rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/>',
+  phone:'<path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3 19.5 19.5 0 0 1-6-6 19.8 19.8 0 0 1-3-8.6A2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.3 1.8.6 2.6a2 2 0 0 1-.5 2.1L8 9.6a16 16 0 0 0 6 6l1.2-1.2a2 2 0 0 1 2.1-.5c.8.3 1.7.5 2.6.6a2 2 0 0 1 1.7 2z"/>',
+  link:'<path d="M10 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1.5 1.5"/><path d="M14 11a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1.5-1.5"/>',
+  book:'<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>',
+  user:'<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/>',
+  users:'<circle cx="9" cy="8" r="3.4"/><path d="M2.5 20c0-3.4 3-5 6.5-5s6.5 1.6 6.5 5"/><path d="M16 5.2a3.4 3.4 0 0 1 0 6.4M22 20c0-2.6-1.6-4.2-4-4.8"/>',
+  bell:'<path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/>',
+  dash:'<rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/>',
+  inbox:'<path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.5 5h13l3.5 7v6a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-6z"/>',
+  send:'<path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4z"/>',
+  plus:'<path d="M12 5v14M5 12h14"/>',
+  edit:'<path d="M4 20l4-1L19 8a2 2 0 0 0-3-3L5 16l-1 4z"/><path d="M14 6l3 3"/>',
+  trash:'<path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/>',
+  key:'<circle cx="8" cy="14" r="4"/><path d="M11 11l9-9M17 5l3 3M14 8l2 2"/>',
+  check:'<path d="M20 6L9 17l-5-5"/>',
+  chevL:'<path d="M15 6l-6 6 6 6"/>', chevR:'<path d="M9 6l6 6-6 6"/>',
+  doc:'<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/>',
+  sheet:'<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18M15 3v18"/>',
+  type:'<path d="M4 7V5h16v2M9 19h6M12 5v14"/>',
+};
+function svg(d, w){ return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${w||1.7}" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`; }
+
+/* ============================================================
+   モックデータ（本番では Supabase が持つ部分）
+   ============================================================ */
+const SEED = {
+  staff:[
+    {id:'s1', name:'田中 支援員', email:'tanaka@ajisai.jp'},
+    {id:'s2', name:'佐藤 支援員', email:'sato@ajisai.jp'},
+    {id:'s3', name:'鈴木 支援員', email:'suzuki@ajisai.jp'},
+  ],
+  users:[
+    {id:'u1', name:'山田 太郎'},
+    {id:'u2', name:'高橋 花子'},
+    {id:'u3', name:'伊藤 健'},
+  ],
+  notices:[
+    {id:'n1', date:'06/22', pin:true, title:'夏季の開所日について', body:'8月13日〜15日はお休みです。詳しくは支援員までお尋ねください。'},
+    {id:'n2', date:'06/20', pin:false, title:'タイピング練習会のお知らせ', body:'毎週水曜の午後、希望者向けにタイピング練習の時間をつくりました。'},
+    {id:'n3', date:'06/18', pin:false, title:'面談スケジュール', body:'今月の個別面談の希望日を、相談フォームから送ってください。'},
+  ],
+  links:[
+    {id:'l1', cat:'doc', title:'Googleドキュメント', url:'https://docs.google.com'},
+    {id:'l2', cat:'sheet', title:'Googleスプレッドシート', url:'https://sheets.google.com'},
+    {id:'l3', cat:'type', title:'寿司打（タイピング練習）', url:'https://sushida.net'},
+    {id:'l4', cat:'doc', title:'Canva', url:'https://canva.com'},
+    {id:'l5', cat:'link', title:'クラウドワークス', url:'https://crowdworks.jp'},
+    {id:'l6', cat:'link', title:'ランサーズ', url:'https://lancers.jp'},
+  ],
+  manuals:[
+    {id:'m1', title:'PCの基本操作', body:'電源の入れ方、マウスとキーボードの使い方、ウィンドウの閉じ方などをまとめています。'},
+    {id:'m2', title:'ローマ字入力とホームポジション', body:'指の置き方（ホームポジション）と、ローマ字での文字入力の基本です。'},
+    {id:'m3', title:'AIの使い方', body:'ChatGPTなどのAIに上手にお願いするコツ（プロンプト）の基本を説明します。'},
+  ],
+  contacts:[
+    {id:'c1', name:'事業所（代表）', tel:'03-1234-5678', note:'平日 9:00〜17:00'},
+    {id:'c2', name:'緊急時・夜間', tel:'090-1234-5678', note:'体調急変などのとき'},
+    {id:'c3', name:'最寄りの病院', tel:'03-9876-5432', note:'みどり内科クリニック'},
+  ],
+  facilityEvents:[
+    {d:3, title:'避難訓練 10:00'},
+    {d:10, title:'誕生日会 15:00'},
+    {d:17, title:'外出レク 13:00'},
+    {d:24, title:'面談週間'},
+  ],
+};
+
+/* ============================================================
+   保存（localStorage）
+   ============================================================ */
+const Store = {
+  get(k, def){ try{ const v=localStorage.getItem('ajisai_'+k); return v?JSON.parse(v):(def!==undefined?structuredClone(def):null); }catch(e){ return def!==undefined?structuredClone(def):null; } },
+  set(k, v){ try{ localStorage.setItem('ajisai_'+k, JSON.stringify(v)); }catch(e){} },
+};
+function todayKey(){ const d=new Date(); return `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`; }
+function nowTime(){ const d=new Date(); return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`; }
+
+/* セッション（ログイン中の人） */
+let session = null;   // { role:'user'|'staff'|'admin', id, name }
+
+/* ============================================================
+   ログイン画面
+   ============================================================ */
+let loginRole = 'user';
+document.getElementById('role-tabs').addEventListener('click', e=>{
+  const t=e.target.closest('.role-tab'); if(!t)return;
+  loginRole=t.dataset.role;
+  document.querySelectorAll('.role-tab').forEach(x=>x.classList.toggle('on', x===t));
+  renderLoginFields();
+});
+function renderLoginFields(){
+  const box=document.getElementById('login-fields');
+  const hint=document.getElementById('login-hint');
+  if(loginRole==='user'){
+    box.innerHTML=`
+      <label class="lb">お名前</label>
+      <select class="select" id="lf-name">
+        ${SEED.users.map(u=>`<option value="${u.id}">${u.name}</option>`).join('')}
+      </select>
+      <label class="lb">パスワード</label>
+      <input class="input" id="lf-pw" type="password" placeholder="自分で決めたパスワード">
+      <div style="height:18px"></div>
+      <button class="btn block" onclick="loginUser()">ログイン</button>`;
+    hint.innerHTML=`はじめての方は、お名前をえらんでパスワードを決めてください。<br>
+      <div class="demo-pills"><span class="demo-pill">体験版：パスワードは何でもOK</span></div>`;
+  } else {
+    const list = loginRole==='staff'? SEED.staff : SEED.staff.slice(0,1);
+    box.innerHTML=`
+      <label class="lb">メールアドレス</label>
+      <input class="input" id="lf-email" type="email" placeholder="mail@ajisai.jp" value="${loginRole==='admin'?'admin@ajisai.jp':'tanaka@ajisai.jp'}">
+      <label class="lb">パスワード</label>
+      <input class="input" id="lf-pw" type="password" placeholder="パスワード" value="demo">
+      <div style="height:18px"></div>
+      <button class="btn ${loginRole==='admin'?'accent':''} block" onclick="loginStaff()">ログイン</button>`;
+    hint.innerHTML = loginRole==='admin'
+      ? `管理者は事業所代表のアカウントです。<br><div class="demo-pills"><span class="demo-pill">体験版：このままログイン可</span></div>`
+      : `支援員アカウントは管理者が登録します。<br><div class="demo-pills"><span class="demo-pill">体験版：このままログイン可</span></div>`;
+  }
+}
+function loginUser(){
+  const id=document.getElementById('lf-name').value;
+  const u=SEED.users.find(x=>x.id===id);
+  // 体験版：パスワードはローカルに記録（初回＝新規設定の体で）
+  const pwKey='userpw_'+id, saved=Store.get(pwKey), val=document.getElementById('lf-pw').value;
+  if(!saved){ if(!val){ toast('パスワードを決めてください','err'); return; } Store.set(pwKey,val); toast('パスワードを設定しました'); }
+  session={ role:'user', id:u.id, name:u.name };
+  enterApp();
+}
+function loginStaff(){
+  const email=document.getElementById('lf-email').value;
+  if(loginRole==='admin'){ session={ role:'admin', id:'admin', name:'管理者（代表）' }; }
+  else { const s=SEED.staff.find(x=>x.email===email)||SEED.staff[0]; session={ role:'staff', id:s.id, name:s.name }; }
+  enterApp();
+}
+function logout(){ session=null; document.body.classList.remove('in-app'); }
+
+/* ============================================================
+   ナビゲーション定義（ロール別）
+   ============================================================ */
+const NAV = {
+  user:[
+    {k:'home', label:'ホーム', ic:'home', tab:true},
+    {k:'survey', label:'アンケート', ic:'survey', tab:true},
+    {k:'consult', label:'相談', ic:'consult', tab:true},
+    {k:'chat', label:'チャット', ic:'chat', tab:true},
+    {k:'memo', label:'メモ', ic:'memo', tab:true},
+    {k:'calendar', label:'カレンダー', ic:'calendar'},
+    {k:'contacts', label:'緊急連絡先', ic:'phone'},
+    {k:'links', label:'リンク集', ic:'link'},
+    {k:'manual', label:'マニュアル', ic:'book'},
+    {k:'profile', label:'プロフィール', ic:'user'},
+  ],
+  staff:[
+    {k:'dash', label:'利用者一覧', ic:'dash', tab:true},
+    {k:'s_survey', label:'アンケート', ic:'survey', tab:true},
+    {k:'s_consult', label:'相談箱', ic:'inbox', tab:true},
+    {k:'s_chat', label:'チャット', ic:'chat', tab:true},
+    {k:'s_calendar', label:'カレンダー', ic:'calendar', tab:true},
+    {k:'s_notice', label:'お知らせ', ic:'bell'},
+    {k:'s_links', label:'リンク集', ic:'link'},
+    {k:'s_contacts', label:'緊急連絡先', ic:'phone'},
+  ],
+  admin:[
+    {k:'a_staff', label:'支援員管理', ic:'users', tab:true},
+    {k:'a_users', label:'利用者管理', ic:'user', tab:true},
+    {k:'a_manual', label:'マニュアル編集', ic:'book', tab:true},
+    {k:'dash', label:'利用者一覧', ic:'dash', tab:true},
+    {k:'s_notice', label:'お知らせ', ic:'bell', tab:true},
+    {k:'s_consult', label:'相談箱', ic:'inbox'},
+    {k:'s_chat', label:'チャット', ic:'chat'},
+    {k:'s_calendar', label:'カレンダー', ic:'calendar'},
+    {k:'s_links', label:'リンク集', ic:'link'},
+    {k:'s_contacts', label:'緊急連絡先', ic:'phone'},
+  ],
+};
+let current = 'home';
+
+function enterApp(){
+  document.body.classList.add('in-app');
+  document.getElementById('nav-user').innerHTML = `<b>${session.name}</b> さん`;
+  current = NAV[session.role][0].k;
+  buildNav();
+  render();
+  window.scrollTo(0,0);
+}
+function buildNav(){
+  const items = NAV[session.role];
+  document.getElementById('nav-links').innerHTML = items.map(it=>`
+    <button class="nav-link ${it.k===current?'on':''}" onclick="navTo('${it.k}')">
+      ${svg(IC[it.ic])}<span>${it.label}</span>${badge(it.k)}
+    </button>`).join('');
+  const tabs = items.filter(it=>it.tab).slice(0,5);
+  document.getElementById('tabbar-inner').innerHTML = tabs.map(it=>`
+    <button class="tab-item ${it.k===current?'on':''}" onclick="navTo('${it.k}')">
+      ${svg(IC[it.ic])}<span>${it.label}</span>${badge(it.k)}
+    </button>`).join('');
+}
+function badge(k){
+  // 未読・未対応の簡易バッジ
+  let n=0;
+  if(k==='s_consult'||k==='consult'){ n = consultUnhandledCount(); }
+  if(k==='chat'||k==='s_chat'){ n = chatUnreadCount(); }
+  return n>0? `<span class="badge">${n}</span>` : '';
+}
+function navTo(k){ current=k; buildNav(); render(); window.scrollTo(0,0);
+  document.getElementById('main').scrollIntoView({block:'start'}); }
+
+/* ============================================================
+   画面ルーター
+   ============================================================ */
+function render(){
+  const m=document.getElementById('main');
+  const fn = ROUTES[current];
+  m.innerHTML = fn? fn() : `<div class="empty">準備中の画面です</div>`;
+  if(AFTER[current]) AFTER[current]();
+}
+const AFTER = {};
+
+function head(ic, title, sub){
+  return `<div class="page-head"><h2>${svg(IC[ic])}${title}</h2>${sub?`<div class="ph-sub">${sub}</div>`:''}</div>`;
+}
+
+/* ============================================================
+   ＝＝＝ 利用者：ホーム ＝＝＝
+   ============================================================ */
+const ROUTES = {};
+ROUTES.home = function(){
+  const hour=new Date().getHours();
+  const greet = hour<11?'おはようございます':hour<18?'こんにちは':'こんばんは';
+  const doneToday = !!Store.get('survey_'+session.id+'_'+todayKey());
+  return `
+  <div class="welcome">
+    <h2>おかえりなさい、${session.name} さん</h2>
+    <p>${greet}。今日もマイペースでいきましょう。</p>
+  </div>
+
+  <div class="shortcut-grid">
+    <button class="shortcut" onclick="navTo('survey')">
+      <div class="sc-ic">${svg(IC.survey)}</div>
+      <b>今日のアンケート</b>
+      <span>${doneToday?'今日は記入ずみ ✓':'まだ記入していません'}</span>
+    </button>
+    <button class="shortcut" onclick="navTo('consult')">
+      <div class="sc-ic purple">${svg(IC.consult)}</div>
+      <b>相談する</b><span>支援員に相談・要望</span>
+    </button>
+    <button class="shortcut" onclick="navTo('calendar')">
+      <div class="sc-ic">${svg(IC.calendar)}</div>
+      <b>カレンダー</b><span>予定を見る・入れる</span>
+    </button>
+    <button class="shortcut" onclick="navTo('links')">
+      <div class="sc-ic">${svg(IC.link)}</div>
+      <b>リンク集</b><span>よく使うサイト</span>
+    </button>
+    <button class="shortcut" onclick="navTo('manual')">
+      <div class="sc-ic purple">${svg(IC.book)}</div>
+      <b>マニュアル</b><span>使い方を見る</span>
+    </button>
+    <button class="shortcut" onclick="navTo('contacts')">
+      <div class="sc-ic">${svg(IC.phone)}</div>
+      <b>緊急連絡先</b><span>困ったときに</span>
+    </button>
+  </div>
+
+  <div class="section-title">${svg(IC.bell)} お知らせ</div>
+  ${getNotices().map(n=>`
+    <div class="card notice ${n.pin?'pin':''}">
+      <div class="n-date">${n.date}</div>
+      <div class="n-body"><b>${n.pin?'📌 ':''}${esc(n.title)}</b><p>${esc(n.body)}</p></div>
+    </div>`).join('')}
+  `;
+};
+
+/* ============================================================
+   ＝＝＝ 利用者：日次アンケート（気分スタンプ・一日一回） ＝＝＝
+   ============================================================ */
+const MOODS=[
+  {v:'great', f:'😊', l:'とても良い'},
+  {v:'good',  f:'🙂', l:'良い'},
+  {v:'soso',  f:'😐', l:'ふつう'},
+  {v:'low',   f:'😢', l:'しんどい'},
+  {v:'angry', f:'😠', l:'もやもや'},
+  {v:'tired', f:'😴', l:'つかれた'},
+];
+ROUTES.survey = function(){
+  const key='survey_'+session.id+'_'+todayKey();
+  const done=Store.get(key);
+  if(done){
+    const mood=MOODS.find(x=>x.v===done.mood);
+    return head('survey','今日のアンケート')+`
+      <div class="card done-banner">
+        <div class="big">${mood?mood.f:'✓'}</div>
+        <h3 style="margin:8px 0 4px">今日のアンケートは記入ずみです</h3>
+        <p class="muted">ご記入ありがとうございました。<br>アンケートは一日一回です。また明日お待ちしています。</p>
+      </div>
+      <div class="card">
+        <div class="spread"><b>今日の記録</b><span class="tag green">${nowLabel(done.at)}</span></div>
+        <hr class="divider">
+        <p class="muted" style="font-size:12px;margin:0 0 3px">気分</p>
+        <p style="margin:0 0 10px">${mood?mood.f+' '+mood.l:'—'}</p>
+        ${fieldShow('一日の感想', done.diary)}
+        ${fieldShow('よかったこと', done.good)}
+        ${fieldShow('気になったこと', done.worry)}
+        ${fieldShow('意見・質問', done.opinion)}
+      </div>`;
+  }
+  return head('survey','今日のアンケート','その日の気分や出来事を、ひとことずつ。一日一回です。')+`
+    <div class="card">
+      <label class="lb" style="margin-top:0">いまの気分は？</label>
+      <div class="mood-row" id="mood-row">
+        ${MOODS.map(m=>`<button class="mood" data-v="${m.v}" onclick="pickMood(this)">
+          <span class="face">${m.f}</span><span class="ml">${m.l}</span></button>`).join('')}
+      </div>
+      <label class="lb">一日の感想</label>
+      <textarea class="textarea" id="sv-diary" placeholder="今日はどんな一日でしたか？"></textarea>
+      <label class="lb">よかったこと</label>
+      <textarea class="textarea" id="sv-good" placeholder="小さなことでも大丈夫です"></textarea>
+      <label class="lb">気になったこと</label>
+      <textarea class="textarea" id="sv-worry" placeholder="ひっかかったこと、心配なこと"></textarea>
+      <label class="lb">意見・質問</label>
+      <textarea class="textarea" id="sv-opinion" placeholder="伝えたいこと、聞きたいこと"></textarea>
+      <div style="height:16px"></div>
+      <button class="btn block" onclick="submitSurvey()">この内容で送信する</button>
+      <p class="muted center" style="font-size:12px;margin:10px 0 0">※ 送信すると、今日はこのあと編集できません</p>
+    </div>`;
+};
+let pickedMood=null;
+function pickMood(el){ pickedMood=el.dataset.v;
+  document.querySelectorAll('#mood-row .mood').forEach(x=>x.classList.toggle('on', x===el)); }
+function submitSurvey(){
+  if(!pickedMood){ toast('気分をえらんでください','err'); return; }
+  const rec={ mood:pickedMood,
+    diary:val('sv-diary'), good:val('sv-good'), worry:val('sv-worry'), opinion:val('sv-opinion'),
+    at:Date.now(), userId:session.id, date:todayKey() };
+  Store.set('survey_'+session.id+'_'+todayKey(), rec);
+  // 支援員が見る蓄積リストにも追加
+  const all=Store.get('surveys', []); all.unshift(rec); Store.set('surveys', all);
+  pickedMood=null;
+  confirmModal('送信しました', 'ご記入ありがとうございました。また明日お待ちしています。', ()=>{ render(); });
+}
+function fieldShow(label,v){ if(!v)return ''; return `<p class="muted" style="font-size:12px;margin:10px 0 3px">${label}</p><p style="margin:0;white-space:pre-wrap">${esc(v)}</p>`; }
+
+/* ============================================================
+   ＝＝＝ 利用者：相談フォーム ＝＝＝
+   ============================================================ */
+const CONSULT_METHOD=['直接話がしたい','テキストでやりとりしたい','時間を確保してほしい'];
+const CONSULT_CAT=['質疑応答','悩み相談','事業所でやってみたいこと','試してみたいこと','要望'];
+ROUTES.consult = function(){
+  const mine=getConsults().filter(c=>c.userId===session.id);
+  return head('consult','相談フォーム','支援員だけが見られます。安心して書いてください。')+`
+    <div class="card">
+      <label class="lb" style="margin-top:0">送信先の支援員</label>
+      <select class="select" id="co-staff">${SEED.staff.map(s=>`<option value="${s.id}">${s.name}</option>`).join('')}</select>
+      <label class="lb">対応方法の希望</label>
+      <select class="select" id="co-method">${CONSULT_METHOD.map(x=>`<option>${x}</option>`).join('')}</select>
+      <label class="lb">相談カテゴリ</label>
+      <select class="select" id="co-cat">${CONSULT_CAT.map(x=>`<option>${x}</option>`).join('')}</select>
+      <label class="lb">相談したいこと</label>
+      <textarea class="textarea" id="co-body" placeholder="どんなことでも大丈夫です"></textarea>
+      <div style="height:14px"></div>
+      <button class="btn accent block" onclick="submitConsult()">相談を送信する</button>
+    </div>
+
+    <div class="section-title">${svg(IC.inbox)} 送信した相談（${mine.length}件）</div>
+    ${mine.length? mine.map(c=>consultCardUser(c)).join('') : `<div class="card empty">まだ相談はありません</div>`}
+  `;
+};
+function consultCardUser(c){
+  const st=consultStatus(c);
+  return `<div class="card">
+    <div class="spread">
+      <div class="row"><span class="tag purple">${c.cat}</span><span class="tag">${c.method}</span></div>
+      <span class="status-pill ${st.cls}">${st.label}</span>
+    </div>
+    <p style="margin:10px 0 6px;white-space:pre-wrap">${esc(c.body)}</p>
+    <div class="muted" style="font-size:12px">${staffName(c.staffId)} 宛 ・ ${nowLabel(c.at)}</div>
+    ${c.replies&&c.replies.length?`<hr class="divider">${c.replies.map(r=>`<div style="font-size:13.5px;background:var(--sub);border-radius:8px;padding:8px 11px;margin-bottom:6px"><b style="font-size:12px;color:var(--main-d)">${staffName(c.staffId)}より</b><br>${esc(r.body)}</div>`).join('')}`:''}
+    ${c.task?`<div class="tag warn" style="margin-top:8px">📅 ${c.task} に面談予定</div>`:''}
+  </div>`;
+}
+function submitConsult(){
+  const rec={ id:'co'+Date.now(), userId:session.id, userName:session.name,
+    staffId:val('co-staff'), method:val('co-method'), cat:val('co-cat'),
+    body:val('co-body'), at:Date.now(), status:'open', replies:[], task:null };
+  if(!rec.body.trim()){ toast('相談内容を書いてください','err'); return; }
+  const all=getConsults(); all.unshift(rec); saveConsults(all);
+  confirmModal('相談を送信しました','支援員が確認します。返信はこの画面とチャットで届きます。', ()=>{ buildNav(); render(); });
+}
+
+/* ============================================================
+   ＝＝＝ 利用者：チャット ＝＝＝
+   ============================================================ */
+ROUTES.chat = function(){
+  const peers=SEED.staff;
+  let sel=Store.get('chat_sel_'+session.id) || peers[0].id;
+  return head('chat','チャット','支援員を選んで、1対1でやりとりできます。')+`
+    <div class="chat-peers" id="chat-peers">
+      ${peers.map(p=>`<button class="peer ${p.id===sel?'on':''}" onclick="selectPeer('${p.id}')">
+        <span class="av">${p.name[0]}</span><span class="pn">${p.name}</span></button>`).join('')}
+    </div>
+    <div class="chat-wrap">
+      <div class="chat-log" id="chat-log"></div>
+      <div class="chat-input">
+        <input class="input" id="chat-text" placeholder="メッセージを入力" onkeydown="if(event.key==='Enter')sendChat()">
+        <button class="btn" onclick="sendChat()">${svg(IC.send,2)}</button>
+      </div>
+    </div>`;
+};
+AFTER.chat = function(){ renderChatLog(); };
+function selectPeer(pid){ Store.set('chat_sel_'+session.id, pid); render(); }
+function chatThreadKey(userId, staffId){ return 'chat_'+userId+'_'+staffId; }
+function currentChatPeer(){
+  if(session.role==='user') return Store.get('chat_sel_'+session.id) || SEED.staff[0].id;
+  return Store.get('schat_sel_'+session.id) || SEED.users[0].id;
+}
+function renderChatLog(){
+  const log=document.getElementById('chat-log'); if(!log)return;
+  let userId, staffId;
+  if(session.role==='user'){ userId=session.id; staffId=currentChatPeer(); }
+  else { staffId=session.id; userId=currentChatPeer(); }
+  const thread=Store.get(chatThreadKey(userId,staffId), []);
+  // 自分宛の相手メッセージを既読化
+  let changed=false;
+  thread.forEach(msg=>{ if(msg.from!==session.role && !msg.read){ msg.read=true; changed=true; } });
+  if(changed) Store.set(chatThreadKey(userId,staffId), thread);
+  if(!thread.length){ log.innerHTML=`<div class="empty">まだメッセージはありません。<br>最初のひとことを送ってみましょう。</div>`; buildNav(); return; }
+  log.innerHTML = thread.map(msg=>{
+    const mine = msg.from===session.role;
+    const read = mine && msg.read ? `<span class="read-mark">既読</span>` : '';
+    return `<div class="msg ${mine?'me':'them'}">${esc(msg.text)}<div class="mt">${read}<span>${nowLabel(msg.at)}</span></div></div>`;
+  }).join('');
+  log.scrollTop=log.scrollHeight;
+  buildNav();
+}
+function sendChat(){
+  const t=document.getElementById('chat-text'); const text=t.value.trim(); if(!text)return;
+  let userId, staffId;
+  if(session.role==='user'){ userId=session.id; staffId=currentChatPeer(); }
+  else { staffId=session.id; userId=currentChatPeer(); }
+  const key=chatThreadKey(userId,staffId);
+  const thread=Store.get(key, []);
+  thread.push({ from:session.role, text, at:Date.now(), read:false });
+  Store.set(key, thread);
+  t.value='';
+  renderChatLog();
+  // 利用者→支援員のときはメール通知（本番イメージ）を表示
+  if(session.role==='user'){
+    const st=SEED.staff.find(s=>s.id===staffId);
+    toast(`📧 ${st.name}（${st.email}）へ通知メールを送信しました`);
+  }
+}
+function chatUnreadCount(){
+  let n=0;
+  if(session.role==='user'){
+    SEED.staff.forEach(s=>{ Store.get(chatThreadKey(session.id,s.id),[]).forEach(m=>{ if(m.from!=='user'&&!m.read)n++; }); });
+  } else if(session.role==='staff'){
+    SEED.users.forEach(u=>{ Store.get(chatThreadKey(u.id,session.id),[]).forEach(m=>{ if(m.from!=='staff'&&!m.read)n++; }); });
+  }
+  return n;
+}
+
+/* ============================================================
+   ＝＝＝ 利用者：メモ（本人のみ・履歴あり） ＝＝＝
+   ============================================================ */
+ROUTES.memo = function(){
+  const cur=Store.get('memo_'+session.id, {text:'', hist:[]});
+  return head('memo','メモ','あなただけのメモです。支援員にも見えません。')+`
+    <div class="card">
+      <textarea class="textarea" id="memo-text" style="min-height:200px" placeholder="クラウドワークスのテンプレートや、AIへのお願い文などを保存できます">${esc(cur.text||'')}</textarea>
+      <div class="spread" style="margin-top:10px">
+        <span class="muted" style="font-size:12px">保存するたびに履歴が残ります</span>
+        <button class="btn" onclick="saveMemo()">${svg(IC.check,2)} 保存</button>
+      </div>
+    </div>
+    ${cur.hist&&cur.hist.length?`
+    <div class="section-title">${svg(IC.memo)} 保存履歴</div>
+    <div class="card">${cur.hist.map((h,i)=>`
+      <div class="hist-item">
+        <span class="memo-hist">${nowLabel(h.at)}</span>
+        <button class="btn ghost sm" onclick="restoreMemo(${i})">この内容に戻す</button>
+      </div>`).join('')}</div>`:''}
+  `;
+};
+function saveMemo(){
+  const cur=Store.get('memo_'+session.id, {text:'', hist:[]});
+  const text=val('memo-text');
+  cur.hist = cur.hist||[];
+  if(cur.text) cur.hist.unshift({ text:cur.text, at:Date.now() });
+  cur.hist = cur.hist.slice(0,10);
+  cur.text=text;
+  Store.set('memo_'+session.id, cur);
+  toast('保存しました','ok'); render();
+}
+function restoreMemo(i){
+  const cur=Store.get('memo_'+session.id, {text:'', hist:[]});
+  const h=cur.hist[i]; if(!h)return;
+  document.getElementById('memo-text').value=h.text;
+  toast('履歴を呼び出しました（保存で確定）');
+}
+
+/* ============================================================
+   ＝＝＝ 利用者：プロフィール ＝＝＝
+   ============================================================ */
+ROUTES.profile = function(){
+  const p=Store.get('profile_'+session.id, {care:'', worry:'', like:''});
+  return head('user','プロフィール','支援員・管理者が見られます。配慮してほしいことを書いておけます。')+`
+    <div class="card">
+      <label class="lb" style="margin-top:0">配慮してほしいこと</label>
+      <textarea class="textarea" id="pf-care" placeholder="例：大きな音が苦手です／急な予定変更は前もって教えてほしい">${esc(p.care)}</textarea>
+      <label class="lb">最近の悩み・気がかり</label>
+      <textarea class="textarea" id="pf-worry" placeholder="例：人前で話すのが緊張する">${esc(p.worry)}</textarea>
+      <label class="lb">得意なこと・好きなこと</label>
+      <textarea class="textarea" id="pf-like" placeholder="例：コツコツした作業が好き／イラストを描くのが得意">${esc(p.like)}</textarea>
+      <div style="height:14px"></div>
+      <button class="btn block" onclick="saveProfile()">保存する</button>
+    </div>`;
+};
+function saveProfile(){
+  Store.set('profile_'+session.id, { care:val('pf-care'), worry:val('pf-worry'), like:val('pf-like') });
+  toast('プロフィールを保存しました','ok');
+}
+
+/* ============================================================
+   ＝＝＝ カレンダー（施設＝緑・個人＝青紫） ＝＝＝
+   ============================================================ */
+let calYear, calMonth;
+function initCal(){ if(calYear===undefined){ const d=new Date(); calYear=d.getFullYear(); calMonth=d.getMonth(); } }
+ROUTES.calendar = function(){ initCal(); return calView(false); };
+ROUTES.s_calendar = function(){ initCal(); return calView(true); };
+function calView(isStaff){
+  const title = isStaff? '施設の予定を登録・編集できます。利用者の個人予定も色分けで表示されます。'
+                       : '施設の予定（緑）と、自分の予定（青紫）。自分の予定は自由に入れられます。';
+  return head('calendar','カレンダー', title)+`
+    <div class="card">
+      <div class="cal-head">
+        <h3>${calYear}年 ${calMonth+1}月</h3>
+        <div class="cal-nav">
+          <button class="icon-btn" onclick="calMove(-1)">${svg(IC.chevL,2)}</button>
+          <button class="icon-btn" onclick="calMove(1)">${svg(IC.chevR,2)}</button>
+        </div>
+      </div>
+      <div class="cal-grid">
+        ${['日','月','火','水','木','金','土'].map(d=>`<div class="cal-dow">${d}</div>`).join('')}
+        ${calCells(isStaff)}
+      </div>
+      <div class="cal-legend">
+        <span><i style="background:var(--main)"></i>施設の予定</span>
+        <span><i style="background:var(--accent)"></i>${isStaff?'利用者の個人予定':'自分の予定'}</span>
+      </div>
+    </div>
+    <button class="btn block" onclick="openEventModal()">${svg(IC.plus,2)} ${isStaff?'施設の予定を追加':'自分の予定を追加'}</button>`;
+}
+function calMove(d){ calMonth+=d; if(calMonth<0){calMonth=11;calYear--;} if(calMonth>11){calMonth=0;calYear++;} render(); }
+function getFacilityEvents(){ return Store.get('facilityEvents', SEED.facilityEvents); }
+function getPersonalEvents(uid){ return Store.get('events_'+uid, []); }
+function calCells(isStaff){
+  const first=new Date(calYear,calMonth,1).getDay();
+  const days=new Date(calYear,calMonth+1,0).getDate();
+  const today=new Date();
+  const fac=getFacilityEvents();
+  // 個人予定：利用者は自分、支援員は全員ぶん
+  let personal=[];
+  if(isStaff){ SEED.users.forEach(u=>getPersonalEvents(u.id).forEach(e=>personal.push({...e, who:u.name}))); }
+  else { personal=getPersonalEvents(session.id); }
+  let cells='';
+  for(let i=0;i<first;i++) cells+=`<div class="cal-cell other"></div>`;
+  for(let d=1;d<=days;d++){
+    const dow=new Date(calYear,calMonth,d).getDay();
+    const isToday = today.getFullYear()===calYear&&today.getMonth()===calMonth&&today.getDate()===d;
+    const fe=fac.filter(e=>e.d===d);
+    const pe=personal.filter(e=>e.d===d);
+    cells+=`<div class="cal-cell ${isToday?'today':''} ${dow===0?'sun':''} ${dow===6?'sat':''}" onclick="openEventModal(${d})">
+      <span class="dn">${d}</span>
+      ${fe.map(e=>`<div class="ev facility" title="${esc(e.title)}">${esc(e.title)}</div>`).join('')}
+      ${pe.map(e=>`<div class="ev personal" title="${esc((e.who?e.who+'：':'')+e.title)}">${e.who?'・':''}${esc(e.title)}</div>`).join('')}
+    </div>`;
+  }
+  return cells;
+}
+function openEventModal(day){
+  const isStaff = (current==='s_calendar');
+  const d = day || new Date().getDate();
+  openModal(`
+    <h3>${isStaff?'施設の予定を追加':'予定を追加'}</h3>
+    <p class="muted" style="font-size:13px;margin:2px 0 6px">「〇時から〇〇」のように、かんたんに。</p>
+    <label class="lb">日にち（${calMonth+1}月）</label>
+    <input class="input" id="ev-day" type="number" min="1" max="31" value="${d}">
+    <label class="lb">時刻（任意）</label>
+    <input class="input" id="ev-time" type="time">
+    <label class="lb">予定の内容</label>
+    <input class="input" id="ev-title" placeholder="例：そうじ当番／通院">
+    <div style="height:16px"></div>
+    <button class="btn block ${isStaff?'':'accent'}" onclick="addEvent(${isStaff})">追加する</button>
+  `);
+}
+function addEvent(isStaff){
+  const d=parseInt(val('ev-day'),10); const time=val('ev-time'); const t=val('ev-title').trim();
+  if(!t){ toast('内容を書いてください','err'); return; }
+  const title = time? `${time} ${t}` : t;
+  if(isStaff){ const fe=getFacilityEvents(); fe.push({d, title}); Store.set('facilityEvents', fe); }
+  else { const pe=getPersonalEvents(session.id); pe.push({d, title}); Store.set('events_'+session.id, pe); }
+  closeModal(); toast('予定を追加しました','ok'); render();
+}
+
+/* ============================================================
+   ＝＝＝ 緊急連絡先 ＝＝＝
+   ============================================================ */
+ROUTES.contacts = function(){ return contactsView(false); };
+ROUTES.s_contacts = function(){ return contactsView(true); };
+function contactsView(canEdit){
+  const list=Store.get('contacts', SEED.contacts);
+  return head('phone','緊急連絡先', canEdit?'連絡先を登録・編集できます。':'困ったときは、ここから連絡できます。')+`
+    ${list.map(c=>`<div class="card">
+      <div class="spread">
+        <div><b style="font-size:16px">${esc(c.name)}</b><div class="muted" style="font-size:12.5px">${esc(c.note||'')}</div></div>
+        <a class="btn sm" href="tel:${c.tel}">${svg(IC.phone,2)} ${esc(c.tel)}</a>
+      </div>
+      ${canEdit?`<div class="row" style="margin-top:10px;justify-content:flex-end"><button class="btn ghost sm" onclick="delContact('${c.id}')">削除</button></div>`:''}
+    </div>`).join('')}
+    ${canEdit?`<button class="btn block" onclick="addContactModal()">${svg(IC.plus,2)} 連絡先を追加</button>`:''}`;
+}
+function addContactModal(){
+  openModal(`<h3>連絡先を追加</h3>
+    <label class="lb">名称</label><input class="input" id="ct-name" placeholder="例：相談支援センター">
+    <label class="lb">電話番号</label><input class="input" id="ct-tel" placeholder="03-0000-0000">
+    <label class="lb">メモ（任意）</label><input class="input" id="ct-note" placeholder="例：平日のみ">
+    <div style="height:14px"></div><button class="btn block" onclick="addContact()">追加する</button>`);
+}
+function addContact(){
+  const list=Store.get('contacts', SEED.contacts);
+  if(!val('ct-name')||!val('ct-tel')){ toast('名称と電話番号を入れてください','err'); return; }
+  list.push({id:'c'+Date.now(), name:val('ct-name'), tel:val('ct-tel'), note:val('ct-note')});
+  Store.set('contacts', list); closeModal(); toast('追加しました','ok'); render();
+}
+function delContact(id){ const list=Store.get('contacts', SEED.contacts).filter(c=>c.id!==id); Store.set('contacts', list); toast('削除しました'); render(); }
+
+/* ============================================================
+   ＝＝＝ リンク集 ＝＝＝
+   ============================================================ */
+ROUTES.links = function(){ return linksView(false); };
+ROUTES.s_links = function(){ return linksView(true); };
+function linksView(canEdit){
+  const list=Store.get('links', SEED.links);
+  const icFor=c=> c==='sheet'?IC.sheet : c==='type'?IC.type : c==='link'?IC.link : IC.doc;
+  return head('link','URLリンク集', canEdit?'リンクの追加・削除ができます。':'よく使うサイトへのリンクです。')+`
+    ${list.map(l=>`<div class="card link-item">
+      <div class="li-ic">${svg(icFor(l.cat))}</div>
+      <div class="li-body"><b>${esc(l.title)}</b><span>${esc(l.url)}</span></div>
+      <a class="btn ghost sm" href="${l.url}" target="_blank" rel="noopener">開く</a>
+      ${canEdit?`<button class="icon-btn" onclick="delLink('${l.id}')" title="削除">${svg(IC.trash)}</button>`:''}
+    </div>`).join('')}
+    ${canEdit?`<button class="btn block" onclick="addLinkModal()">${svg(IC.plus,2)} リンクを追加</button>`:''}`;
+}
+function addLinkModal(){
+  openModal(`<h3>リンクを追加</h3>
+    <label class="lb">タイトル</label><input class="input" id="lk-title" placeholder="例：自社の作業マニュアル">
+    <label class="lb">URL</label><input class="input" id="lk-url" placeholder="https://...">
+    <div style="height:14px"></div><button class="btn block" onclick="addLink()">追加する</button>`);
+}
+function addLink(){
+  const list=Store.get('links', SEED.links);
+  if(!val('lk-title')||!val('lk-url')){ toast('タイトルとURLを入れてください','err'); return; }
+  list.push({id:'l'+Date.now(), cat:'link', title:val('lk-title'), url:val('lk-url')});
+  Store.set('links', list); closeModal(); toast('追加しました','ok'); render();
+}
+function delLink(id){ Store.set('links', Store.get('links',SEED.links).filter(l=>l.id!==id)); toast('削除しました'); render(); }
+
+/* ============================================================
+   ＝＝＝ マニュアル（閲覧／管理者のみ編集） ＝＝＝
+   ============================================================ */
+ROUTES.manual = function(){ return manualView(false); };
+ROUTES.a_manual = function(){ return manualView(true); };
+function manualView(canEdit){
+  const list=Store.get('manuals', SEED.manuals);
+  return head('book','マニュアル', canEdit?'テキスト・画像の追加と削除ができます（管理者のみ）。':'PCの使い方などをまとめています。')+`
+    ${list.map(m=>`<div class="card">
+      <div class="spread"><b style="font-size:16px">${esc(m.title)}</b>
+        ${canEdit?`<div class="row"><button class="icon-btn" onclick="editManual('${m.id}')">${svg(IC.edit)}</button><button class="icon-btn" onclick="delManual('${m.id}')">${svg(IC.trash)}</button></div>`:''}
+      </div>
+      <p style="margin:8px 0 0;white-space:pre-wrap;font-size:14px">${esc(m.body)}</p>
+    </div>`).join('')}
+    ${canEdit?`<button class="btn block" onclick="editManual()">${svg(IC.plus,2)} 項目を追加</button>`:''}`;
+}
+function editManual(id){
+  const list=Store.get('manuals', SEED.manuals);
+  const m = id? list.find(x=>x.id===id) : {title:'', body:''};
+  openModal(`<h3>${id?'項目を編集':'項目を追加'}</h3>
+    <label class="lb">タイトル</label><input class="input" id="mn-title" value="${esc(m.title)}">
+    <label class="lb">本文</label><textarea class="textarea" id="mn-body" style="min-height:160px">${esc(m.body)}</textarea>
+    <p class="muted" style="font-size:12px;margin:6px 0 0">※ 本番では画像の添付にも対応します</p>
+    <div style="height:14px"></div><button class="btn accent block" onclick="saveManual('${id||''}')">保存する</button>`);
+}
+function saveManual(id){
+  const list=Store.get('manuals', SEED.manuals);
+  if(!val('mn-title')){ toast('タイトルを入れてください','err'); return; }
+  if(id){ const m=list.find(x=>x.id===id); m.title=val('mn-title'); m.body=val('mn-body'); }
+  else { list.push({id:'m'+Date.now(), title:val('mn-title'), body:val('mn-body')}); }
+  Store.set('manuals', list); closeModal(); toast('保存しました','ok'); render();
+}
+function delManual(id){ Store.set('manuals', Store.get('manuals',SEED.manuals).filter(m=>m.id!==id)); toast('削除しました'); render(); }
+
+/* ============================================================
+   ＝＝＝ 支援員：利用者一覧（ダッシュボード） ＝＝＝
+   ============================================================ */
+ROUTES.dash = function(){
+  return head('dash','利用者一覧', '利用者を選ぶと、プロフィールとアンケートを確認できます。')+`
+    <div class="card">
+      ${SEED.users.map(u=>{
+        const last=Store.get('survey_'+u.id+'_'+todayKey());
+        const mood=last?MOODS.find(m=>m.v===last.mood):null;
+        return `<div class="list-row">
+          <div class="avatar">${u.name[0]}</div>
+          <div style="flex:1"><b>${u.name}</b><div class="muted" style="font-size:12px">${last?'今日のアンケート：'+(mood?mood.f+' '+mood.l:'記入ずみ'):'今日は未記入'}</div></div>
+          <button class="btn ghost sm" onclick="openUserDetail('${u.id}')">詳しく見る</button>
+        </div>`;
+      }).join('')}
+    </div>`;
+};
+function openUserDetail(uid){
+  const u=SEED.users.find(x=>x.id===uid);
+  const p=Store.get('profile_'+uid, {care:'',worry:'',like:''});
+  const surveys=Store.get('surveys', []).filter(s=>s.userId===uid).slice(0,5);
+  openModal(`
+    <button class="sh-x" onclick="closeModal()">×</button>
+    <h3>${u.name} さん</h3>
+    <div class="section-title" style="margin-top:14px">${svg(IC.user)} プロフィール</div>
+    ${p.care||p.worry||p.like? `
+      ${p.care?`<p class="muted" style="font-size:12px;margin:6px 0 2px">配慮してほしいこと</p><p style="margin:0 0 8px">${esc(p.care)}</p>`:''}
+      ${p.worry?`<p class="muted" style="font-size:12px;margin:6px 0 2px">最近の悩み</p><p style="margin:0 0 8px">${esc(p.worry)}</p>`:''}
+      ${p.like?`<p class="muted" style="font-size:12px;margin:6px 0 2px">得意・好き</p><p style="margin:0 0 8px">${esc(p.like)}</p>`:''}`
+      : `<p class="muted" style="font-size:13px">まだ記入されていません</p>`}
+    <div class="section-title">${svg(IC.survey)} 最近のアンケート</div>
+    ${surveys.length? surveys.map(s=>{ const m=MOODS.find(x=>x.v===s.mood); return `
+      <div style="background:var(--sub);border-radius:9px;padding:10px 12px;margin-bottom:7px">
+        <div class="spread"><b>${m?m.f+' '+m.l:'—'}</b><span class="muted" style="font-size:11px">${dateLabel(s.at)}</span></div>
+        ${s.diary?`<p style="margin:5px 0 0;font-size:13px">${esc(s.diary)}</p>`:''}
+      </div>`; }).join('') : `<p class="muted" style="font-size:13px">記録はまだありません</p>`}
+  `);
+}
+
+/* ============================================================
+   ＝＝＝ 支援員：アンケート閲覧 ＝＝＝
+   ============================================================ */
+ROUTES.s_survey = function(){
+  const all=Store.get('surveys', []);
+  return head('survey','アンケート結果', '利用者ごとに記録が蓄積されます。')+`
+    ${all.length? all.map(s=>{ const m=MOODS.find(x=>x.v===s.mood); const u=SEED.users.find(x=>x.id===s.userId);
+      return `<div class="card">
+        <div class="spread"><div class="row"><div class="avatar" style="width:30px;height:30px;font-size:13px">${u?u.name[0]:'?'}</div><b>${u?u.name:'利用者'}</b></div>
+          <span class="muted" style="font-size:12px">${dateLabel(s.at)}</span></div>
+        <div style="font-size:24px;margin:8px 0 4px">${m?m.f:''} <span style="font-size:14px;color:var(--muted)">${m?m.l:''}</span></div>
+        ${fieldShow('一日の感想', s.diary)}${fieldShow('よかったこと', s.good)}${fieldShow('気になったこと', s.worry)}${fieldShow('意見・質問', s.opinion)}
+      </div>`; }).join('') : `<div class="card empty">アンケートはまだありません。<br><span style="font-size:12px">利用者でログインして送信すると、ここに表示されます。</span></div>`}`;
+};
+
+/* ============================================================
+   ＝＝＝ 支援員：相談受信箱（ステータス・タスク・返信） ＝＝＝
+   ============================================================ */
+ROUTES.s_consult = function(){
+  const all=getConsults().filter(c=> session.role==='admin' ? true : c.staffId===session.id);
+  return head('inbox','相談受信箱', session.role==='admin'?'全支援員あての相談です。':'あなた宛の相談です。ステータスを管理できます。')+`
+    ${all.length? all.map(c=>{ const st=consultStatus(c); const u=SEED.users.find(x=>x.id===c.userId);
+      return `<div class="card inbox-item" onclick="openConsultDetail('${c.id}')">
+        <div class="spread">
+          <div class="row"><div class="avatar purple" style="width:30px;height:30px;font-size:13px">${u?u.name[0]:'?'}</div><b>${c.userName}</b></div>
+          <span class="status-pill ${st.cls}">${st.label}</span>
+        </div>
+        <div class="row" style="margin:9px 0 6px"><span class="tag purple">${c.cat}</span><span class="tag">${c.method}</span></div>
+        <p style="margin:0;white-space:pre-wrap;font-size:14px">${esc(c.body)}</p>
+        <div class="muted" style="font-size:11.5px;margin-top:8px">${nowLabel(c.at)} ・ ${staffName(c.staffId)} 宛</div>
+      </div>`; }).join('') : `<div class="card empty">相談はまだありません。<br><span style="font-size:12px">利用者でログインして相談を送ると、ここに届きます。</span></div>`}`;
+};
+function openConsultDetail(id){
+  const c=getConsults().find(x=>x.id===id); const st=consultStatus(c);
+  openModal(`
+    <button class="sh-x" onclick="closeModal()">×</button>
+    <h3>${c.userName} さんの相談</h3>
+    <div class="row" style="margin:6px 0"><span class="tag purple">${c.cat}</span><span class="tag">${c.method}</span><span class="status-pill ${st.cls}">${st.label}</span></div>
+    <p style="white-space:pre-wrap;background:var(--sub);border-radius:9px;padding:11px 13px;margin:8px 0">${esc(c.body)}</p>
+
+    <label class="lb">対応ステータス</label>
+    <div class="seg" id="st-seg">
+      <button class="${c.status==='open'?'on':''}" onclick="setConsultStatus('${id}','open')">未対応</button>
+      <button class="${c.status==='prog'?'on':''}" onclick="setConsultStatus('${id}','prog')">対応中</button>
+      <button class="${c.status==='done'?'on':''}" onclick="setConsultStatus('${id}','done')">完了</button>
+    </div>
+
+    <label class="lb">面談・タスク（日時を決めたら記録）</label>
+    <div class="row"><input class="input" id="cs-task" placeholder="例：6/28 14:00〜" value="${c.task||''}"><button class="btn sm" onclick="setConsultTask('${id}')">登録</button></div>
+
+    <label class="lb">チャットで返信</label>
+    <textarea class="textarea" id="cs-reply" placeholder="この内容は利用者へのチャットにも届きます"></textarea>
+    <div style="height:12px"></div>
+    <button class="btn block" onclick="replyConsult('${id}')">${svg(IC.send,2)} 返信を送る</button>
+  `);
+}
+function setConsultStatus(id, st){ const all=getConsults(); const c=all.find(x=>x.id===id); c.status=st; saveConsults(all); toast('ステータスを更新'); buildNav(); openConsultDetail(id); }
+function setConsultTask(id){ const all=getConsults(); const c=all.find(x=>x.id===id); c.task=val('cs-task'); saveConsults(all); toast('面談予定を登録しました','ok'); }
+function replyConsult(id){
+  const text=val('cs-reply').trim(); if(!text){ toast('返信を書いてください','err'); return; }
+  const all=getConsults(); const c=all.find(x=>x.id===id);
+  c.replies=c.replies||[]; c.replies.push({body:text, at:Date.now()});
+  if(c.status==='open') c.status='prog';
+  saveConsults(all);
+  // チャットスレッドにも反映（支援員→利用者）
+  const key=chatThreadKey(c.userId, c.staffId);
+  const thread=Store.get(key, []);
+  thread.push({ from:'staff', text:'【相談への返信】'+text, at:Date.now(), read:false });
+  Store.set(key, thread);
+  closeModal(); toast('返信しました（チャットにも送信）','ok'); buildNav(); render();
+}
+function consultStatus(c){
+  if(c.status==='done') return {cls:'status-done', label:'完了'};
+  if(c.status==='prog') return {cls:'status-prog', label:'対応中'};
+  return {cls:'status-open', label:'未対応'};
+}
+function consultUnhandledCount(){
+  const all=getConsults();
+  if(session.role==='user') return 0;
+  return all.filter(c=>(session.role==='admin'||c.staffId===session.id) && c.status!=='done').length;
+}
+
+/* ============================================================
+   ＝＝＝ 支援員：チャット（相手＝利用者） ＝＝＝
+   ============================================================ */
+ROUTES.s_chat = function(){
+  const peers=SEED.users;
+  let sel=Store.get('schat_sel_'+session.id) || peers[0].id;
+  return head('chat','チャット', '自分あてのチャットだけが表示されます。')+`
+    <div class="chat-peers">
+      ${peers.map(p=>{
+        let unread=0; Store.get(chatThreadKey(p.id, session.id),[]).forEach(m=>{ if(m.from!=='staff'&&!m.read)unread++; });
+        return `<button class="peer ${p.id===sel?'on':''}" onclick="selectSPeer('${p.id}')">
+          <span class="av">${p.name[0]}</span><span class="pn">${p.name}</span>${unread?`<span class="badge" style="position:static">${unread}</span>`:''}</button>`;
+      }).join('')}
+    </div>
+    <div class="chat-wrap">
+      <div class="chat-log" id="chat-log"></div>
+      <div class="chat-input">
+        <input class="input" id="chat-text" placeholder="メッセージを入力" onkeydown="if(event.key==='Enter')sendChat()">
+        <button class="btn" onclick="sendChat()">${svg(IC.send,2)}</button>
+      </div>
+    </div>`;
+};
+AFTER.s_chat = function(){ renderChatLog(); };
+function selectSPeer(uid){ Store.set('schat_sel_'+session.id, uid); render(); }
+
+/* ============================================================
+   ＝＝＝ 支援員/管理者：お知らせ管理 ＝＝＝
+   ============================================================ */
+ROUTES.s_notice = function(){
+  const list=getNotices();
+  return head('bell','お知らせ管理', '投稿・編集・削除がすぐ反映されます。')+`
+    <button class="btn block" onclick="editNotice()" style="margin-bottom:14px">${svg(IC.plus,2)} お知らせを投稿</button>
+    ${list.map(n=>`<div class="card notice ${n.pin?'pin':''}">
+      <div class="n-date">${n.date}</div>
+      <div class="n-body" style="flex:1"><b>${n.pin?'📌 ':''}${esc(n.title)}</b><p>${esc(n.body)}</p></div>
+      <div class="row"><button class="icon-btn" onclick="editNotice('${n.id}')">${svg(IC.edit)}</button><button class="icon-btn" onclick="delNotice('${n.id}')">${svg(IC.trash)}</button></div>
+    </div>`).join('')}`;
+};
+function editNotice(id){
+  const list=getNotices();
+  const n = id? list.find(x=>x.id===id) : {title:'', body:'', pin:false};
+  openModal(`<h3>${id?'お知らせを編集':'お知らせを投稿'}</h3>
+    <label class="lb">タイトル</label><input class="input" id="nt-title" value="${esc(n.title)}">
+    <label class="lb">本文</label><textarea class="textarea" id="nt-body">${esc(n.body)}</textarea>
+    <label class="lb"><input type="checkbox" id="nt-pin" ${n.pin?'checked':''}> 上部に固定（📌）</label>
+    <div style="height:12px"></div><button class="btn block" onclick="saveNotice('${id||''}')">保存する</button>`);
+}
+function saveNotice(id){
+  const list=getNotices();
+  if(!val('nt-title')){ toast('タイトルを入れてください','err'); return; }
+  const pin=document.getElementById('nt-pin').checked;
+  if(id){ const n=list.find(x=>x.id===id); n.title=val('nt-title'); n.body=val('nt-body'); n.pin=pin; }
+  else {
+    const d=new Date();
+    list.unshift({id:'n'+Date.now(), date:`${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')}`, pin, title:val('nt-title'), body:val('nt-body')});
+  }
+  saveNotices(list); closeModal(); toast('保存しました','ok'); render();
+}
+function delNotice(id){ saveNotices(getNotices().filter(n=>n.id!==id)); toast('削除しました'); render(); }
+
+/* ============================================================
+   ＝＝＝ 管理者：支援員管理 ＝＝＝
+   ============================================================ */
+ROUTES.a_staff = function(){
+  const list=Store.get('staffList', SEED.staff);
+  return head('users','支援員管理', 'アカウントの登録・削除ができます。')+`
+    <button class="btn block accent" onclick="addStaffModal()" style="margin-bottom:14px">${svg(IC.plus,2)} 支援員を登録</button>
+    <div class="card">
+      ${list.map(s=>`<div class="list-row">
+        <div class="avatar">${s.name[0]}</div>
+        <div style="flex:1"><b>${esc(s.name)}</b><div class="muted" style="font-size:12px">${esc(s.email)}</div></div>
+        <button class="btn ghost sm danger" onclick="delStaff('${s.id}')">削除</button>
+      </div>`).join('')}
+    </div>`;
+};
+function addStaffModal(){
+  openModal(`<h3>支援員を登録</h3>
+    <label class="lb">お名前</label><input class="input" id="sf-name" placeholder="例：渡辺 支援員">
+    <label class="lb">メールアドレス</label><input class="input" id="sf-email" placeholder="mail@ajisai.jp">
+    <p class="muted" style="font-size:12px;margin:6px 0 0">※ 本番では、このメール宛に初期パスワード設定の案内が届きます</p>
+    <div style="height:14px"></div><button class="btn accent block" onclick="addStaff()">登録する</button>`);
+}
+function addStaff(){
+  const list=Store.get('staffList', SEED.staff);
+  if(!val('sf-name')||!val('sf-email')){ toast('名前とメールを入れてください','err'); return; }
+  list.push({id:'s'+Date.now(), name:val('sf-name'), email:val('sf-email')});
+  Store.set('staffList', list); closeModal(); toast('支援員を登録しました','ok'); render();
+}
+function delStaff(id){ Store.set('staffList', Store.get('staffList',SEED.staff).filter(s=>s.id!==id)); toast('削除しました'); render(); }
+
+/* ============================================================
+   ＝＝＝ 管理者：利用者管理 ＝＝＝
+   ============================================================ */
+ROUTES.a_users = function(){
+  const list=Store.get('userList', SEED.users);
+  return head('user','利用者管理', '名前の登録・削除・パスワードのリセットができます。')+`
+    <button class="btn block" onclick="addUserModal()" style="margin-bottom:14px">${svg(IC.plus,2)} 利用者を登録</button>
+    <div class="card">
+      ${list.map(u=>{ const hasPw=!!Store.get('userpw_'+u.id);
+        return `<div class="list-row">
+        <div class="avatar">${u.name[0]}</div>
+        <div style="flex:1"><b>${esc(u.name)}</b><div class="muted" style="font-size:12px">${hasPw?'パスワード設定ずみ':'未ログイン（初回設定まち）'}</div></div>
+        <button class="btn ghost sm" onclick="resetPw('${u.id}')">${svg(IC.key)} リセット</button>
+        <button class="btn ghost sm danger" onclick="delUser('${u.id}')">削除</button>
+      </div>`; }).join('')}
+    </div>
+    <p class="muted center" style="font-size:12px">※ パスワードの中身は支援員・管理者には表示されません</p>`;
+};
+function addUserModal(){
+  openModal(`<h3>利用者を登録</h3>
+    <label class="lb">お名前</label><input class="input" id="us-name" placeholder="例：中村 みどり">
+    <p class="muted" style="font-size:12px;margin:6px 0 0">※ 利用者は初回ログイン時に自分でパスワードを設定します</p>
+    <div style="height:14px"></div><button class="btn block" onclick="addUser()">登録する</button>`);
+}
+function addUser(){
+  const list=Store.get('userList', SEED.users);
+  if(!val('us-name')){ toast('名前を入れてください','err'); return; }
+  list.push({id:'u'+Date.now(), name:val('us-name')});
+  Store.set('userList', list); closeModal(); toast('利用者を登録しました','ok'); render();
+}
+function delUser(id){ Store.set('userList', Store.get('userList',SEED.users).filter(u=>u.id!==id)); toast('削除しました'); render(); }
+function resetPw(id){ Store.set('userpw_'+id, null); localStorage.removeItem('ajisai_userpw_'+id); toast('パスワードをリセットしました（利用者が再設定します）','ok'); render(); }
+
+/* ============================================================
+   データ取得ヘルパ（Seedとローカルをマージ）
+   ============================================================ */
+function getNotices(){ return Store.get('notices', SEED.notices); }
+function saveNotices(l){ Store.set('notices', l); }
+function getConsults(){ return Store.get('consults', []); }
+function saveConsults(l){ Store.set('consults', l); }
+function staffName(id){ const s=SEED.staff.find(x=>x.id===id); return s?s.name:'支援員'; }
+
+/* ============================================================
+   小物（モーダル・トースト・整形）
+   ============================================================ */
+function openModal(html){ document.getElementById('sheet').innerHTML=html; document.getElementById('modal').classList.add('show'); }
+function closeModal(){ document.getElementById('modal').classList.remove('show'); }
+document.getElementById('modal').addEventListener('click', e=>{ if(e.target.id==='modal') closeModal(); });
+function confirmModal(title, msg, onok){
+  openModal(`<div class="center"><div style="font-size:42px">✓</div><h3 style="margin:6px 0">${title}</h3><p class="muted">${msg}</p><div style="height:14px"></div><button class="btn block" onclick="closeModal();(${onok?'__onok':'function(){}'})()">とじる</button></div>`);
+  window.__onok = onok || function(){};
+}
+function toast(msg, type){ const t=document.getElementById('toast'); t.textContent=msg; t.className=''; if(type)t.classList.add(type); t.classList.add('show');
+  clearTimeout(t._tm); t._tm=setTimeout(()=>t.classList.remove('show'), 2600); }
+function val(id){ const e=document.getElementById(id); return e?e.value:''; }
+function esc(s){ return (s||'').replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+function nowLabel(ts){ const d=new Date(ts); const t=new Date(); const sameDay=d.toDateString()===t.toDateString();
+  return sameDay? `今日 ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`
+               : `${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`; }
+function dateLabel(ts){ const d=new Date(ts); return `${d.getMonth()+1}/${d.getDate()}`; }
+
+/* ============================================================
+   起動
+   ============================================================ */
+renderLoginFields();
+</script>
+</body>
+</html>
