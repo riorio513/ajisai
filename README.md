@@ -2,7 +2,7 @@
 
 就労継続支援B型事業所むけの、利用者・支援員・管理者ツール（プロトタイプ）。
 
-- **公開URL（GitHub Pages）**: セットアップ後にここへ記載します
+- **公開URL（GitHub Pages）**: https://riorio513.github.io/ajisai/
 - 1ファイル（`index.html`）で動く静的プロトタイプ。インストール不要。
 - データはブラウザ内（localStorage）に保存され、サーバーには送信されません。
 - 本番は Next.js / Supabase / Vercel を想定（このリポジトリはその見本）。
