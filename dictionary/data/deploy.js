@@ -42,7 +42,7 @@ T("deploy","feature flag","ふぃーちゃーふらぐ","フィーチャーフ�
 
 T("deploy","ホスティング","ほすてぃんぐ","hosting|ウェブホスティング|web hosting|ホスティングサービス|サーバー","Webサイトやアプリをインターネットに公開するための場所・サービス。","GitHub Pages / Vercel / Netlify / Cloudflare Pages / Firebase Hosting / Render などが代表例。静的サイト向けか、サーバー処理(SSR/API)も動かせるかで選ぶ。","","デプロイ|静的サイト|Vercel|Netlify");
 
-T("deploy","静的サイト","せいてきさいと","static site|静的サイトジェネレーター|SSG|Static Site Generation|static hosting|静的ホスティング|スタティックサイト","サーバー側で処理せず、あらかじめ作ったHTML/CSS/JSをそのまま配信するサイト。","高速・安価・安全。ブログ、ドキュメント、LPに向く。SSGはビルド時にHTMLを生成する方式（Astro, Next.jsのstatic export, Hugo, Jekyllなど）。","","SSR|SPA|GitHub Pages|CDN");
+T("deploy","静的サイト","せいてきさいと","static site|静的サイトジェネレーター|SSG|Static Site Generation|static hosting|静的ホスティング|スタティックサイト|Hugo|Jekyll|Eleventy","サーバー側で処理せず、あらかじめ作ったHTML/CSS/JSをそのまま配信するサイト。","高速・安価・安全。ブログ、ドキュメント、LPに向く。SSGはビルド時にHTMLを生成する方式（Astro, Next.jsのstatic export, Hugo, Jekyllなど）。","","SSR|SPA|GitHub Pages|CDN");
 
 T("deploy","SSR","えすえすあーる","server-side rendering|サーバーサイドレンダリング|SSR|ISR|incremental static regeneration|CSR|client-side rendering|クライアントサイドレンダリング","リクエストのたびにサーバーでHTMLを生成して返す描画方式。","対してCSRはブラウザ側でJSがHTMLを作る方式。SSRは初期表示とSEOに強いが、動かすサーバー（またはServerless関数）が必要。","","SPA|静的サイト|Next.js|Serverless");
 
@@ -50,7 +50,7 @@ T("deploy","SPA","えすぴーえー","single page application|シングルペ�
 
 T("deploy","CDN","しーでぃーえぬ","content delivery network|コンテンツデリバリーネットワーク|CDN|エッジキャッシュ|edge cache|Cloudflare|CloudFront","世界中のサーバーに内容を複製して、ユーザーの近くから高速に配信する仕組み。","画像やJS/CSSなどの静的ファイルを配信するのが主な用途。更新が反映されないときは「キャッシュのパージ（削除）」が必要なことも。","","キャッシュ|ホスティング|エッジ");
 
-T("deploy","エッジ","えっじ","edge|edge function|Edge Functions|エッジ関数|エッジコンピューティング|edge runtime|Cloudflare Workers|Vercel Edge","ユーザーに近い世界各地の拠点で、コードを実行する仕組み。","低遅延が強み。Cloudflare Workers、Vercel Edge Functions/Middleware などがある。使えるAPIに制限があることが多い。","","CDN|Serverless");
+T("deploy","エッジ","えっじ","edge|edge function|Edge Functions|エッジ関数|エッジコンピューティング|edge runtime|Cloudflare Workers|Vercel Edge|Middleware|ミドルウェア","ユーザーに近い世界各地の拠点で、コードを実行する仕組み。","低遅延が強み。Cloudflare Workers、Vercel Edge Functions/Middleware などがある。使えるAPIに制限があることが多い。","","CDN|Serverless");
 
 T("deploy","Serverless","さーばーれす","サーバーレス|serverless|Lambda|AWS Lambda|Cloud Functions|Cloud Run|Functions|FaaS|関数","サーバー管理をせず、コード（関数）だけを置いて必要なときだけ動かす方式。","使った分だけ課金、自動スケール。起動直後の遅れ（コールドスタート）や実行時間の制限に注意。Vercel Functions/Netlify Functions/AWS Lambdaなど。","","エッジ|API|ホスティング");
 
@@ -120,7 +120,7 @@ CMD ["npm", "start"]`,"Docker|image|コンテナ");
 
 T("deploy","コンテナ","こんてな","container|image|イメージ|docker image|コンテナイメージ|コンテナ化|containerize","アプリと必要な環境を1つに隔離してまとめた、軽量な実行単位。","image=雛形（読み取り専用の設計済みパッケージ）、container=imageを起動した実体。VMより軽く、起動が速い。","","Docker|Kubernetes|Dockerfile");
 
-T("deploy","docker compose","どっかーこんぽーず","docker-compose|compose.yaml|docker-compose.yml|docker compose up|docker compose down|compose.yml|docker compose up -d","複数のコンテナ（アプリ+DBなど）をまとめて定義・起動するツール。","compose.yaml に構成を書き、docker compose up -d の1コマンドで全部立ち上がる。ローカル開発環境の構築に便利。","docker compose up -d\ndocker compose logs -f\ndocker compose down","Docker|コンテナ");
+T("deploy","docker compose","どっかーこんぽーず","docker-compose|compose.yaml|docker-compose.yml|docker compose up|docker compose down|compose.yml|docker compose up -d|compose","複数のコンテナ（アプリ+DBなど）をまとめて定義・起動するツール。","compose.yaml に構成を書き、docker compose up -d の1コマンドで全部立ち上がる。ローカル開発環境の構築に便利。","docker compose up -d\ndocker compose logs -f\ndocker compose down","Docker|コンテナ");
 
 T("deploy","Kubernetes","くばーねてぃす","k8s|kubectl|K8s|クーバネティス|クバネティス|Helm|kubectl apply|pod|Pod|Deployment|ingress","大量のコンテナを自動で配置・拡張・復旧するオーケストレーションツール。","大規模運用向けで学習コストは高い。個人開発や小規模サービスでは、まずPaaSやCloud Runで十分なことが多い。","kubectl get pods\nkubectl apply -f deploy.yaml","Docker|コンテナ");
 
@@ -130,7 +130,7 @@ T("deploy","ヘルスチェック","へるすちぇっく","health check|healthc
 
 T("deploy","監視","かんし","monitoring|モニタリング|observability|オブザーバビリティ|Sentry|Datadog|Grafana|アラート|alert|エラー監視|APM|可観測性","アプリの状態（エラー・遅さ・落ち）を継続的に見張って、異常時に通知する仕組み。","Sentry（エラー収集）、Datadog・Grafana（メトリクス）などが代表的。","","ログ|ヘルスチェック");
 
-T("deploy","ログ","ろぐ","log|logs|ログ出力|logging|log level|ログレベル|console.log|stack trace|スタックトレース|ログを見る|vercel logs|docker logs","プログラムの動きの記録。不具合調査の最重要情報源。","ログレベル（debug / info / warn / error）で重要度を区別する。AIエージェントにエラーを直させるときは、エラーログ全文（スタックトレース）を渡すと精度が上がる。","docker logs -f <container>\nvercel logs <url>","監視|デバッグ");
+T("deploy","ログ","ろぐ","log|logs|ログ出力|logging|log level|ログレベル|console.log|stack trace|スタックトレース|ログを見る|vercel logs|docker logs|info|warn|error|debug|エラーログ|アクセスログ","プログラムの動きの記録。不具合調査の最重要情報源。","ログレベル（debug / info / warn / error）で重要度を区別する。AIエージェントにエラーを直させるときは、エラーログ全文（スタックトレース）を渡すと精度が上がる。","docker logs -f <container>\nvercel logs <url>","監視|デバッグ");
 
 T("deploy","マイグレーション","まいぐれーしょん","migration|DB migration|データベースマイグレーション|prisma migrate|migrate|スキーマ変更|db migrate|supabase db push|schema migration","データベースの構造（テーブル定義など）の変更を、手順として記録・適用する仕組み。","変更履歴をファイルでバージョン管理し、環境ごとに同じ順で適用する。本番DBへのマイグレーションは、バックアップと影響確認が必須。","npx prisma migrate dev\nnpx prisma migrate deploy","データベース|Prisma|ORM|デプロイ");
 
@@ -155,4 +155,4 @@ T("deploy","マルチステージビルド","まるちすてーじびるど","mu
 T("deploy","メンテナンスモード","めんてなんすもーど","maintenance mode|メンテナンス画面|503 maintenance|メンテ中|downtime|ダウンタイム|計画停止","サービスを一時停止して「メンテナンス中」を表示する状態。","DBマイグレーションなどで書き込みを止める必要があるときに使う。可能ならブルーグリーンやゼロダウンタイムで避ける。","","マイグレーション|ブルーグリーンデプロイ|HTTPステータスコード");
 T("deploy","コールドスタート","こーるどすたーと","cold start|コールドスタート|ウォームアップ|warm|最初のリクエストだけ遅い|provisioned concurrency|keep warm","しばらく使われなかったサーバーレス関数の初回実行が遅くなる現象。","起動準備が必要なため。軽量化、エッジ実行、事前ウォームアップなどで軽減する。","","Serverless|エッジ|スケーリング");
 T("deploy","バックアップ","ばっくあっぷ","backup|バックアップ|リストア|restore|PITR|point-in-time recovery|スナップショット|snapshot|3-2-1|データ復旧|DBバックアップ","データを別の場所に複製して、消失・破損に備えること。復元できて初めて意味がある。","定期取得＋実際に復元できるかの確認が重要。本番DBを触る前（マイグレーション・AIへの操作許可の前）にも取る。","","マイグレーション|ロールバック|本番環境");
-T("deploy","バージョンの固定","ばーじょんのこてい","pin version|バージョン固定|.nvmrc|engines|runtime version|Node version|NODE_VERSION|python-version|.tool-versions|asdf|mise|volta|Dockerのタグ固定|latest タグ","Node/Pythonなどのランタイムや依存のバージョンを明示して、環境差による不具合を防ぐこと。","「ローカルでは動くがデプロイで失敗」の定番原因は Node のバージョン違い。.nvmrc / engines / ホスティングの設定で揃える。Dockerの latest タグは避ける。","node -v\ncat .nvmrc","Node.js|package.json|ビルド");
+T("deploy","バージョンの固定","ばーじょんのこてい","pin version|バージョン固定|.nvmrc|engines|runtime version|Node version|NODE_VERSION|python-version|.tool-versions|asdf|mise|volta|Dockerのタグ固定|latest タグ|latest","Node/Pythonなどのランタイムや依存のバージョンを明示して、環境差による不具合を防ぐこと。","「ローカルでは動くがデプロイで失敗」の定番原因は Node のバージョン違い。.nvmrc / engines / ホスティングの設定で揃える。Dockerの latest タグは避ける。","node -v\ncat .nvmrc","Node.js|package.json|ビルド");

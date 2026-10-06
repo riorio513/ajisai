@@ -13,7 +13,7 @@ git clone <URL>         # 既存のリポジトリをコピーしてくる`,"clo
 T("git","ローカル","ろーかる","local|ローカルリポジトリ|local repository|手元","自分のPC（や作業環境）の中にあるもの。",
 "Gitではローカル＝自分の作業環境にあるリポジトリ・ブランチのこと。commitしただけではローカルにしか記録されず、pushして初めてリモート（GitHubなど）に反映される。","","リモート|push|commit");
 
-T("git","リモート","りもーと","remote|リモートリポジトリ|remote repository|git remote|git remote -v","GitHubなど、ネットワーク上にあるリポジトリ。",
+T("git","リモート","りもーと","remote|リモートリポジトリ|remote repository|git remote|git remote -v|set-url|git remote set-url","GitHubなど、ネットワーク上にあるリポジトリ。",
 "チームで共有したり、バックアップ・公開したりするためのサーバー側のリポジトリ。ローカルとの対応づけに名前（通常は origin）を付けて管理する。",
 `git remote -v                          # 登録済みリモートの一覧
 git remote add origin <URL>            # リモートを登録
@@ -30,7 +30,7 @@ T("git","upstream","あっぷすとりーむ","アップストリーム|git push
 git branch -vv                      # 追跡関係を確認
 git remote add upstream <本家URL>   # fork元を登録`,"origin|fork|push");
 
-T("git","clone","くろーん","git clone|クローン|複製|git clone --depth 1|shallow clone|シャロークローン","リモートのリポジトリを丸ごと手元にコピーすること。",
+T("git","clone","くろーん","git clone|クローン|複製|git clone --depth 1|shallow clone|シャロークローン|--depth","リモートのリポジトリを丸ごと手元にコピーすること。",
 "URLを指定して、ファイルと履歴をすべてダウンロードする。originの登録も自動で行われる。巨大リポジトリは --depth 1 で最新のみ取得する「浅いクローン」が便利。",
 `git clone https://github.com/OWNER/REPO.git
 git clone git@github.com:OWNER/REPO.git
@@ -45,7 +45,7 @@ T("git","working tree","わーきんぐつりー","作業ツリー|ワーキン�
 "Gitの3つの領域の1つめ。①作業ツリー（編集中）→ ②ステージングエリア（次のcommitに入れる予定）→ ③リポジトリ（commit済みの履歴）。git status で各領域の状態がわかる。",
 `git status`,"ステージング|git add|commit");
 
-T("git","ステージング","すてーじんぐ","staging|stage|staging area|index|インデックス|ステージ|ステージングエリア|ステージする|git stage","次のcommitに含める変更を「選んで置いておく」場所。",
+T("git","ステージング","すてーじんぐ","staging|stage|staging area|index|インデックス|ステージ|ステージングエリア|ステージする|git stage|staged|--staged","次のcommitに含める変更を「選んで置いておく」場所。",
 "作業ツリーの変更のうち、どれを次のcommitに入れるかを選んで置く控え室。git add でステージに載せ、git commit で確定する。これにより関係ない変更を混ぜずに、意味のある単位でcommitできる。",
 `git add file.txt      # 特定ファイルを載せる
 git restore --staged file.txt   # ステージから外す
@@ -133,7 +133,7 @@ T("git","fast-forward","ふぁーすとふぉわーど","ff|fast forward|ファ�
 "mainに新しいcommitがなく、featureがmainの先にあるだけなら、マージコミットを作らずポインタを進めるだけで統合できる。これをfast-forwardという。--ff-only は、fast-forwardできないときは失敗させる指定。",
 `git merge --ff-only feature`,"merge|rebase");
 
-T("git","conflict","こんふりくと","コンフリクト|競合|衝突|merge conflict|マージ競合|<<<<<<<|=======|>>>>>>>|CONFLICT|Automatic merge failed","同じ箇所を別々に変更したため、Gitが自動で統合できない状態。",
+T("git","conflict","こんふりくと","コンフリクト|競合|衝突|merge conflict|マージ競合|<<<<<<<|=======|>>>>>>>|CONFLICT|Automatic merge failed|--abort|abort|--continue","同じ箇所を別々に変更したため、Gitが自動で統合できない状態。",
 "ファイル内に <<<<<<< ======= >>>>>>> のマーカーが挿入されるので、どちらを残すか手で編集して整える。直したら git add → git commit（rebase中は git rebase --continue）。やめたいときは --abort。エディタやAIエージェントに解消を手伝わせることも多い。",
 `git status                 # 競合ファイルを確認
 # マーカーを編集して解消後
@@ -157,7 +157,7 @@ T("git","amend","あめんど","git commit --amend|--amend|amend commit|直前�
 `git commit --amend -m "新しいメッセージ"
 git add forgot.txt && git commit --amend --no-edit`,"commit|force push");
 
-T("git","reset","りせっと","git reset|git reset --hard|git reset --soft|git reset --mixed|git reset HEAD~1|reset --hard|ハードリセット|リセット","ブランチの位置や、ステージ・作業ツリーを過去の状態に戻す操作。",
+T("git","reset","りせっと","git reset|git reset --hard|git reset --soft|git reset --mixed|git reset HEAD~1|reset --hard|ハードリセット|リセット|--hard|hard|--soft|soft|--mixed|mixed","ブランチの位置や、ステージ・作業ツリーを過去の状態に戻す操作。",
 "--soft：commitだけ取り消す（変更はステージに残る）、--mixed（既定）：commitとステージを取り消す（変更は作業ツリーに残る）、--hard：作業ツリーの変更まで全部捨てる（未commitの内容は消える。危険）。push済みの履歴には revert を使うのが安全。",
 `git reset --soft HEAD~1    # commitを1つ取り消し、変更は残す
 git reset --hard HEAD      # 未commitの変更を全部捨てる
@@ -168,7 +168,7 @@ T("git","revert","りばーと","git revert|リバート|取り消しコミッ�
 `git revert HEAD
 git revert <commit-hash>`,"reset|commit|rollback");
 
-T("git","stash","すたっしゅ","git stash|スタッシュ|git stash pop|git stash apply|git stash list|git stash -u|退避|一時退避","未commitの変更を一時的に脇に退避しておく機能。",
+T("git","stash","すたっしゅ","git stash|スタッシュ|git stash pop|git stash apply|git stash list|git stash -u|退避|一時退避|pop|apply","未commitの変更を一時的に脇に退避しておく機能。",
 "作業の途中でブランチを切り替えたいが、commitするほどでもないときに便利。pop で退避した変更を戻す。新規ファイルも退避するなら -u。",
 `git stash
 git stash -u            # 未追跡ファイルも
@@ -180,7 +180,7 @@ T("git","cherry-pick","ちぇりーぴっく","git cherry-pick|チェリーピ�
 `git cherry-pick abc1234
 git cherry-pick A..B     # 範囲指定`,"merge|hotfix|commit hash");
 
-T("git","git log","ぎっとろぐ","log|git log --oneline|git log --graph|git log -p|log --oneline --graph --all|履歴を見る|コミット履歴","commitの履歴を表示するコマンド。",
+T("git","git log","ぎっとろぐ","log|git log --oneline|git log --graph|git log -p|log --oneline --graph --all|履歴を見る|コミット履歴|--oneline|--graph|--author|--since","commitの履歴を表示するコマンド。",
 "誰がいつ何を変えたかを確認する。--oneline で1行表示、--graph でブランチの枝分かれを図示、-p で差分も表示、--author や --since で絞り込める。",
 `git log --oneline --graph --all
 git log -p file.txt      # ファイルの変更履歴
@@ -203,7 +203,7 @@ T("git","git show","ぎっとしょう","show|git show HEAD|git show <hash>","�
 T("git","git blame","ぎっとぶれーむ","blame|git blame -L|ブレーム|誰が書いたか","ファイルの各行を最後に変更した人・commitを表示する。",
 "「この行はいつ、なぜ変更されたのか」を調べる定番。GitHubの画面でもBlame表示がある。","git blame -L 10,20 src/app.js","git log|commit");
 
-T("git","git bisect","ぎっとばいせくと","bisect|git bisect start|二分探索|バグの混入commitを探す","どのcommitでバグが入ったかを二分探索で特定する。",
+T("git","git bisect","ぎっとばいせくと","bisect|git bisect start|二分探索|バグの混入commitを探す|good|bad","どのcommitでバグが入ったかを二分探索で特定する。",
 "正常だったcommit(good)と壊れているcommit(bad)を指定すると、Gitが中間を次々チェックアウトしてくれ、少ない手数で原因commitに到達できる。",
 `git bisect start
 git bisect bad              # 今は壊れている
@@ -215,7 +215,7 @@ T("git","reflog","りふろぐ","git reflog|reference log|リフログ|誤って
 `git reflog
 git reset --hard HEAD@{1}`,"reset|HEAD|commit hash");
 
-T("git","HEAD","へっど","HEAD~1|HEAD^|HEAD~2|ヘッド|HEAD~","「今いる場所」を指す特別な名前（通常は現在のブランチの最新commit）。",
+T("git","HEAD","へっど","HEAD~1|HEAD^|HEAD~2|ヘッド|HEAD~|ポインタ|pointer","「今いる場所」を指す特別な名前（通常は現在のブランチの最新commit）。",
 "HEAD は現在チェックアウトしているcommitを指す。HEAD~1 は1つ前、HEAD~3 は3つ前のcommit。git show HEAD や git reset HEAD~1 のように使う。","git reset --soft HEAD~1\ngit diff HEAD","detached HEAD|branch|commit hash");
 
 T("git","detached HEAD","でたっちどへっど","デタッチドヘッド|HEAD detached|You are in 'detached HEAD' state|detached head state","ブランチではなく特定のcommitを直接チェックアウトしている状態。",
@@ -223,7 +223,7 @@ T("git","detached HEAD","でたっちどへっど","デタッチドヘッド|HEA
 `git switch -c rescue-branch   # 今の状態に名前をつけて保存
 git switch main               # 元のブランチに戻る`,"HEAD|checkout|reflog");
 
-T("git","commit hash","こみっとはっしゅ","SHA|SHA-1|ハッシュ|コミットハッシュ|commit id|コミットID|sha1|ハッシュ値","各commitを一意に識別する40桁の英数字（通常は先頭7桁程度で指定する）。",
+T("git","commit hash","こみっとはっしゅ","SHA|SHA-1|ハッシュ|コミットハッシュ|commit id|コミットID|sha1|ハッシュ値|hash","各commitを一意に識別する40桁の英数字（通常は先頭7桁程度で指定する）。",
 "git log で表示される「commit abc1234...」のこと。revert・cherry-pick・checkoutなどでcommitを指定するときに使う。GitHub上のURLにも現れる。",
 "git show a1b2c3d","git log|cherry-pick|revert");
 
@@ -255,10 +255,10 @@ git tag -a v1.0.0 -m "初回リリース"
 git push origin v1.0.0
 git push --tags`,"Release|semver|commit");
 
-T("git","semver","せむばー","セマンティックバージョニング|Semantic Versioning|セムバー|MAJOR.MINOR.PATCH|バージョン番号|1.0.0","「メジャー.マイナー.パッチ」で表す、意味のあるバージョン番号の付け方。",
+T("git","semver","せむばー","セマンティックバージョニング|Semantic Versioning|セムバー|MAJOR.MINOR.PATCH|バージョン番号|1.0.0|メジャー|マイナー|パッチ","「メジャー.マイナー.パッチ」で表す、意味のあるバージョン番号の付け方。",
 "例 2.4.1：メジャー(2)＝互換性のない変更、マイナー(4)＝後方互換な機能追加、パッチ(1)＝後方互換なバグ修正。npmのバージョン指定（^1.2.3 / ~1.2.3）もこの考え方に基づく。","","tag|Release|package.json");
 
-T("git","git config","ぎっとこんふぃぐ","config|git config --global|user.name|user.email|git config user.name|git config --list|.gitconfig|gitconfig","Gitの設定を読み書きするコマンド。最初にユーザー名とメールを設定する。",
+T("git","git config","ぎっとこんふぃぐ","config|git config --global|user.name|user.email|git config user.name|git config --list|.gitconfig|gitconfig|--global|global|--local","Gitの設定を読み書きするコマンド。最初にユーザー名とメールを設定する。",
 "commitの作者情報（user.name / user.email）や、エディタ、既定ブランチ名などを設定する。--global はPC全体、省略するとそのリポジトリだけ。設定は ~/.gitconfig や .git/config に保存される。",
 `git config --global user.name "Your Name"
 git config --global user.email "you@example.com"
@@ -288,7 +288,7 @@ T("git","git worktree","ぎっとわーくつりー","worktree|ワークツリ�
 git worktree list
 git worktree remove ../my-feature`,"branch|サブエージェント|並列実行");
 
-T("git","git submodule","ぎっとさぶもじゅーる","submodule|サブモジュール|git submodule update --init|--recursive","別のGitリポジトリを、自分のリポジトリの一部として取り込む仕組み。",
+T("git","git submodule","ぎっとさぶもじゅーる","submodule|サブモジュール|git submodule update --init|--recursive|recurse-submodules|--recurse-submodules","別のGitリポジトリを、自分のリポジトリの一部として取り込む仕組み。",
 "外部ライブラリなどを特定のcommitで固定して含められる。clone時に --recurse-submodules を付けるか、あとで git submodule update --init --recursive を実行する。","git clone --recurse-submodules <URL>","clone|リポジトリ");
 
 T("git","git hook","ぎっとふっく","git hooks|pre-commit|pre-push|commit-msg|husky|フック|.git/hooks|lint-staged","commitやpushなど特定の操作の前後で自動実行されるスクリプト。",

@@ -59,14 +59,14 @@ T("claude","ANTHROPIC_API_KEY","あんそろぴっくえーぴーあいきー","
 
 T("claude","ultrathink","うるとらしんく","ultrathink|think|think hard|think harder|megathink|拡張思考キーワード|考えさせる","プロンプトに書くと、Claudeにより深く考えさせる合図となるキーワード。","think < think hard < ultrathink の順で思考量が増える（バージョンや設定によって挙動は異なる）。複雑な設計やバグ調査向けで、時間とトークンは増える。","ultrathink このバグの根本原因を調べて","推論|プランモード");
 
-T("claude","バックグラウンド実行","ばっくぐらうんどじっこう","background task|background|run_in_background|バックグラウンドタスク|dev server|長時間コマンド|Ctrl+B|&|bashes|/bashes|バックグラウンドでコマンド","開発サーバーなど長く動き続けるコマンドを、裏で走らせながら作業を続ける機能。","Claudeはサーバーを起動したまま、ログを確認したり別の作業を進めたりできる。","","Bash|エージェントループ");
+T("claude","バックグラウンド実行","ばっくぐらうんどじっこう","background task|background|run_in_background|バックグラウンドタスク|dev server|長時間コマンド|Ctrl+B|&|bashes|/bashes|バックグラウンドでコマンド|バックグラウンド|background","開発サーバーなど長く動き続けるコマンドを、裏で走らせながら作業を続ける機能。","Claudeはサーバーを起動したまま、ログを確認したり別の作業を進めたりできる。","","Bash|エージェントループ");
 
-T("claude","Claude Code 画像貼り付け","がぞうはりつけ","画像貼り付け|スクリーンショット|paste image|Ctrl+V|image paste|画像をドラッグ|デザインカンプ|スクショを渡す","スクリーンショットやデザイン画像を貼り付けて、見た目を指示する機能。","ターミナルに画像をドラッグ＆ドロップ／貼り付け（Ctrl+V）すると、Claudeが画像を見て「この通りに直して」に応えられる。","","マルチモーダル");
+T("claude","Claude Code 画像貼り付け","がぞうはりつけ","画像貼り付け|スクリーンショット|paste image|Ctrl+V|image paste|画像をドラッグ|デザインカンプ|スクショを渡す|スクショ","スクリーンショットやデザイン画像を貼り付けて、見た目を指示する機能。","ターミナルに画像をドラッグ＆ドロップ／貼り付け（Ctrl+V）すると、Claudeが画像を見て「この通りに直して」に応えられる。","","マルチモーダル");
 
 T("claude","Claude Code 使い方のコツ","つかいかたのこつ","explore plan code commit|探索→計画→実装→コミット|TDD with Claude|テスト駆動|小さく頼む|コツ|best practices|ベストプラクティス|workflow","Claude Codeをうまく使う基本の流れ。","①まず調査(読むだけ)させる→②プランモードで計画→③実装→④テスト実行→⑤commit/PR。こまめに /clear や /compact、重要ルールは CLAUDE.md、危険操作は deny/hooks で守る。Gitで常に戻せる状態にしておく。","","プランモード|CLAUDE.md|/clear|git commit");
 
 /* ===== 2026年版ドキュメントに基づく更新・追加（公式: code.claude.com/docs） ===== */
-T("claude","claude(インストール)","くろーどいんすとーる","install claude code|npm install -g @anthropic-ai/claude-code|claude update|claude --version|claude -v|claude doctor|claude install|claude install stable|claude auth login|claude auth logout|claude auth status|claude setup-token|インストール|アップデート|native installer|ネイティブインストーラー|ログイン|サインイン","Claude Codeのインストール・更新・ログイン・診断に使うコマンド。",
+T("claude","claude(インストール)","くろーどいんすとーる","install claude code|npm install -g @anthropic-ai/claude-code|claude update|claude --version|claude -v|claude doctor|claude install|claude install stable|claude auth login|claude auth logout|claude auth status|claude setup-token|インストール|アップデート|native installer|ネイティブインストーラー|ログイン|サインイン|setup-token|doctor|stable|latest","Claude Codeのインストール・更新・ログイン・診断に使うコマンド。",
 "公式のインストーラ（macOS/Linux/WSLはcurlスクリプト、Windowsは専用スクリプトやWinGet等）か、Node.js環境ならnpmで入れる。claude install [version] でネイティブ版を入れ直し・バージョン指定（stable / latest / 2.1.x など）、claude update で更新。ログインは claude auth login（--console でAPI課金、--sso でSSO）。claude auth status で認証状況、claude setup-token はCI用の長期トークン発行。claude doctor は起動せずに診断。方法は更新されるので公式のセットアップページも確認。",
 `npm install -g @anthropic-ai/claude-code
 claude --version
@@ -98,9 +98,9 @@ T("claude","スラッシュコマンド","すらっしゅこまんど","slash co
 T("claude","同梱スキル","どうこんすきる","bundled skills|Bundled skills|/batch|/code-review|/debug|/loop|/simplify|/run|/verify|/run-skill-generator|/update-config|/fewer-permission-prompts|/claude-api|/dataviz|/design|/slides|/claude-in-chrome|built-in skills","Claude Codeに最初から入っているプロンプト型のスキル（/batch・/code-review・/debug・/loop など）。",
 "固定ロジックの組み込みコマンドと違い、詳細なプロンプトをClaudeに渡して、サブエージェント起動・ファイル読み込み・状況への適応をさせる。例：/batch（大規模変更を並列実行）、/code-review（差分レビュー）、/debug（デバッグログ有効化＋調査）、/loop（定期繰り返し）、/simplify（整理・簡素化）、/run と /verify（アプリを実際に起動して確認）、/update-config（設定変更）、/fewer-permission-prompts（許可プロンプトを減らす許可リスト提案）。※ 構成は版や環境で変わる。","/code-review high\n/simplify\n/loop 5m テスト結果を確認して","Skills|スラッシュコマンド|サブエージェント");
 
-T("claude","effort level","えふぉーとれべる","effort level|adaptive reasoning|適応的推論|アダプティブ|思考レベル|thinking effort|ultracode|MAX_THINKING_TOKENS|effortLevel","モデルが各ステップでどれだけ深く考えるかを決める設定。","高いほど思考トークンが増えて深い推論、低いほど速く安い。/effort、--effort、/model画面の左右キー、settings の effortLevel で設定。extended thinking（考える過程の表示）は effort で調整し、固定予算のモデルでは MAX_THINKING_TOKENS で上限を決める。","","/effort|extended thinking|推論");
+T("claude","effort level","えふぉーとれべる","effort level|adaptive reasoning|適応的推論|アダプティブ|思考レベル|thinking effort|ultracode|MAX_THINKING_TOKENS|effortLevel|xhigh|low|medium|high|max","モデルが各ステップでどれだけ深く考えるかを決める設定。","高いほど思考トークンが増えて深い推論、低いほど速く安い。/effort、--effort、/model画面の左右キー、settings の effortLevel で設定。extended thinking（考える過程の表示）は effort で調整し、固定予算のモデルでは MAX_THINKING_TOKENS で上限を決める。","","/effort|extended thinking|推論");
 
-T("claude","ショートカットキー","しょーとかっときー","Shift+Tab|Esc|Esc Esc|Ctrl+C|Ctrl+D|Ctrl+R|Ctrl+O|Ctrl+B|Ctrl+T|Ctrl+G|Ctrl+S|Ctrl+V|Ctrl+L|Ctrl+Z|Option+P|Alt+P|Option+T|Alt+T|Option+O|Alt+O|Tab|@|!|#|?|ショートカット|keyboard shortcuts|キーボードショートカット|入力モード|矢印キー","Claude Codeの入力欄でよく使うキー操作と先頭記号。",
+T("claude","ショートカットキー","しょーとかっときー","Shift+Tab|Esc|Esc Esc|Ctrl+C|Ctrl+D|Ctrl+R|Ctrl+O|Ctrl+B|Ctrl+T|Ctrl+G|Ctrl+S|Ctrl+V|Ctrl+L|Ctrl+Z|Option+P|Alt+P|Option+T|Alt+T|Option+O|Alt+O|Tab|@|!|#|?|ショートカット|keyboard shortcuts|キーボードショートカット|入力モード|矢印キー|terminal-setup|シェルモード|shell mode","Claude Codeの入力欄でよく使うキー操作と先頭記号。",
 "Shift+Tab：パーミッションモード切替 ／ Esc：Claudeを中断・ダイアログを閉じる ／ Esc Esc：入力の消去または巻き戻し(/rewind) ／ Ctrl+C：中断・入力クリア(もう一度で終了) ／ Ctrl+D：終了 ／ Ctrl+R：履歴検索 ／ Ctrl+O：トランスクリプト表示 ／ Ctrl+B：実行中タスクをバックグラウンドへ ／ Ctrl+T：タスクチェックリスト表示 ／ Ctrl+G：エディタで入力を開く ／ Ctrl+S：入力の一時退避 ／ Ctrl+V：画像貼り付け ／ Option/Alt+P：モデル切替 ／ Option/Alt+T：拡張思考 ／ Option/Alt+O：高速モード ／ 行頭の / ：コマンド・スキル ／ 行頭の ! ：シェルモード ／ @：ファイル参照 ／ ? ：ショートカット一覧。改行は Shift+Enter（/terminal-setup で設定）。割り当ては版や端末で異なるので /help も参照。",
 `Shift+Tab    # モード切替
 Esc          # 中断
@@ -108,7 +108,7 @@ Esc Esc      # 巻き戻し
 @src/app.ts  # ファイルを指定
 !git status  # シェル実行`,"パーミッションモード|プランモード|@ファイル参照");
 
-T("claude","Vimモード","ぶいあいえむもーど","vim mode|vimモード|vimキーバインド|Editor mode|/vim|NORMAL mode|ノーマルモード|入力欄のVim","入力欄をVimのキー操作（NORMAL/INSERT）で編集できるモード。","/vim コマンドは廃止され、/config → Editor mode で切り替える。Esc でNORMALモード、i/a/o で挿入、h j k l で移動、dd で行削除、ciw等の編集が使える。","/config","ショートカットキー|vim");
+T("claude","Vimモード","ぶいあいえむもーど","vim mode|vimモード|vimキーバインド|Editor mode|/vim|NORMAL mode|ノーマルモード|入力欄のVim|NORMAL|INSERT","入力欄をVimのキー操作（NORMAL/INSERT）で編集できるモード。","/vim コマンドは廃止され、/config → Editor mode で切り替える。Esc でNORMALモード、i/a/o で挿入、h j k l で移動、dd で行削除、ciw等の編集が使える。","/config","ショートカットキー|vim");
 
 T("claude","パーミッションモード","ぱーみっしょんもーど","permission mode|permission modes|--permission-mode|default|manual|Manual|acceptEdits|plan|auto|auto mode|dontAsk|bypassPermissions|auto-accept edits|defaultMode|権限モード|自動承認モード|Shift+Tab","Claude Codeが操作をどこまで確認なしで行うかを決めるモード。Shift+Tab で切り替える。",
 "default（画面上はManual）：読み取り以外は毎回確認 ／ acceptEdits：ファイル編集と mkdir・mv・cp などは確認なし ／ plan：調べて計画だけ立て、承認までは編集しない ／ auto：別の分類器モデルが操作を審査し、安全なものは確認なしで実行（v2.1.283以降は対話セッションの既定。危険操作・プロンプトインジェクションはブロック） ／ dontAsk：許可ルールにないものは拒否（質問しない） ／ bypassPermissions：確認を全部省略（非常に危険。隔離環境のみ）。起動時は --permission-mode、設定は defaultMode。",
@@ -122,7 +122,7 @@ T("claude","auto mode","おーともーど","auto mode|オートモード|自動
 T("claude","permission rule","ぱーみっしょんるーる","permission rules|許可ルール|allow ルール|ask ルール|deny ルール|Bash(git log *)|Read(./.env)|Edit(|WebFetch(domain:|mcp__|ルール構文|permission rule syntax|権限ルール|permissions.allow|permissions.deny|permissions.ask","ツール名と引数パターンで「許可・確認・拒否」を決める設定エントリ。",
 "評価順は deny → ask → allow で、最初に一致したものが有効。例：Bash(git log *) は git log 系だけ許可、Read(./.env) の deny で .env の読み取り禁止、mcp__* でMCPツール全体。パーミッションモードより細かい制御で、/permissions や settings.json の permissions で管理する。","{ \"permissions\": { \"allow\": [\"Bash(npm run test *)\"], \"deny\": [\"Read(./.env)\", \"Bash(rm *)\"] } }","権限|settings.json|/permissions|--allowedTools");
 
-T("claude","hooks","ふっくす","hooks|hook|フック|PreToolUse|PostToolUse|PostToolUseFailure|PermissionRequest|PermissionDenied|UserPromptSubmit|UserPromptExpansion|Stop|StopFailure|SubagentStart|SubagentStop|SessionStart|SessionEnd|Notification|PreCompact|PostCompact|InstructionsLoaded|ConfigChange|CwdChanged|FileChanged|WorktreeCreate|WorktreeRemove|TaskCreated|TaskCompleted|TeammateIdle|Elicitation|matcher|Claude Code hooks|フック設定|hook event","Claude Codeのライフサイクルの決まった時点で、自動的にコマンド等を実行する仕組み。",
+T("claude","hooks","ふっくす","hooks|hook|フック|PreToolUse|PostToolUse|PostToolUseFailure|PermissionRequest|PermissionDenied|UserPromptSubmit|UserPromptExpansion|Stop|StopFailure|SubagentStart|SubagentStop|SessionStart|SessionEnd|Notification|PreCompact|PostCompact|InstructionsLoaded|ConfigChange|CwdChanged|FileChanged|WorktreeCreate|WorktreeRemove|TaskCreated|TaskCompleted|TeammateIdle|Elicitation|matcher|Claude Code hooks|フック設定|hook event|ライフサイクルフック|lifecycle hook","Claude Codeのライフサイクルの決まった時点で、自動的にコマンド等を実行する仕組み。",
 "「AIに頼む」のではなく「必ず実行される」ルールにしたいときに使う。主なイベント：SessionStart / SessionEnd、UserPromptSubmit（入力時）、PreToolUse（ツール実行前：ブロック可）、PermissionRequest / PermissionDenied、PostToolUse / PostToolUseFailure（実行後：整形・lint）、Notification、SubagentStart / SubagentStop、TaskCreated / TaskCompleted、Stop / StopFailure（応答完了・API失敗）、PreCompact / PostCompact、InstructionsLoaded、ConfigChange、CwdChanged、FileChanged、WorktreeCreate / WorktreeRemove、Elicitation など約30種。ハンドラ種別は command（シェル）／http（POST）／mcp_tool／prompt（LLM判定）／agent（サブエージェント検証）。構成は「イベント＋matcher＋ハンドラ」。settings.json に記述、/hooks で確認。",
 `{
   "hooks": {
@@ -133,7 +133,7 @@ T("claude","hooks","ふっくす","hooks|hook|フック|PreToolUse|PostToolUse|P
   }
 }`,"settings.json|ガードレール|git hook|/hooks|matcher");
 
-T("claude","サブエージェント","さぶえーじぇんと","subagent|sub-agent|subagents|Task tool|Agent tool|.claude/agents|サブエージェント|専門エージェント|カスタムエージェント|custom agent|Explore|Plan agent|general-purpose|--agent|--agents|isolation: worktree|forked subagent|フォーク","特定の役割に特化した別のエージェント。メインとは別のコンテキストウィンドウ・権限で動く。",
+T("claude","サブエージェント","さぶえーじぇんと","subagent|sub-agent|subagents|Task tool|Agent tool|.claude/agents|サブエージェント|専門エージェント|カスタムエージェント|custom agent|Explore|Plan agent|general-purpose|--agent|--agents|isolation: worktree|forked subagent|フォーク|subtask|/subtask","特定の役割に特化した別のエージェント。メインとは別のコンテキストウィンドウ・権限で動く。",
 "例：調査専門、コードレビュー専門、テスト作成専門。長い調査を任せると、メインの会話が汚れない。.claude/agents/名前.md の frontmatter（description・tools など）と本文の指示で定義する。組み込みは Explore・Plan・general-purpose。claude --agent 名前 でそのエージェントとして起動、--agents でJSON定義、/subtask で現在の会話を引き継いだ“フォーク”サブエージェントを背景で実行。isolation: worktree で別のgit worktreeに隔離できる。サブエージェントは所属セッション内に留まり、別セッション間は cross-session messaging を使う。",
 `# .claude/agents/reviewer.md
 ---
@@ -143,7 +143,7 @@ tools: Read, Grep, Glob
 ---
 あなたは厳格なコードレビュアーです。...`,"マルチエージェント|/agents|Agent teams|worktree isolation|frontmatter|Skills");
 
-T("claude","claude -p","くろーどぴー","claude -p|-p|--print|print mode|headless|headless mode|ヘッドレス|ヘッドレスモード|非対話モード|非対話|non-interactive|--output-format|--output-format json|stream-json|--max-turns|スクリプトから呼ぶ|パイプ|pipe|claude -p \"","非対話モード（旧称ヘッドレス）。1回の指示を実行して結果を出力して終了する。スクリプトやCI向け。",
+T("claude","claude -p","くろーどぴー","claude -p|-p|--print|print mode|headless|headless mode|ヘッドレス|ヘッドレスモード|非対話モード|非対話|non-interactive|--output-format|--output-format json|stream-json|--max-turns|スクリプトから呼ぶ|パイプ|pipe|claude -p \"|--permission-prompts|--no-session-persistence","非対話モード（旧称ヘッドレス）。1回の指示を実行して結果を出力して終了する。スクリプトやCI向け。",
 "-p（--print）で対話UIなしに実行。パイプでdiffやログを渡せる。--output-format text/json/stream-json、--max-turns（往復回数の上限）、--max-budget-usd（費用上限）、--json-schema（スキーマ検証済みJSON出力）、--permission-prompts none（確認に答える人がいない環境で拒否）、--no-session-persistence（履歴を保存しない）、--bare（設定の自動読み込みなしで高速起動）が主なオプション。Agent SDK（Python/TypeScript）が同等のプログラム向け実装。",
 `claude -p "このdiffをレビューして" < change.diff
 git diff | claude -p "変更点を要約して"
@@ -162,7 +162,7 @@ T("claude","--bare","べあもーど","--bare|bare mode|ベアモード|CLAUDE_C
 
 T("claude","--safe-mode","せーふもーど","--safe-mode|safe mode|セーフモード|CLAUDE_CODE_SAFE_MODE|設定を全部無効で起動|トラブルシュート 起動","CLAUDE.md・スキル・プラグイン・フック・MCPなどカスタマイズをすべて無効にして起動するトラブルシューティング用モード。","認証・モデル選択・組み込みツール・権限は通常どおり。設定が原因で壊れていないかの切り分けに使う（--bareとは別物）。","claude --safe-mode","--bare|claude doctor");
 
-T("claude","--worktree","わーくつりー","--worktree|-w|claude -w|git worktree claude|worktree isolation|.claude/worktrees|--tmux|ワークツリー隔離|isolation: worktree|WorktreeCreate|WorktreeRemove","隔離したgit worktree（<repo>/.claude/worktrees/名前）でClaudeを起動するオプション。","並列に走らせるセッションが互いのファイルを壊さない。#123 やPRのURLを渡すと、そのPR/MRをoriginから取得してworktreeを作る。--tmux でtmuxセッション付き。サブエージェントは isolation: worktree で同様に隔離できる。","claude -w feature-auth\nclaude -w #123","git worktree|サブエージェント");
+T("claude","--worktree","わーくつりー","--worktree|-w|claude -w|git worktree claude|worktree isolation|.claude/worktrees|--tmux|ワークツリー隔離|isolation: worktree|WorktreeCreate|WorktreeRemove|worktrees","隔離したgit worktree（<repo>/.claude/worktrees/名前）でClaudeを起動するオプション。","並列に走らせるセッションが互いのファイルを壊さない。#123 やPRのURLを渡すと、そのPR/MRをoriginから取得してworktreeを作る。--tmux でtmuxセッション付き。サブエージェントは isolation: worktree で同様に隔離できる。","claude -w feature-auth\nclaude -w #123","git worktree|サブエージェント");
 
 T("claude","--tools","つーるず","--tools|--allowed-tools|--disallowedTools|ツール制限|使えるツールを絞る|--tools \"\"|--tools default","使える組み込みツールそのものを制限するオプション（許可プロンプトの省略とは別）。","--tools \"Bash,Edit,Read\" のように指定。\"\" で全無効、default で既定セット。MCPツールには効かないので --disallowedTools \"mcp__*\" を併用。許可ルールで承認を省略するのは --allowedTools。","claude --tools \"Bash,Edit,Read\"","--allowedTools|ツール(Claude Code)");
 
@@ -180,10 +180,10 @@ T("claude","--from-pr","ふろむぴーあーる","--from-pr|from pr|PRに紐づ
 
 T("claude","verification loop","べりふぃけーしょんるーぷ","verification loop|検証ループ|検証手段|テストで確認|Claudeが自分で確認|give Claude a way to verify","「本当に終わったか」を、Claude自身が実行して確かめられる仕組み（テスト・ビルド・スクショ比較など）。","検証手段があれば、成功するまで反復できる。/goal・無人実行・動的ワークフローの前提。「完了」の判断をAI任せにしない。指示するときは「テストを実行して通るまで直して」と書くのが基本。","","/goal|テスト|エージェントループ");
 
-T("claude","エージェントビュー","えーじぇんとびゅー","agent view|claude agents|claude agents --json|claude attach|claude logs|claude stop|claude kill|claude respawn|claude rm|claude daemon|supervisor|並列セッション管理","複数のバックグラウンドセッションを一覧・監視・指示できる画面（claude agents）。",
+T("claude","エージェントビュー","えーじぇんとびゅー","agent view|claude agents|claude agents --json|claude attach|claude logs|claude stop|claude kill|claude respawn|claude rm|claude daemon|supervisor|並列セッション管理|attach|respawn|daemon","複数のバックグラウンドセッションを一覧・監視・指示できる画面（claude agents）。",
 "claude agents で開く（--json でスクリプト用出力、--cwd で絞り込み）。管理コマンド：claude attach <id|名前>（接続）、claude logs（出力表示）、claude stop（停止）、claude respawn（会話を保ったまま再起動）、claude rm（一覧から削除）、claude daemon status/stop（背景を支える監視プロセスの状態確認・停止）。","claude agents\nclaude attach 7c5dcf5d\nclaude logs 7c5dcf5d","/background|サブエージェント");
 
-T("claude","Agent teams","えーじぇんとちーむ","agent teams|エージェントチーム|teammate|チームメイト|team lead|--teammate-mode|teammateMode|TeammateIdle|実験機能","チームリードが複数の独立したClaude Codeセッション（チームメイト）を共有タスクリストで調整する実験的機能。","サブエージェントと違い、各チームメイトが自分のコンテキストを持ち、直接やり取りもできる。既定は無効。表示は --teammate-mode（in-process / auto / tmux / iterm2）。","claude --teammate-mode tmux","サブエージェント|マルチエージェント|オーケストレーター");
+T("claude","Agent teams","えーじぇんとちーむ","agent teams|エージェントチーム|teammate|チームメイト|team lead|--teammate-mode|teammateMode|TeammateIdle|実験機能|チームリード|lead|iterm2|in-process|tmux","チームリードが複数の独立したClaude Codeセッション（チームメイト）を共有タスクリストで調整する実験的機能。","サブエージェントと違い、各チームメイトが自分のコンテキストを持ち、直接やり取りもできる。既定は無効。表示は --teammate-mode（in-process / auto / tmux / iterm2）。","claude --teammate-mode tmux","サブエージェント|マルチエージェント|オーケストレーター");
 
 T("claude","クラウドセッション","くらうどせっしょん","cloud session|Cloud session|クラウドセッション|Claude Code on the web|Claude Code Web|claude.ai/code|リモートセッション|remote session|--cloud|--remote|--teleport|/teleport|/web-setup|/remote-env|self-hosted environment|Web版 Claude Code|クラウド実行|ccpool_","自分のPCではなくクラウド上で動くClaude Codeセッション。PCを閉じても作業が続く。",
 "claude.ai/code、モバイルアプリ、Desktop（Cloud選択）、claude --cloud \"依頼\"、ルーティンから開始できる。リポジトリはクラウドの隔離コンテナにcloneされ、ブランチにpushされる（コンテナは一時的なので成果は必ずcommit/pushして残す）。クラウド→手元は /teleport（claude --teleport）、手元→クラウドは --cloud（--remote は旧名）。/web-setup でGitHub認証、/remote-env で既定環境を選択。組織が運用する“セルフホスト環境”（claude self-hosted-runner）も選べる。「Claude Code on the web」は現在、claude.ai/code のブラウザ画面だけを指す名称。","claude --cloud \"ログインのバグを直して\"\nclaude --teleport","Remote Control|teleport|サンドボックス|git push|環境変数");
@@ -203,7 +203,7 @@ T("claude","frontmatter","ふろんとまった","frontmatter|フロントマタ
 
 T("claude",".claude ディレクトリ","どっとくろーどでぃれくとり","~/.claude|.claude directory|.claude folder|.claude/|.claude/settings.json|.claude/skills|.claude/agents|.claude/commands|.claude/rules|~/.claude.json|claude purge|設定フォルダ","Claude Codeがプロジェクト用設定（設定・フック・スキル・サブエージェント・ルール・メモリ）を読む場所。","プロジェクト直下の .claude/ と、ユーザー共通の ~/.claude/ がある。会話の記録(transcript)は ~/.claude/projects/ 以下。プロジェクトのローカルデータを消すのが claude purge（--dry-runで確認）。","claude purge ~/work/repo --dry-run","settings.json|CLAUDE.md|transcript");
 
-T("claude","settings layers","せってぃんぐれいやーず","settings layers|設定の優先順位|settings precedence|managed settings|managed policy|server-managed settings|組織の管理設定|settings.local.json|設定階層","設定を読む階層。優先度は 管理ポリシー > コマンドライン引数 > ローカル(.claude/settings.local.json) > プロジェクト(.claude/settings.json) > ユーザー(~/.claude/settings.json)。","配列は階層をまたいで結合、単一値は上位が優先。組織管理(managed settings)は管理コンソールや端末のOSパスから配布され、ユーザー・プロジェクト設定では上書きできない。","","settings.json|CLAUDE.md");
+T("claude","settings layers","せってぃんぐれいやーず","settings layers|設定の優先順位|settings precedence|managed settings|managed policy|server-managed settings|組織の管理設定|settings.local.json|設定階層|管理設定|組織設定|managed|強制設定","設定を読む階層。優先度は 管理ポリシー > コマンドライン引数 > ローカル(.claude/settings.local.json) > プロジェクト(.claude/settings.json) > ユーザー(~/.claude/settings.json)。","配列は階層をまたいで結合、単一値は上位が優先。組織管理(managed settings)は管理コンソールや端末のOSパスから配布され、ユーザー・プロジェクト設定では上書きできない。","","settings.json|CLAUDE.md");
 
 T("claude","project trust","ぷろじぇくとらすと","project trust|workspace trust|信頼するか|Do you trust this folder|フォルダを信頼|trust dialog|信頼ダイアログ","リポジトリの設定を読み込む前に出る「このフォルダを信頼しますか」の確認。","信頼するまで、リポジトリが持ち込むプロジェクトの許可ルールやマーケットプレイスなどは保留される。他人のリポジトリを開くときは中身（フックやMCP設定）を確認してから信頼する。","","権限|プロンプトインジェクション|hooks");
 
