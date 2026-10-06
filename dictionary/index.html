@@ -74,7 +74,13 @@ header.top{padding:26px 0 14px}
 main{padding:14px 0 50px}
 .status{font-size:13.5px;color:var(--muted);margin:2px 2px 10px}
 .status b{color:var(--text)}
-.sec-h{margin:22px 2px 8px;font-size:14px;color:var(--main);font-weight:700;display:flex;gap:8px;align-items:baseline}
+.tabs{display:flex;gap:4px;margin:12px 0 8px;background:var(--bg2);border-radius:10px;padding:3px}
+.tab{flex:1;border:none;background:none;border-radius:8px;padding:6px 8px;font-size:14px}
+.tab.on{background:var(--panel);box-shadow:0 1px 4px rgba(62,32,9,.15);font-weight:700;color:var(--main)}
+.jump{display:flex;flex-wrap:wrap;gap:5px;margin:0 0 4px}
+.jb{min-width:34px;border:1px solid var(--border-s);background:var(--panel);border-radius:8px;padding:2px 9px;font-size:14px;font-weight:700}
+.jb:hover{border-color:var(--main);color:var(--main)}
+.sec-h{scroll-margin-top:84px;margin:22px 2px 8px;font-size:17px;color:var(--main);font-weight:700;display:flex;gap:8px;align-items:baseline}
 .sec-h span{font-weight:400;color:var(--muted);font-size:12.5px}
 .card{scroll-margin-top:84px;background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);margin:0 0 8px;overflow:hidden}
 .card.open{border-color:var(--main);box-shadow:var(--shadow)}
@@ -324,7 +330,7 @@ footer ul{display:flex;flex-wrap:wrap;gap:4px 16px;list-style:none;padding:0;mar
 
   /* ---------- 状態 ---------- */
   var typeTimer;
-  var state = { q: "", cat: "", open: {}, more: false };
+  var state = { q: "", cat: "", open: {}, more: false, view: "kana" };
   var WEAK = 350;   // これ未満は「本文・使い方に含まれるだけ」の弱い一致
   var input = document.getElementById("q");
   var sbox = document.getElementById("sbox");
@@ -397,6 +403,41 @@ footer ul{display:flex;flex-wrap:wrap;gap:4px 16px;list-style:none;padding:0;mar
     return c;
   }
 
+  /* ---------- 索引（検索しなくても引ける一覧） ---------- */
+  var ROWS = [["あ", "ぁあぃいぅうぇえぉおゔ"], ["か", "かがきぎくぐけげこごゕゖ"], ["さ", "さざしじすずせぜそぞ"],
+              ["た", "ただちぢっつづてでとど"], ["な", "なにぬねの"], ["は", "はばぱひびぴふぶぷへべぺほぼぽ"],
+              ["ま", "まみむめも"], ["や", "ゃやゅゆょよ"], ["ら", "らりるれろ"], ["わ", "ゎわゐゑをん"]];
+  var rowOf = {};
+  ROWS.forEach(function (r) { r[1].split("").forEach(function (ch) { rowOf[ch] = r[0]; }); });
+  function kanaKey(e) {
+    var r = hira(String(e.reading || "").normalize("NFKC"));
+    for (var i = 0; i < r.length; i++) { if (rowOf[r.charAt(i)]) return rowOf[r.charAt(i)] + "行"; }
+    return "その他";
+  }
+  function abcKey(e) {
+    var t = e.term.replace(/^[^A-Za-z0-9\u3040-\u30ff\u4e00-\u9fff]+/, "");
+    var c = t.charAt(0);
+    if (/[A-Za-z]/.test(c)) return c.toUpperCase();
+    if (/[0-9]/.test(c)) return "0-9";
+    return "日本語";
+  }
+  function sortKey(e) { return hira(String(e.reading || e.term).normalize("NFKC")) + "\u0000" + e.term.toLowerCase(); }
+  function groupIndex(items, keyFn, order) {
+    var g = {};
+    items.forEach(function (r) { (g[keyFn(r.e)] = g[keyFn(r.e)] || []).push(r); });
+    Object.keys(g).forEach(function (k) { g[k].sort(function (a, b) { var x = sortKey(a.e), y = sortKey(b.e); return x < y ? -1 : x > y ? 1 : 0; }); });
+    var keys = order.filter(function (k) { return g[k]; });
+    Object.keys(g).forEach(function (k) { if (keys.indexOf(k) < 0) keys.push(k); });
+    return keys.map(function (k) { return { key: k, items: g[k] }; });
+  }
+  var KANA_ORDER = ROWS.map(function (r) { return r[0] + "行"; }).concat(["その他"]);
+  var ABC_ORDER = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").concat(["0-9", "日本語"]);
+  function secLabel(k) {
+    if (k === "日本語") return "日本語名の用語（ABC順では末尾）";
+    if (k === "その他") return "その他";
+    return k;
+  }
+
   /* ---------- 描画 ---------- */
   function render() {
     var q = clean(state.q), list, all;
@@ -424,7 +465,7 @@ footer ul{display:flex;flex-wrap:wrap;gap:4px 16px;list-style:none;padding:0;mar
       statusEl.textContent = "";
       statusEl.appendChild(el("span", null, "全 "));
       statusEl.appendChild(el("b", null, String(list.length)));
-      statusEl.appendChild(el("span", null, " 語を収録。上の検索欄に用語やコマンドを貼り付けるか、下の一覧から探せます。"));
+      statusEl.appendChild(el("span", null, " 語を収録。検索しなくても、下の索引（五十音順／ABC順／カテゴリ別）から引けます。"));
       var ex = el("div", "chips");
       ["git push", "Pull Request", "デプロイ", "/compact", "CLAUDE.md", "AGENTS.md", "--dangerously-skip-permissions", "MCP", "rebase", "環境変数", "サブエージェント", "codex exec"].forEach(function (s) {
         var b = el("button", "chip ex", s); b.type = "button";
@@ -432,12 +473,41 @@ footer ul{display:flex;flex-wrap:wrap;gap:4px 16px;list-style:none;padding:0;mar
         ex.appendChild(b);
       });
       frag.appendChild(ex);
-      CATS.forEach(function (c) {
-        var items = list.filter(function (r) { return r.e.cat === c[0]; });
-        if (!items.length) return;
-        var h = el("div", "sec-h", c[1]); h.appendChild(el("span", null, items.length + "語"));
+      var VIEWS = [["kana", "五十音順"], ["abc", "ABC順"], ["cat", "カテゴリ別"]];
+      var tabs = el("div", "tabs"); tabs.setAttribute("role", "tablist");
+      VIEWS.forEach(function (v) {
+        var b = el("button", "tab" + (state.view === v[0] ? " on" : ""), v[1]); b.type = "button";
+        b.setAttribute("role", "tab"); b.setAttribute("aria-selected", state.view === v[0] ? "true" : "false");
+        b.addEventListener("click", function () { state.view = v[0]; render(); });
+        tabs.appendChild(b);
+      });
+      frag.appendChild(tabs);
+
+      var groups;
+      if (state.view === "kana") groups = groupIndex(list, kanaKey, KANA_ORDER);
+      else if (state.view === "abc") groups = groupIndex(list, abcKey, ABC_ORDER);
+      else groups = CATS.map(function (c) {
+        return { key: c[0], label: c[1], items: list.filter(function (r) { return r.e.cat === c[0]; }) };
+      }).filter(function (g) { return g.items.length; });
+
+      /* ジャンプバー（索引の見出しへ移動） */
+      var jb = el("div", "jump"); jb.setAttribute("aria-label", "索引ジャンプ");
+      groups.forEach(function (g) {
+        var b = el("button", "jb", g.label || g.key.replace("行", "")); b.type = "button";
+        b.title = (g.label || secLabel(g.key)) + "（" + g.items.length + "語）";
+        b.addEventListener("click", function () {
+          var n = document.getElementById("sec-" + g.key);
+          if (n) n.scrollIntoView({ behavior: "smooth", block: "start" });
+        });
+        jb.appendChild(b);
+      });
+      frag.appendChild(jb);
+
+      groups.forEach(function (g) {
+        var h = el("div", "sec-h", g.label || secLabel(g.key)); h.id = "sec-" + g.key;
+        h.appendChild(el("span", null, g.items.length + "語"));
         frag.appendChild(h);
-        items.forEach(function (r) { frag.appendChild(card(r)); });
+        g.items.forEach(function (r) { frag.appendChild(card(r)); });
       });
     } else {
       statusEl.textContent = "";

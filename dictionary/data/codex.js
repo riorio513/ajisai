@@ -25,22 +25,6 @@ T("codex","AGENTS.md","えーじぇんつえむでぃー","AGENTS.md|agents.md|A
 ## ルール
 - 回答は日本語`,"CLAUDE.md|README|Codex");
 
-T("codex","config.toml","こんふぃぐとむる","config.toml|~/.codex/config.toml|.codex/config.toml|CODEX_HOME|codex config|profiles|[profiles]|[mcp_servers]|model_provider|toml|Codex 設定ファイル","Codexの設定ファイル（~/.codex/config.toml）。モデル、承認ポリシー、サンドボックス、MCP等を設定する。",
-"TOML形式。profiles で用途別の設定セットを作り --profile で切り替えられる。[mcp_servers.名前] でMCPサーバーを登録する。コマンドラインの -c key=value で一時的に上書きもできる。",
-`# ~/.codex/config.toml（例）
-model = "gpt-5-codex"
-approval_policy = "on-request"
-sandbox_mode = "workspace-write"
-
-[mcp_servers.docs]
-command = "npx"
-args = ["-y", "some-mcp-server"]`,"承認ポリシー|サンドボックスモード|MCP|TOML");
-
-T("codex","承認ポリシー","しょうにんぽりしー","approval policy|approval_policy|--ask-for-approval|-a|untrusted|on-request|on-failure|never|suggest|auto-edit|full-auto|Approval Modes|承認モード Codex|/approvals","Codexが操作の前に人間へ確認を求める条件の設定。",
-"代表的な値：untrusted（信頼済みの安全なコマンド以外は確認）／on-request（モデルが必要と判断したとき確認）／on-failure（失敗したときだけ確認）／never（確認しない）。以前は suggest / auto-edit / full-auto の3モード呼称だった（版で変わる）。--ask-for-approval(-a)、config.tomlの approval_policy、実行中は /approvals で変更。",
-`codex --ask-for-approval on-request
-codex -a untrusted`,"サンドボックスモード|--full-auto|承認モード|権限");
-
 T("codex","サンドボックスモード","さんどぼっくすもーど","sandbox_mode|--sandbox|-s|read-only|workspace-write|danger-full-access|sandbox modes|サンドボックス Codex|ネットワークアクセス|network_access|writable_roots","Codexが触れるファイル・ネットワークの範囲を制限する設定。",
 "read-only：読み取りのみ（安全。調査向け）／workspace-write：作業フォルダ内は書き込み可（既定的な選択）／danger-full-access：制限なし（危険）。承認ポリシーと組み合わせて安全性を調整する。ネットワークはデフォルトで制限されることが多い。",
 `codex --sandbox read-only
@@ -49,14 +33,6 @@ codex -s workspace-write`,"承認ポリシー|サンドボックス|--yolo");
 T("codex","--full-auto","ふるおーと","--full-auto|full-auto|フルオート|全自動|低摩擦モード|--ask-for-approval on-request --sandbox workspace-write","「作業フォルダ内の編集・コマンドは自動、危険そうなときだけ確認」という低摩擦の自動実行プリセット。","承認ポリシー(on-request相当)とサンドボックス(workspace-write)の組み合わせの省略形。便利だが、Git管理下の安全な場所で使うこと。","codex --full-auto \"テストが通るまで直して\"","承認ポリシー|サンドボックスモード");
 
 T("codex","--yolo","よーろー","--yolo|yolo|--dangerously-bypass-approvals-and-sandbox|dangerously-bypass-approvals-and-sandbox|承認とサンドボックスを無効化|全部無効|danger","承認もサンドボックスも完全に無効化する、非常に危険なオプション。","Claude Codeの --dangerously-skip-permissions に相当。外部から隔離した使い捨て環境以外では使わない。","codex --dangerously-bypass-approvals-and-sandbox   # 隔離環境のみ","--dangerously-skip-permissions|サンドボックス");
-
-T("codex","Codex スラッシュコマンド","こーでっくすすらっしゅこまんど","/model|/approvals|/new|/init|/status|/diff|/mention|/compact|/review|/resume|/fork|/mcp|/logout|/quit|/exit|/feedback|/prompts|codex slash commands|Codexのスラッシュコマンド","Codex CLIの対話中に使える「/」コマンド。",
-"/model＝モデルと推論量の切替／/approvals＝承認設定の変更／/new＝新しい会話／/init＝AGENTS.mdの雛形作成／/status＝現在の設定・使用状況／/diff＝Gitの差分表示／/mention＝ファイルを指定／/compact＝会話の要約／/review＝変更のレビュー／/mcp＝MCPツール一覧。※ 版で増減。/ を入力すると一覧が出る。",
-`/model
-/approvals
-/init
-/diff
-/compact`,"スラッシュコマンド|AGENTS.md|承認ポリシー");
 
 T("codex","Codex オプション","こーでっくすおぷしょん","--model|-m|--cd|-C|--image|-i|--search|--profile|-p|--config|-c|--oss|--sandbox|--ask-for-approval|--full-auto|--add-dir|codex --help|フラグ Codex|Codex フラグ","codexコマンドの主なオプション。",
 "-m/--model＝モデル指定／-C/--cd＝作業ディレクトリ／-i/--image＝画像を添付／--search＝Web検索を有効化／--profile＝設定プロファイル／-c key=value＝設定の一時上書き／-s/--sandbox＝サンドボックス／-a/--ask-for-approval＝承認ポリシー／--add-dir＝書き込み可能フォルダを追加。※ 版により変わるので codex --help が正。",
@@ -71,3 +47,40 @@ T("codex","Codex IDE拡張","こーでっくすあいでぃーいーかくちょ
 T("codex","Codex GitHub連携","こーでっくすぎっとはぶれんけい","@codex|@codex review|Codex code review|Codex GitHub integration|Codexレビュー|自動レビュー|Codex PR","GitHubのPRで @codex をメンションしてレビューや修正を頼める連携。","リポジトリでCodexのレビューを有効にしておくと、PRに自動でレビューコメントを付けたり、コメントで依頼したタスクを実行してくれる。","@codex review","メンション|Pull Request|Codex Cloud");
 
 T("codex","reasoning effort","りーぞにんぐえふぉーと","model_reasoning_effort|reasoning_effort|reasoning effort|推論の強さ|思考量|low|medium|high|minimal|reasoning.effort","モデルがどれだけ時間をかけて考えるかの度合い（minimal / low / medium / high）。","高いほど複雑な問題に強いが、遅くコストも増える。Codexでは /model か設定 model_reasoning_effort で調整する。","codex -c model_reasoning_effort=high","推論|Codex");
+
+/* ===== 更新・追加（OpenAI公式ドキュメントは取得できなかったため、検索で確認できた範囲のみ。変わりやすいので公式で要確認） ===== */
+T("codex","承認ポリシー","しょうにんぽりしー","approval policy|approval_policy|--ask-for-approval|-a|untrusted|on-request|on-failure|never|auto_review|auto review|suggest|auto-edit|full-auto|Approval Modes|承認モード Codex|/approvals","Codexが操作の前に人間へ確認を求める条件の設定。",
+"代表的な値：untrusted（信頼済みの安全なコマンド以外は確認）／on-request（サンドボックスの範囲を越えるときなどモデルが必要と判断したとき確認）／on-failure（失敗したときだけ確認）／never（確認しない）／auto_review（レビュー用サブエージェントが対象の操作を自動承認）。以前は suggest / auto-edit / full-auto の3モード呼称だった（版で変わる）。--ask-for-approval(-a)、config.tomlの approval_policy、実行中は /approvals で変更。",
+`codex --ask-for-approval on-request
+codex -a untrusted`,"サンドボックスモード|--full-auto|承認モード|権限");
+
+T("codex","Codex スラッシュコマンド","こーでっくすすらっしゅこまんど","/model|/approvals|/new|/init|/status|/diff|/mention|/compact|/review|/resume|/fork|/mcp|/plan|/goal|/skills|/plugins|/fast|/personality|/clear|/help|/logout|/quit|/exit|/feedback|/prompts|codex slash commands|Codexのスラッシュコマンド","Codex CLIの対話中に使える「/」コマンド（v0.13x時点で40超）。",
+"/model＝モデルと推論量の切替／/approvals＝承認設定の変更／/new,/clear＝新しい会話／/init＝AGENTS.mdの雛形作成／/status＝現在の設定・使用状況／/diff＝Gitの差分表示／/mention＝ファイルを指定／/compact＝会話の要約／/review＝作業ツリーのレビュー／/plan＝プランモード（書き込まず計画のみ）／/goal＝長めのタスクの目標を設定・一時停止・再開・解除／/skills＝スキルの選択・利用／/plugins＝プラグイン管理／/fast＝高速サービス層の切替／/personality＝口調の選択／/mcp＝MCPツール一覧。※ 版で増減。/ を入力すると一覧が出る。",
+`/model
+/approvals
+/init
+/diff
+/plan
+/goal
+/compact`,"スラッシュコマンド|AGENTS.md|承認ポリシー|/plan|/goal");
+
+T("codex","config.toml","こんふぃぐとむる","config.toml|~/.codex/config.toml|.codex/config.toml|/etc/codex/config.toml|CODEX_HOME|codex config|profiles|[profiles]|[mcp_servers]|model_provider|personality|toml|Codex 設定ファイル|設定の優先順位","Codexの設定ファイル（~/.codex/config.toml）。モデル、承認ポリシー、サンドボックス、MCP等を設定する。",
+"TOML形式。優先順位は（高→低）コマンドラインフラグ → プロファイル → プロジェクト設定(.codex/config.toml) → ユーザー設定(~/.codex/config.toml) → システム設定(/etc/codex/config.toml) → 既定値。profiles で用途別の設定セットを作り --profile で切替。[mcp_servers.名前] でMCPサーバー登録。-c key=value で一時上書きもできる。",
+`# ~/.codex/config.toml（例）
+model = "gpt-5-codex"
+approval_policy = "on-request"
+sandbox_mode = "workspace-write"
+
+[mcp_servers.docs]
+command = "npx"
+args = ["-y", "some-mcp-server"]`,"承認ポリシー|サンドボックスモード|MCP|TOML|AGENTS.md");
+
+T("codex","Codex サブエージェント","こーでっくすさぶえーじぇんと","Codex subagents|multi-agent Codex|.toml agent|agent definition toml|parallel fan-out|並列サブエージェント Codex","Codexで複数のエージェントを分担させる機能。.toml でエージェントを定義し、既定で最大6スレッド程度まで並列に動かせる。","役割ごとの指示・使えるツールを定義し、親エージェントが分割して並列実行・結果統合する。Claude Codeのサブエージェントに相当。","","サブエージェント|マルチエージェント|AGENTS.md");
+
+T("codex","Codex スキル","こーでっくすすきる","Codex skills|SKILL.md Codex|skills Codex|~/.codex/skills|.codex/skills|agent skills","SKILL.md（YAML frontmatter＋手順・スクリプト・テンプレート）を置いたフォルダで、Codexに作業手順を追加する仕組み。","/skills で選択・利用。Claude Codeのスキルと同じAgent Skills形式の考え方で、AGENTS.md（常時読込）より“必要なときだけ読む”専門知識に向く。","","Skills|AGENTS.md|frontmatter");
+
+T("codex","Codex プラグイン","こーでっくすぷらぐいん","Codex plugins|/plugins|codex plugin|plugin marketplace Codex|app connectors|アプリコネクタ","スキル・MCPサーバー・アプリ連携・エージェント定義を1つにまとめて配布・導入できる拡張パッケージ（/plugins）。","詳細画面で、そのプラグインが登録するライフサイクルフック一覧を、インストール前に確認できる。","","/plugin|Skills|MCP|hooks");
+
+T("codex","Codex フック","こーでっくすふっく","Codex hooks|lifecycle hooks Codex|allow_managed_hooks_only|requirements.toml|hooks trust|フックを信頼","Codexのライフサイクルフック。設定済みフックの確認、新規・変更フックの信頼、管理外フックの無効化ができる。","組織は requirements.toml の allow_managed_hooks_only = true で、管理者配布のフックだけを許可できる。","","hooks|ガードレール|config.toml");
+
+T("codex","requirements.toml","りくわいあめんつとむる","requirements.toml|managed config|管理設定 Codex|組織ポリシー Codex|admin requirements","組織の管理者がCodexに強制する制約（許可するフック等）を書く設定ファイル。","組織の管理者が配布する制約用の設定ファイル（詳細・優先順位は公式ドキュメントで確認）。","","config.toml|settings layers");

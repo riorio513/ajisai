@@ -38,3 +38,11 @@ T("mcp","Sentry","せんとりー","sentry|Sentry MCP|エラートラッキン�
 T("mcp","Figma","ふぃぐま","figma|Figma MCP|デザインツール|デザインデータ|design to code|Figma to code|デザインからコード","UIデザインツール。MCP連携でデザインをAIに読ませてコード化できる。","","","MCP|UI");
 
 T("mcp","Stripe","すとらいぷ","stripe|Stripe MCP|決済|payments|決済API|PayPal|サブスク課金|webhook 決済|checkout","オンライン決済サービス。","APIキーに「公開鍵(pk_)」と「秘密鍵(sk_)」があり、秘密鍵は絶対にフロントやGitに出さない。テストモードで十分検証してから本番へ。","","APIキー|Webhook|シークレット");
+
+/* ===== 追加 ===== */
+T("mcp","MCP resources / prompts","りそーす","MCP resources|MCP prompts|MCP tools|resources|prompts|ツール リソース プロンプト|MCPの3要素|elicitation|Elicitation|サンプリング|sampling|roots","MCPサーバーが提供するもの：tools（実行できる操作）、resources（読めるデータ）、prompts（定型指示）。","elicitation はMCPサーバーが実行中にユーザーへ追加入力を求める仕組み。Claude Codeではフックの Elicitation / ElicitationResult で扱える。","","MCP|ツール呼び出し|hooks");
+T("mcp","MCPのセキュリティ","えむしーぴーのせきゅりてぃ","MCP security|信頼できないMCP|tool poisoning|ツールポイズニング|rug pull|ラグプル|MCP server 信頼|最小権限 MCP|read-only MCP|managed-mcp.json|MCP allowlist","MCPサーバーを入れる際の安全上の注意。","MCPサーバーは任意のコードを動かし、ツール説明文自体がAIへの指示になる。提供元の確認、必要最小限の権限（読み取り専用トークン等）、バージョン固定、組織なら許可リスト(managed-mcp.json)での管理が基本。","","MCP|プロンプトインジェクション|権限|managed settings");
+T("mcp","GitHub MCP","ぎっとはぶえむしーぴー","GitHub MCP server|github-mcp-server|mcp__github|GitHub連携 MCP|PR作成 MCP","AIがGitHubのIssue・PR・コード検索・Actionsを操作できるようにするMCPサーバー。","ghコマンドが使えない環境でも、PR作成やレビュー、CI状況の確認をAIに任せられる。付与するトークンの権限（リポジトリ範囲）は最小限に。","","MCP|GitHub CLI|Pull Request");
+T("mcp","Postgres / DB MCP","でーたべーすえむしーぴー","Postgres MCP|database MCP|Supabase MCP|SQL MCP|DB接続 AI|read-only DB|DBをAIに触らせる","データベースをAIに参照・操作させるMCPサーバー。","本番DBへは読み取り専用の接続にし、書き込みはステージングで。破壊的SQL(DROP/DELETE)の実行前に必ず確認する運用にする。","","データベース|MCP|権限|バックアップ");
+T("mcp","Docker Desktop / Dev Container","でぶこんてな","dev container|devcontainer|Dev Container|devcontainer.json|Development containers|Docker Desktop|コンテナ開発環境|隔離して開発|Claude Code dev container","開発環境そのものをコンテナで用意する仕組み。AIエージェントを隔離して安全に動かす用途にも使われる。","ネットワーク制限などを組み合わせれば、--dangerously-skip-permissions のような強い権限を使う場合でも被害範囲を限定できる。VS CodeやCodespacesが対応。","","GitHub Codespaces|Docker|サンドボックス|--dangerously-skip-permissions");
+T("mcp","Slack/Discord Bot","ぼっと","bot|ボット|Slack bot|Discord bot|Telegram bot|チャットボット|通知bot|Webhook通知|incoming webhook","チャットサービス上で動く自動応答・通知のプログラム。","CI結果やデプロイ通知の送信、AIエージェントへの依頼窓口として使われる。トークン(Bot token)は秘密情報。","","Slack|Webhook|シークレット");
