@@ -141,7 +141,7 @@ footer ul{display:flex;flex-wrap:wrap;gap:4px 16px;list-style:none;padding:0;mar
     </div>
   </div>
   <div class="belowbar">
-    <p class="hint">コマンドや用語を<b>そのまま貼り付け</b>ればOK（<code>git push origin main</code> / <code>/compact</code> / <code>--dangerously-skip-permissions</code> など）。
+    <p class="hint">コマンドや用語を<b>そのまま貼り付け</b>ればOK（<code>git push origin main</code> / <code>AGENTS.md</code> / <code>--dangerously-skip-permissions</code> など）。
       全角・半角、大文字小文字、カタカナ・ひらがな、ハイフンの有無は区別しません。<kbd>/</kbd>で検索欄へ、<kbd>Enter</kbd>で最上位を開く。</p>
     <div class="chips" id="cats" role="group" aria-label="カテゴリで絞り込み"></div>
   </div>
@@ -467,7 +467,7 @@ footer ul{display:flex;flex-wrap:wrap;gap:4px 16px;list-style:none;padding:0;mar
       statusEl.appendChild(el("b", null, String(list.length)));
       statusEl.appendChild(el("span", null, " 語を収録。検索しなくても、下の索引（五十音順／ABC順／カテゴリ別）から引けます。"));
       var ex = el("div", "chips");
-      ["git push", "Pull Request", "デプロイ", "/compact", "CLAUDE.md", "AGENTS.md", "--dangerously-skip-permissions", "MCP", "rebase", "環境変数", "サブエージェント", "codex exec"].forEach(function (s) {
+      ["git push", "Pull Request", "デプロイ", "auto mode", "CLAUDE.md", "AGENTS.md", "--dangerously-skip-permissions", "MCP", "rebase", "環境変数", "サブエージェント", "codex exec"].forEach(function (s) {
         var b = el("button", "chip ex", s); b.type = "button";
         b.addEventListener("click", function () { setQuery(s, true); });
         ex.appendChild(b);
