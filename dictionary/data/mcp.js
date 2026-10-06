@@ -5,7 +5,7 @@ T("mcp","MCP","えむしーぴー","Model Context Protocol|モデルコンテキ
 claude mcp add --transport http <名前> <URL>
 # Codex は config.toml に [mcp_servers.<名前>] を書く`,"ツール呼び出し|claude mcp add|MCPサーバー追加|config.toml|プロンプトインジェクション");
 
-T("mcp","stdio / HTTP / SSE","えすてぃーでぃーあいおー","stdio|HTTP transport|SSE|Server-Sent Events|Streamable HTTP|transport|トランスポート|ローカルMCP|リモートMCP|--transport|remote MCP|local MCP","MCPサーバーとの接続方式。stdio＝ローカルでプロセス起動、HTTP/SSE＝URLで接続するリモート。","stdioは npx などでローカルにサーバーを起動して標準入出力で会話する方式。リモートMCPはURLに接続し、OAuthなどで認証することが多い。SSEは古い方式で、新しくはStreamable HTTPが主流。","","MCP|OAuth|npx");
+T("mcp","stdio / HTTP / SSE","えすてぃーでぃーあいおー","stdio|HTTP transport|SSE|Server-Sent Events|Streamable HTTP|transport|トランスポート|ローカルMCP|リモートMCP|--transport|remote MCP|local MCP|接続方式|通信方式","MCPサーバーとの接続方式。stdio＝ローカルでプロセス起動、HTTP/SSE＝URLで接続するリモート。","stdioは npx などでローカルにサーバーを起動して標準入出力で会話する方式。リモートMCPはURLに接続し、OAuthなどで認証することが多い。SSEは古い方式で、新しくはStreamable HTTPが主流。","","MCP|OAuth|npx");
 
 T("mcp",".mcp.json","どっとえむしーぴーじぇいそん","mcp.json|.mcp.json|mcpServers|claude_desktop_config.json|MCP設定ファイル|mcp config|Claude Desktop MCP|mcp設定","MCPサーバーの接続設定を書くJSONファイル。プロジェクトに置いてチームで共有できる。","Claude Codeではプロジェクト直下の .mcp.json、Claude Desktopでは claude_desktop_config.json などに記述する。APIキーを直書きせず環境変数を参照する。","{ \"mcpServers\": { \"fs\": { \"command\": \"npx\", \"args\": [\"-y\",\"@modelcontextprotocol/server-filesystem\",\".\"] } } }","MCP|環境変数|claude mcp add");
 
@@ -27,7 +27,7 @@ T("mcp","Context7","こんてきすとせぶん","context7|Context7 MCP|最新�
 
 T("mcp","VS Code","ぶいえすこーど","vscode|VSCode|Visual Studio Code|ブイエスコード|code コマンド|code .|VS Code 拡張機能|extensions|拡張機能","Microsoft製の無料で人気のコードエディタ。","code . で今のフォルダを開ける。拡張機能で言語対応やAI連携（Claude Code / Codex / Copilot）を追加できる。CursorやWindsurfはVS Codeベース。","code .","Cursor|IDE|ターミナル");
 
-T("mcp","IDE","あいでぃーいー","integrated development environment|統合開発環境|エディタ|editor|テキストエディタ|JetBrains|IntelliJ|WebStorm|PyCharm|Vim|Neovim|Zed|Xcode|Android Studio","コードを書く・動かす・デバッグする機能をまとめた開発ツール（統合開発環境）。","VS Code、JetBrains系(IntelliJ/WebStorm/PyCharm)、Xcode、Android Studio、Vim/Neovim、Zed など。AIエージェントは多くがIDE連携の拡張を提供する。","","VS Code|Cursor");
+T("mcp","IDE","あいでぃーいー","integrated development environment|統合開発環境|エディタ|editor|テキストエディタ|JetBrains|IntelliJ|WebStorm|PyCharm|Vim|Neovim|Zed|Xcode|Android Studio|コードエディタ|code editor","コードを書く・動かす・デバッグする機能をまとめた開発ツール（統合開発環境）。","VS Code、JetBrains系(IntelliJ/WebStorm/PyCharm)、Xcode、Android Studio、Vim/Neovim、Zed など。AIエージェントは多くがIDE連携の拡張を提供する。","","VS Code|Cursor");
 
 T("mcp","npx","えぬぴーえっくす","npx|npx -y|npx create-next-app|npx create-vite|パッケージを一時実行|-y|node package runner","npmパッケージを、インストールせずに一時的に実行するコマンド。","MCPサーバーや create-xxx 系のセットアップコマンドの起動によく使う。-y は「確認プロンプトに自動でyes」。信頼できないパッケージは実行しない（実行＝任意コードの実行）。","npx -y create-next-app@latest","npm|MCP");
 
@@ -40,7 +40,7 @@ T("mcp","Figma","ふぃぐま","figma|Figma MCP|デザインツール|デザイ�
 T("mcp","Stripe","すとらいぷ","stripe|Stripe MCP|決済|payments|決済API|PayPal|サブスク課金|webhook 決済|checkout","オンライン決済サービス。","APIキーに「公開鍵(pk_)」と「秘密鍵(sk_)」があり、秘密鍵は絶対にフロントやGitに出さない。テストモードで十分検証してから本番へ。","","APIキー|Webhook|シークレット");
 
 /* ===== 追加 ===== */
-T("mcp","MCP resources / prompts","りそーす","MCP resources|MCP prompts|MCP tools|resources|prompts|ツール リソース プロンプト|MCPの3要素|elicitation|Elicitation|サンプリング|sampling|roots","MCPサーバーが提供するもの：tools（実行できる操作）、resources（読めるデータ）、prompts（定型指示）。","elicitation はMCPサーバーが実行中にユーザーへ追加入力を求める仕組み。Claude Codeではフックの Elicitation / ElicitationResult で扱える。","","MCP|ツール呼び出し|hooks");
+T("mcp","MCP resources / prompts","りそーす","MCP resources|MCP prompts|MCP tools|resources|prompts|ツール リソース プロンプト|MCPの3要素|elicitation|Elicitation|サンプリング|sampling|roots|ElicitationResult","MCPサーバーが提供するもの：tools（実行できる操作）、resources（読めるデータ）、prompts（定型指示）。","elicitation はMCPサーバーが実行中にユーザーへ追加入力を求める仕組み。Claude Codeではフックの Elicitation / ElicitationResult で扱える。","","MCP|ツール呼び出し|hooks");
 T("mcp","MCPのセキュリティ","えむしーぴーのせきゅりてぃ","MCP security|信頼できないMCP|tool poisoning|ツールポイズニング|rug pull|ラグプル|MCP server 信頼|最小権限 MCP|read-only MCP|managed-mcp.json|MCP allowlist","MCPサーバーを入れる際の安全上の注意。","MCPサーバーは任意のコードを動かし、ツール説明文自体がAIへの指示になる。提供元の確認、必要最小限の権限（読み取り専用トークン等）、バージョン固定、組織なら許可リスト(managed-mcp.json)での管理が基本。","","MCP|プロンプトインジェクション|権限|managed settings");
 T("mcp","GitHub MCP","ぎっとはぶえむしーぴー","GitHub MCP server|github-mcp-server|mcp__github|GitHub連携 MCP|PR作成 MCP","AIがGitHubのIssue・PR・コード検索・Actionsを操作できるようにするMCPサーバー。","ghコマンドが使えない環境でも、PR作成やレビュー、CI状況の確認をAIに任せられる。付与するトークンの権限（リポジトリ範囲）は最小限に。","","MCP|GitHub CLI|Pull Request");
 T("mcp","Postgres / DB MCP","でーたべーすえむしーぴー","Postgres MCP|database MCP|Supabase MCP|SQL MCP|DB接続 AI|read-only DB|DBをAIに触らせる","データベースをAIに参照・操作させるMCPサーバー。","本番DBへは読み取り専用の接続にし、書き込みはステージングで。破壊的SQL(DROP/DELETE)の実行前に必ず確認する運用にする。","","データベース|MCP|権限|バックアップ");

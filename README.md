@@ -25,13 +25,14 @@
 
 ## 開発用語辞典（`dictionary/`）
 
-Claude Code・Codex・Git・GitHub・デプロイ・AIエージェント・MCP などの用語やコマンドを、**貼り付けるだけで一発検索**できるデジタル辞典です（約465語）。
+Claude Code・Codex・Git・GitHub・デプロイ・AIエージェント・MCP などの用語やコマンドを、**貼り付けるだけで一発検索**できるデジタル辞典です（約560語）。
 
 - **URL**: https://riorio513.github.io/ajisai/dictionary/ （mainにマージ後、GitHub Pagesで公開）
 - 手元で開く場合は `dictionary/index.html` をブラウザで開くだけ（インストール不要）。
 - 検索しなくても、**五十音順／ABC順／カテゴリ別の索引**から引けます（ジャンプバー付き）。
 - 検索欄にコマンドや用語をそのまま貼り付けると、全角/半角・大文字小文字・カタカナ/ひらがな・ハイフンの有無を無視して検索し、強い一致なら自動で説明を開きます。
   - 例: `git push origin main` / `AGENTS.md` / `--dangerously-skip-permissions` / `$ npm run build` / `プルリク` / `デブロイ`（表記ゆれもOK）
+- 説明文の中に出てくる他の用語（点線の下線）は、クリックでその項目へ飛べます。
 - `https://…/dictionary/#q=git%20push` のように、検索語つきURLで共有できます。
 
 ### 用語を追加・修正するには
@@ -46,6 +47,8 @@ T("git", "branch", "ぶらんち",
   "git branch\ngit branch -d <name>",  // 使い方・例（任意）
   "checkout|merge");                    // 関連用語（任意）
 ```
+
+説明文に出てくるのに単独の項目がない語は、`node dictionary/tools/find-gaps.js` で洗い出せます（出力から実際に調べたくなる専門用語を追加）。
 
 新しいカテゴリやファイルを足したら、`dictionary/data/core.js` の `CATS` と `dictionary/index.html` の `<script>` を更新してください。
 ※ Claude Code / Codex は更新が速いため、コマンド名やオプションは公式ドキュメントも確認してください。

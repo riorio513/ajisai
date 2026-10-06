@@ -49,7 +49,7 @@ T("codex","Codex GitHub連携","こーでっくすぎっとはぶれんけい","
 T("codex","reasoning effort","りーぞにんぐえふぉーと","model_reasoning_effort|reasoning_effort|reasoning effort|推論の強さ|思考量|low|medium|high|minimal|reasoning.effort","モデルがどれだけ時間をかけて考えるかの度合い（minimal / low / medium / high）。","高いほど複雑な問題に強いが、遅くコストも増える。Codexでは /model か設定 model_reasoning_effort で調整する。","codex -c model_reasoning_effort=high","推論|Codex");
 
 /* ===== 更新・追加（OpenAI公式ドキュメントは取得できなかったため、検索で確認できた範囲のみ。変わりやすいので公式で要確認） ===== */
-T("codex","承認ポリシー","しょうにんぽりしー","approval policy|approval_policy|--ask-for-approval|-a|untrusted|on-request|on-failure|never|auto_review|auto review|suggest|auto-edit|full-auto|Approval Modes|承認モード Codex|/approvals","Codexが操作の前に人間へ確認を求める条件の設定。",
+T("codex","承認ポリシー","しょうにんぽりしー","approval policy|approval_policy|--ask-for-approval|-a|untrusted|on-request|on-failure|never|auto_review|auto review|suggest|auto-edit|full-auto|Approval Modes|承認モード Codex|/approvals|approval","Codexが操作の前に人間へ確認を求める条件の設定。",
 "代表的な値：untrusted（信頼済みの安全なコマンド以外は確認）／on-request（サンドボックスの範囲を越えるときなどモデルが必要と判断したとき確認）／on-failure（失敗したときだけ確認）／never（確認しない）／auto_review（レビュー用サブエージェントが対象の操作を自動承認）。以前は suggest / auto-edit / full-auto の3モード呼称だった（版で変わる）。--ask-for-approval(-a)、config.tomlの approval_policy、実行中は /approvals で変更。",
 `codex --ask-for-approval on-request
 codex -a untrusted`,"サンドボックスモード|--full-auto|承認モード|権限");
@@ -64,7 +64,7 @@ T("codex","Codex スラッシュコマンド","こーでっくすすらっしゅ
 /goal
 /compact`,"スラッシュコマンド|AGENTS.md|承認ポリシー|/plan|/goal");
 
-T("codex","config.toml","こんふぃぐとむる","config.toml|~/.codex/config.toml|.codex/config.toml|/etc/codex/config.toml|CODEX_HOME|codex config|profiles|[profiles]|[mcp_servers]|model_provider|personality|toml|Codex 設定ファイル|設定の優先順位","Codexの設定ファイル（~/.codex/config.toml）。モデル、承認ポリシー、サンドボックス、MCP等を設定する。",
+T("codex","config.toml","こんふぃぐとむる","config.toml|~/.codex/config.toml|.codex/config.toml|/etc/codex/config.toml|CODEX_HOME|codex config|profiles|[profiles]|[mcp_servers]|model_provider|personality|toml|Codex 設定ファイル|設定の優先順位|プロファイル|profile","Codexの設定ファイル（~/.codex/config.toml）。モデル、承認ポリシー、サンドボックス、MCP等を設定する。",
 "TOML形式。優先順位は（高→低）コマンドラインフラグ → プロファイル → プロジェクト設定(.codex/config.toml) → ユーザー設定(~/.codex/config.toml) → システム設定(/etc/codex/config.toml) → 既定値。profiles で用途別の設定セットを作り --profile で切替。[mcp_servers.名前] でMCPサーバー登録。-c key=value で一時上書きもできる。",
 `# ~/.codex/config.toml（例）
 model = "gpt-5-codex"

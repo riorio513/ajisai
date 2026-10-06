@@ -11,7 +11,7 @@ gh pr create --fill`,"レビュー|merge|Draft PR|Issue|Squash and merge");
 T("github","Draft PR","どらふとぷるりくえすと","ドラフトPR|draft pull request|Draft|ドラフトプルリク|WIP|Ready for review","「まだ作業中」であることを示す下書き状態のPull Request。",
 "マージできない状態で作成され、途中経過の共有やCI確認に使える。準備ができたら「Ready for review」にしてレビューを依頼する。","gh pr create --draft","Pull Request|レビュー");
 
-T("github","レビュー","れびゅー","review|code review|コードレビュー|Approve|Request changes|approve|承認|変更依頼|LGTM|Reviewer|レビュワー|レビュアー","Pull Requestの変更を他の人（やAI）が確認し、承認や修正依頼をすること。",
+T("github","レビュー","れびゅー","review|code review|コードレビュー|Approve|Request changes|approve|承認|変更依頼|LGTM|Reviewer|レビュワー|レビュアー|レビューコメント|review comment","Pull Requestの変更を他の人（やAI）が確認し、承認や修正依頼をすること。",
 "各行にコメントを付け、最終的に Comment / Approve（承認）/ Request changes（要修正）のいずれかで提出する。LGTM は「Looks Good To Me（問題なし）」の略。ブランチ保護で「N人の承認が必須」と設定できる。","","Pull Request|ブランチ保護|CODEOWNERS");
 
 T("github","Squash and merge","すかっしゅあんどまーじ","squash merge|スカッシュマージ|Merge methods|マージ方法|Rebase and merge|Create a merge commit|merge commit|マージコミット","PRのマージ方法の1つ。PR内の全commitを1つにまとめてmainに入れる。",
@@ -30,7 +30,7 @@ T("github","fork","ふぉーく","フォーク|fork|forking|リポジトリを�
 
 T("github","star","すたー","スター|stars|★|GitHub Star|Watch|ウォッチ|watch","リポジトリをお気に入り登録する機能（Star）／更新通知を受け取る機能（Watch）。","","","GitHub|fork");
 
-T("github","GitHub Actions","ぎっとはぶあくしょんず","Actions|actions|アクション|GitHub Action|ワークフロー|workflow|.github/workflows|workflow.yml|ci.yml","GitHub上でテストやデプロイなどを自動実行する仕組み（CI/CD）。",
+T("github","GitHub Actions","ぎっとはぶあくしょんず","Actions|actions|アクション|GitHub Action|ワークフロー|workflow|.github/workflows|workflow.yml|ci.yml|Action","GitHub上でテストやデプロイなどを自動実行する仕組み（CI/CD）。",
 "リポジトリの .github/workflows/*.yml に手順を書くと、push・PR・定期実行などをきっかけに仮想マシン（runner）上で自動実行される。テスト、ビルド、デプロイ、AIエージェントの呼び出し（Claude Code Action等）にも使える。",
 `# .github/workflows/ci.yml
 name: CI
@@ -55,7 +55,7 @@ T("github","workflow_dispatch","わーくふろーでぃすぱっち","手動実
   schedule:
     - cron: "0 0 * * *"   # 毎日 UTC 0:00`,"GitHub Actions|cron");
 
-T("github","runner","らんなー","ランナー|runs-on|ubuntu-latest|self-hosted|self-hosted runner|GitHub-hosted runner|windows-latest|macos-latest","GitHub Actionsのジョブを実際に動かすマシン。",
+T("github","runner","らんなー","ランナー|runs-on|ubuntu-latest|self-hosted|self-hosted runner|GitHub-hosted runner|windows-latest|macos-latest|hosted|hosted runner","GitHub Actionsのジョブを実際に動かすマシン。",
 "GitHubが用意するhosted runner（ubuntu-latest等）と、自分のサーバーで動かす self-hosted runner がある。","runs-on: ubuntu-latest","GitHub Actions|workflow");
 
 T("github","secrets","しーくれっつ","GitHub Secrets|Repository secrets|secrets.|${{ secrets.|Actions secrets|シークレット|Environment secrets","APIキーなどの秘密情報を安全に保管し、Actionsから参照する機能。",
@@ -66,7 +66,7 @@ T("github","secrets","しーくれっつ","GitHub Secrets|Repository secrets|sec
 T("github","GITHUB_TOKEN","ぎっとはぶとーくん","github token|automatic token|permissions:|contents: write|自動トークン","GitHub Actions実行時に自動発行される、そのリポジトリ限定の一時トークン。",
 "workflow内で secrets.GITHUB_TOKEN として使え、実行終わりに失効する。permissions: で最小限の権限（contents: read など）に絞るのが安全。","permissions:\n  contents: read\n  pull-requests: write","secrets|Personal Access Token|GitHub Actions");
 
-T("github","Personal Access Token","ぱーそなるあくせすとーくん","PAT|パーソナルアクセストークン|アクセストークン|personal access token|fine-grained token|ghp_|github_pat_|classic token","パスワードの代わりにAPI/HTTPSで使う、権限を絞れる個人用の認証トークン。",
+T("github","Personal Access Token","ぱーそなるあくせすとーくん","PAT|パーソナルアクセストークン|アクセストークン|personal access token|fine-grained token|ghp_|github_pat_|classic token|fine-grained","パスワードの代わりにAPI/HTTPSで使う、権限を絞れる個人用の認証トークン。",
 "HTTPSでのpushやGitHub APIの認証に使う。「fine-grained」なら対象リポジトリや権限を細かく限定できる（推奨）。漏えいしたらすぐ失効（revoke）する。コードや会話・ログに貼らない。","","SSHキー|GITHUB_TOKEN|APIキー|シークレット");
 
 T("github","GitHub Pages","ぎっとはぶぺーじす","Pages|ページズ|gh-pages|github.io|静的サイトホスティング|GitHub Pagesで公開","GitHubリポジトリの静的サイト（HTML/CSS/JS）を無料で公開できるホスティング。",
@@ -90,7 +90,7 @@ T("github","README","りーどみー","README.md|readme|リードミー|readme.m
 T("github","CONTRIBUTING","こんとりびゅーてぃんぐ","CONTRIBUTING.md|コントリビューションガイド|貢献ガイド|contributing guide|CODE_OF_CONDUCT|行動規範|SECURITY.md","外部の人が貢献するときのルールを書いたファイル（CONTRIBUTING.md）。",
 "ブランチ名、コミット規約、テストの流れ、PRの出し方などを書く。CODE_OF_CONDUCT.md（行動規範）、SECURITY.md（脆弱性の報告先）も併せて置くのが定番。","","README|OSS");
 
-T("github","LICENSE","らいせんす","ライセンス|license|MIT License|MIT|Apache-2.0|Apache License|GPL|OSSライセンス|BSD","他人がコードを使っていい条件を示すファイル。",
+T("github","LICENSE","らいせんす","ライセンス|license|MIT License|MIT|Apache-2.0|Apache License|GPL|OSSライセンス|BSD|コピーレフト|copyleft","他人がコードを使っていい条件を示すファイル。",
 "LICENSEが無いと、公開していても他人は原則使えない。MIT/Apache-2.0は自由度が高く、GPLは派生物も同じライセンスで公開する必要がある（コピーレフト）。","","OSS|README");
 
 T("github","OSS","おーえすえす","オープンソース|open source|オープンソースソフトウェア|OSS","ソースコードが公開され、決められた条件で誰でも利用・改変・再配布できるソフトウェア。","","","LICENSE|fork|Pull Request");
@@ -163,9 +163,9 @@ T("github","needs / if / outputs","にーず","needs:|if:|outputs:|jobs.<id>.nee
 T("github","concurrency","こんかれんしー","concurrency:|cancel-in-progress|同時実行制御|二重実行を防ぐ|group:","同じ種類のワークフローが同時に走らないよう制御する設定。","cancel-in-progress: true で、新しいpushが来たら古い実行をキャンセルして無駄とデプロイ衝突を防ぐ。","concurrency:\n  group: deploy-${{ github.ref }}\n  cancel-in-progress: true","GitHub Actions|workflow|デプロイ");
 T("github","OIDC","おーあいでぃーしー","OIDC|OpenID Connect|id-token: write|permissions: id-token|クラウドへ鍵なしでログイン|keyless|workload identity|aws-actions/configure-aws-credentials","長期のシークレットを置かず、GitHub Actionsから一時トークンでクラウド(AWS/GCP/Azure)にログインする方式。","permissions に id-token: write を付け、クラウド側で「このリポジトリ・ブランチからの実行を信頼」と設定する。漏れるとまずい固定のアクセスキーを持たずに済む。","permissions:\n  id-token: write\n  contents: read","secrets|AWS|GITHUB_TOKEN");
 T("github","アクションのバージョン固定","ばーじょんこてい","pin actions|actions/checkout@<sha>|SHA pinning|uses: owner/repo@sha|サプライチェーン actions|タグ固定|@v4|@main","第三者のActionをタグ（@v4）ではなくコミットSHAで固定して、乗っ取り・改ざんを避ける運用。","タグは付け替えられる可能性がある。公式以外のActionは特にSHA固定とDependabotでの更新が安全。","uses: actions/checkout@<40桁のSHA>","GitHub Actions|Dependabot|依存関係");
-T("github","Checks / ステータスチェック","ちぇっくす","status checks|check run|check suite|Checks|Required status checks|required checks|✓|赤いバツ|CIが失敗|commit status|ステータス","PRやcommitに付く、CIなどの自動チェックの結果（成功・失敗・実行中）。","ブランチ保護で「このチェックが成功しないとmerge不可」に設定できる。失敗したらActionsのログ(Details)を開いて原因を確認する。AIエージェントにはこのログを渡して修正させる。","","CI|ブランチ保護|GitHub Actions|auto-merge");
+T("github","Checks / ステータスチェック","ちぇっくす","status checks|check run|check suite|Checks|Required status checks|required checks|✓|赤いバツ|CIが失敗|commit status|ステータス|チェック|check","PRやcommitに付く、CIなどの自動チェックの結果（成功・失敗・実行中）。","ブランチ保護で「このチェックが成功しないとmerge不可」に設定できる。失敗したらActionsのログ(Details)を開いて原因を確認する。AIエージェントにはこのログを渡して修正させる。","","CI|ブランチ保護|GitHub Actions|auto-merge");
 T("github","suggested changes","さじぇすてっどちぇんじ","suggestion|suggested change|```suggestion|変更提案|Commit suggestion|レビューの提案|resolve conversation|Resolve conversation|review thread|レビュースレッド|コメントを解決","レビューコメントで具体的なコード修正案を提示し、ワンクリックで取り込める機能。","コメントに suggestion ブロックを書くと「Commit suggestion」ボタンになる。対応済みのスレッドは Resolve conversation で解決済みにする。","","レビュー|Pull Request");
-T("github","GitHub Enterprise","ぎっとはぶえんたーぷらいず","GitHub Enterprise Cloud|GitHub Enterprise Server|GHES|GHEC|GitHub Enterprise|エンタープライズ|SSO|SAML|社内GitHub","企業向けのGitHub。クラウド版(Enterprise Cloud)と自社運用版(Enterprise Server)がある。","SAML SSO、監査ログ、組織ポリシーの強制などが加わる。AIツールの接続先ドメインが github.com とは異なる点に注意。","","Organization|GitHub App");
+T("github","GitHub Enterprise","ぎっとはぶえんたーぷらいず","GitHub Enterprise Cloud|GitHub Enterprise Server|GHES|GHEC|GitHub Enterprise|エンタープライズ|SSO|SAML|社内GitHub|Enterprise","企業向けのGitHub。クラウド版(Enterprise Cloud)と自社運用版(Enterprise Server)がある。","SAML SSO、監査ログ、組織ポリシーの強制などが加わる。AIツールの接続先ドメインが github.com とは異なる点に注意。","","Organization|GitHub App");
 T("github","dependency graph / SBOM","でぃぺんでんしーぐらふ","dependency graph|SBOM|Software Bill of Materials|ソフトウェア部品表|dependency review|Dependency review|脆弱性アラート|Dependabot alerts","リポジトリが依存するパッケージの一覧と脆弱性を可視化する機能（依存関係グラフ）。","SBOMは使っている部品の一覧表。Dependency reviewは、PRで追加される依存の脆弱性・ライセンスを事前チェックする。","","Dependabot|依存関係|Secret scanning");
 T("github","security advisory","せきゅりてぃあどばいざりー","security advisory|GHSA|CVE|脆弱性報告|Private vulnerability reporting|private vulnerability|SECURITY.md|責任ある開示","脆弱性を非公開で報告・修正・公開するための仕組み（GitHub Security Advisories）。","公開Issueに脆弱性を書かず、SECURITY.md に報告窓口を書き、private vulnerability reporting を有効にしておく。CVEは脆弱性の共通ID。","","CONTRIBUTING|Secret scanning|Dependabot");
 T("github","GitHub API","ぎっとはぶえーぴーあい","GitHub REST API|GitHub GraphQL|gh api|api.github.com|GraphQL API|GitHub API|octokit|Octokit|Rate limit GitHub|X-RateLimit","GitHubをプログラムから操作するAPI（REST / GraphQL）。gh api コマンドからも呼べる。","認証にはPersonal Access TokenやGitHub Appを使う。回数制限（Rate limit）があり、超えると403/429になる。Octokitは公式SDK。","gh api repos/OWNER/REPO/pulls","GitHub CLI|Personal Access Token|API|GitHub App");

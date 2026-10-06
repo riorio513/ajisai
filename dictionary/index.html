@@ -108,6 +108,8 @@ main{padding:14px 0 50px}
 .tag{border:1px solid var(--border);background:var(--bg2);border-radius:6px;padding:0 8px;font-family:var(--mono);font-size:12.5px;line-height:1.8}
 .tag:hover{border-color:var(--main)}
 .rel{border:1px solid var(--accent);background:var(--accent-bg);color:var(--accent);border-radius:999px;padding:0 11px;font-size:13px;line-height:1.8}
+.xl{background:none;border:none;border-bottom:1px dotted var(--accent);color:inherit;padding:0;font:inherit;cursor:pointer;text-align:inherit}
+.xl:hover{color:var(--accent);background:var(--accent-bg)}
 mark{background:var(--mark);color:inherit;border-radius:3px;padding:0 1px}
 .empty{background:var(--panel);border:1px dashed var(--border-s);border-radius:var(--radius);padding:22px 18px;text-align:center;color:var(--muted)}
 .empty .chips{justify-content:center}
@@ -175,6 +177,7 @@ footer ul{display:flex;flex-wrap:wrap;gap:4px 16px;list-style:none;padding:0;mar
 <script src="data/mcp.js"></script>
 <script src="data/term.js"></script>
 <script src="data/dev.js"></script>
+<script src="data/basics.js"></script>
 <script>
 (function () {
   "use strict";
@@ -204,6 +207,27 @@ footer ul{display:flex;flex-wrap:wrap;gap:4px 16px;list-style:none;padding:0;mar
   var keyMap = {};
   D.forEach(function (e) { var k = e.keys[0]; if (k && !(k.s in keyMap)) keyMap[k.s] = e.id; });
   D.forEach(function (e) { e.keys.forEach(function (k) { if (!(k.s in keyMap)) keyMap[k.s] = e.id; }); });
+
+  /* ---------- 説明文中の用語リンク ----------
+     他項目の用語名（と、英数字4文字以上の別名）が説明文に出てきたら、クリックでその項目へ飛べるようにする。
+     同じ語は1段落につき最初の1回だけリンクし、読みにくくならないようにしている。 */
+  var linkMap = {}, linkRe = null;
+  (function () {
+    function put(k, id) { var lk = k.toLowerCase(); if (!(lk in linkMap)) linkMap[lk] = id; }
+    D.forEach(function (e) {
+      var t = e.term;
+      if (t.length >= 2 && !/^[\/\-.@]/.test(t)) put(t, e.id);
+      var base = t.replace(/[(（].*$/, "").trim();           // 「キャッシュ(Redis等)」→「キャッシュ」
+      if (base.length >= 2 && base !== t && !/^[\/\-.@]/.test(base)) put(base, e.id);
+    });
+    D.forEach(function (e) {
+      e.aliases.forEach(function (a) {
+        if (/^[\x20-\x7e]{4,}$/.test(a) && /[A-Za-z]/.test(a) && !/^[\/\-.@]/.test(a)) put(a, e.id);
+      });
+    });
+    var keys = Object.keys(linkMap).sort(function (a, b) { return b.length - a.length; });
+    linkRe = new RegExp("(" + keys.map(function (k) { return k.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); }).join("|") + ")", "ig");
+  })();
 
   /* ---------- 貼り付けテキストの整形 ---------- */
   function clean(t) {
@@ -310,6 +334,30 @@ footer ul{display:flex;flex-wrap:wrap;gap:4px 16px;list-style:none;padding:0;mar
     return parent;
   }
 
+  function isWord(c) { return !!c && /[A-Za-z0-9_]/.test(c); }
+  /* 説明文を描画：他項目の用語はリンク、検索語はハイライト */
+  function rich(text, parent, selfId) {
+    if (!text) return parent;
+    var seen = {}, last = 0, m;
+    linkRe.lastIndex = 0;
+    while ((m = linkRe.exec(text))) {
+      var key = m[0].toLowerCase(), id = linkMap[key];
+      var before = text.charAt(m.index - 1), after = text.charAt(m.index + m[0].length);
+      var asciiEdge = /^[A-Za-z0-9]/.test(m[0]) && isWord(before) || /[A-Za-z0-9]$/.test(m[0]) && isWord(after);
+      if (id == null || id === selfId || seen[key] || asciiEdge) { linkRe.lastIndex = m.index + 1; continue; }
+      seen[key] = true;
+      if (m.index > last) hl(text.slice(last, m.index), parent);
+      var b = el("button", "xl"); b.type = "button"; b.title = "「" + D[id].term + "」の項目を開く";
+      hl(m[0], b);
+      (function (tid) { b.addEventListener("click", function () { jump(D[tid].term); }); })(id);
+      parent.appendChild(b);
+      last = m.index + m[0].length;
+      linkRe.lastIndex = last;
+    }
+    if (last < text.length) hl(text.slice(last), parent);
+    return parent;
+  }
+
   var toastTimer;
   function toast(msg) {
     var t = document.getElementById("toast");
@@ -342,7 +390,7 @@ footer ul{display:flex;flex-wrap:wrap;gap:4px 16px;list-style:none;padding:0;mar
   function buildBody(e) {
     var b = el("div", "body");
     if (e.reading) b.appendChild(el("div", "reading", "読み: " + e.reading));
-    var p = el("p"); hl(e.desc || e.short, p); b.appendChild(p);
+    var p = el("p"); rich(e.desc || e.short, p, e.id); b.appendChild(p);
     if (e.usage) {
       b.appendChild(el("div", "lbl", "使い方・例"));
       var c = el("div", "code"), pre = el("pre"), code = el("code");
