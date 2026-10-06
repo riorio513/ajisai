@@ -6,30 +6,6 @@ claude                      # 対話モードで起動
 claude "READMEを要約して"     # 最初の指示つきで起動
 claude -p "テストを実行して結果を要約"   # 1回だけ実行して終了`,"CLAUDE.md|スラッシュコマンド|パーミッションモード|サブエージェント|hooks|MCP");
 
-T("claude","/help","へるぷ","/help|help|ヘルプ|使い方","使えるコマンドとショートカットのヘルプを表示する。","","/help","スラッシュコマンド");
-T("claude","/clear","くりあ","/clear|clear|会話をリセット|履歴クリア|/reset|/new","会話履歴（コンテキスト）を空にして新しく始める。","別タスクに移る前に実行すると、前の話題が混ざらず精度とコストの面で有利。","/clear","/compact|コンテキスト");
-T("claude","/compact","こんぱくと","/compact|compact|/compact 指示|会話の圧縮|要約して続行","会話を要約して圧縮し、コンテキストを空ける。","指示を添えると、残す内容を指定できる。","/compact\n/compact テスト結果と決定事項を残して","compact|コンテキスト");
-T("claude","/init","いにっと","/init|init|CLAUDE.mdを作る|CLAUDE.md 生成","コードベースを調べて、CLAUDE.md の雛形を自動生成する。","最初に1回実行し、生成物を手で整えるのが定番。","/init","CLAUDE.md");
-T("claude","/permissions","ぱーみっしょんず","/permissions|permissions|許可ルール|allow ルール|permission rules|権限設定|/allowed-tools","ツールの許可・確認・拒否ルールを表示・編集する。","「git status は毎回確認なしで許可」「rm は拒否」など、ルールを細かく管理できる。settings.json の permissions と同じもの。","/permissions","権限|settings.json|パーミッションモード");
-T("claude","/config","こんふぃぐ","/config|config|設定画面|claude config|設定を開く|/settings","設定画面を開く（テーマ、モデル、通知など）。","","/config","settings.json");
-T("claude","/status","すてーたす","/status|status|バージョン確認|アカウント情報|接続状態","バージョン、アカウント、使用モデル、接続状況などを表示する。","","/status","/doctor|/usage");
-T("claude","/context","こんてきすと","/context|context usage|コンテキスト使用量|コンテキスト可視化","コンテキストウィンドウの使用状況（何がどれだけ占めているか）を可視化する。","","/context","コンテキスト|/compact");
-T("claude","/doctor","どくたー","/doctor|doctor|claude doctor|環境診断|インストール診断","インストールや設定の健全性を診断する。","起動しない・更新できない等の不調時に最初に試す。","/doctor","claude(インストール)");
-T("claude","/login","ろぐいん","/login|login|/logout|logout|ログイン|ログアウト|認証|アカウント切り替え","ログイン／アカウント切り替え。/logout でログアウト。","ブラウザの認証画面が開く。APIキー利用とサブスク利用で課金が変わる点に注意。","/login\n/logout","APIキー");
-T("claude","/mcp","えむしーぴー","/mcp|mcp|MCP管理|MCPサーバー一覧|MCP認証|claude mcp list","接続中のMCPサーバーの状態確認・認証を行う。","","/mcp","MCP|claude mcp add");
-T("claude","/memory","めもり","/memory|memory|メモリ編集|CLAUDE.md 編集|#でメモリ追加","CLAUDE.md（メモリ）ファイルを編集する。","","/memory","CLAUDE.md|メモリ");
-T("claude","/hooks","ふっくす","/hooks|hooks設定|フック設定|hook を設定","hooks（自動実行フック）を設定する画面を開く。","","/hooks","hooks|settings.json");
-T("claude","/resume","りじゅーむ","/resume|resume|--resume|-r|--continue|-c|claude --continue|claude --resume|claude -c|claude -r|前回の続き|会話を再開|セッション再開|セッション履歴","過去の会話（セッション）を選んで再開する。","ターミナルから claude --continue（直近を再開）、claude --resume（一覧から選択）でも同じことができる。","/resume\nclaude --continue\nclaude --resume","セッション|/clear");
-T("claude","/add-dir","あっどでぃれくとり","/add-dir|--add-dir|add-dir|作業ディレクトリ追加|追加ディレクトリ|複数フォルダ","作業対象のフォルダを追加する（別ディレクトリのファイルも読み書きできるようにする）。","","/add-dir ../shared-lib\nclaude --add-dir ../shared-lib","権限");
-T("claude","/ide","あいでぃーいー","/ide|ide|IDE連携|VS Code拡張|Claude Code VS Code extension|JetBrains|IDE integration|IDE統合","VS Code等のIDEと連携する。","拡張機能を入れると、IDEで開いているファイル・選択範囲・診断(エラー)をClaudeが参照でき、差分もIDEの画面で確認できる。","/ide","VS Code|Claude Code");
-T("claude","/output-style","あうとぷっとすたいる","/output-style|output style|出力スタイル|Explanatory|Learning|学習モード|説明モード","Claudeの返答スタイル（解説多め・学習向けなど）を切り替える。","","/output-style","システムプロンプト");
-T("claude","/statusline","すてーたすらいん","/statusline|status line|ステータスライン|statusLine|画面下部の表示|ステータス行","画面下部のステータス表示（ブランチ名・モデル・コスト等）をカスタマイズする。","","/statusline","settings.json");
-T("claude","/plugin","ぷらぐいん","/plugin|plugin|plugins|プラグイン|marketplace|マーケットプレイス|プラグインを入れる|/plugin install|claude plugin","スキル・コマンド・サブエージェント・hooks・MCPなどを1つにまとめて配布・導入できる拡張パッケージ。","マーケットプレイス（配布元）を追加して、そこからインストールする。チームの標準構成を共有するのに便利。","/plugin\n/plugin marketplace add <repo>\n/plugin install <name>@<marketplace>","Skills|サブエージェント|hooks|MCP");
-T("claude","/todos","とぅどぅー","/todos|todos|TodoWrite|ToDoリスト|タスクリスト|TODO list|進捗リスト","Claudeが管理しているToDoリスト（作業の段取りと進捗）を表示する。","複数ステップの作業では、Claudeは自分でToDoリストを作り、1つずつ消化していく。","/todos","エージェントループ");
-T("claude","/export","えくすぽーと","/export|export|会話を書き出す|会話エクスポート|ログ保存|transcript","会話の内容をファイルやクリップボードに書き出す。","","/export","");
-T("claude","/bug","ばぐ","/bug|bug|/feedback|feedback|不具合報告|フィードバック送信|/release-notes|release-notes|リリースノート","Claude Codeの不具合・フィードバックを送る。/release-notes で更新内容を確認。","","/feedback\n/release-notes","");
-T("claude","/install-github-app","いんすとーるぎっとはぶあっぷ","/install-github-app|install-github-app|GitHub App 連携|GitHub Actions セットアップ|@claude を使えるようにする","リポジトリに Claude の GitHub App と Actions ワークフローをセットアップする。","これにより、IssueやPRのコメントで @claude とメンションして作業を依頼できる。","/install-github-app","Claude Code GitHub Actions|メンション|GitHub App");
-T("claude","/fast","ふぁすと","/fast|fast mode|ファストモード|高速モード|出力高速化","同じ高性能モデルのまま、出力を高速化するモードの切り替え。","速度優先の設定で、品質は維持しつつレスポンスを速くする（料金体系は通常と異なる場合あり）。","/fast","/model");
 T("claude","@ファイル参照","あっとふぁいるさんしょう","@file|@|ファイルを指定|file mention|@src/|@フォルダ|@ メンション|ファイルメンション|@ファイル名","プロンプトに「@パス」と書いて、特定のファイル・フォルダを読ませる。","「@src/auth.ts を見て、ログインのバグを直して」のように使う。Tabキーで補完でき、フォルダを指定すると一覧が渡る。","@src/components/Header.tsx のレイアウトを直して","コンテキスト|ショートカットキー");
 
 T("claude","プランモード","ぷらんもーど","plan mode|Plan Mode|プラン|計画モード|--permission-mode plan|ExitPlanMode|read-only plan|プランを立てる|plan","コードを変更せず、調査して実装計画だけを立てさせるモード。",
@@ -74,7 +50,7 @@ uses: anthropics/claude-code-action@v1
 with:
   anthropic_api_key: \${{ secrets.ANTHROPIC_API_KEY }}`,"GitHub Actions|メンション|secrets|/install-github-app");
 
-T("claude","Checkpoints","ちぇっくぽいんと","checkpoint|checkpoints|チェックポイント|自動セーブ|コード巻き戻し|restore checkpoint","Claudeが編集する前に自動で取る、ファイルの状態のスナップショット。","/rewind か Esc Esc で呼び出し、会話・コード・両方のどれを戻すか選べる。Gitの代わりではなく補助。","","/rewind|git reset|git commit");
+T("claude","Checkpoints","ちぇっくぽいんと","checkpoint|checkpoints|チェックポイント|自動セーブ|コード巻き戻し|restore checkpoint","Claudeが編集する前に自動で取る、ファイルの状態のスナップショット。","/rewind か Esc Esc で呼び出し、会話・コード・両方のどれを戻すか選べる。Gitの代わりではなく補助。","","git reset|git commit");
 
 T("claude","セッション","せっしょん","session|セッション|session id|--session-id|会話セッション|~/.claude/projects|transcript|セッション履歴|session history|fork","Claude Codeでの1つの会話のまとまり。履歴は保存され、後から再開できる。","同じフォルダでの過去の会話は claude --continue / --resume で再開できる。別の流れで試したいときは分岐(fork)も可能。","claude --continue\nclaude --resume","/resume|/clear|コンテキスト");
 
@@ -98,7 +74,7 @@ claude update
 claude install stable
 claude auth login
 claude auth status
-claude doctor`,"Claude Code|/doctor|/login|APIキー");
+claude doctor`,"Claude Code|/login|APIキー");
 
 T("claude","CLAUDE.md","くろーどえむでぃー","CLAUDE.md|claude.md|CLAUDE.local.md|./.claude/CLAUDE.md|.claude/CLAUDE.md|プロジェクトメモリ|project memory|メモリファイル|~/.claude/CLAUDE.md|クロードエムディー|プロジェクト指示","Claude Codeが起動時に必ず読み込む、プロジェクト専用の指示書（Markdown）。",
 "リポジトリのルートに置き、プロジェクトの概要、よく使うコマンド（ビルド・テスト）、コーディング規約、やってはいけないことなどを書く。毎回説明する手間が省け、精度が安定する。置き場所は、ユーザー全体(~/.claude/CLAUDE.md)・プロジェクト(./CLAUDE.md または ./.claude/CLAUDE.md)・個人用(CLAUDE.local.md)・組織の管理ポリシー。見つかった全ファイルが連結されて渡され、プロジェクト直下のものは自動コンパクト後も再読込される。AGENTS.md しかない場合はそれを読む設定もあり（v2.1.277以降。/config の Project instructions）。/init で雛形を生成できる。",
@@ -122,12 +98,6 @@ T("claude","スラッシュコマンド","すらっしゅこまんど","slash co
 T("claude","同梱スキル","どうこんすきる","bundled skills|Bundled skills|/batch|/code-review|/debug|/loop|/simplify|/run|/verify|/run-skill-generator|/update-config|/fewer-permission-prompts|/claude-api|/dataviz|/design|/slides|/claude-in-chrome|built-in skills","Claude Codeに最初から入っているプロンプト型のスキル（/batch・/code-review・/debug・/loop など）。",
 "固定ロジックの組み込みコマンドと違い、詳細なプロンプトをClaudeに渡して、サブエージェント起動・ファイル読み込み・状況への適応をさせる。例：/batch（大規模変更を並列実行）、/code-review（差分レビュー）、/debug（デバッグログ有効化＋調査）、/loop（定期繰り返し）、/simplify（整理・簡素化）、/run と /verify（アプリを実際に起動して確認）、/update-config（設定変更）、/fewer-permission-prompts（許可プロンプトを減らす許可リスト提案）。※ 構成は版や環境で変わる。","/code-review high\n/simplify\n/loop 5m テスト結果を確認して","Skills|スラッシュコマンド|サブエージェント");
 
-T("claude","/model","もでる","/model|model|モデル切り替え|モデル変更|--model|/model opus|/model sonnet|/model haiku|/model fable|opusplan|Opus|Sonnet|Haiku|Fable|モデルエイリアス|model alias","使用するモデルを切り替える（既定として保存される）。",
-"claude --model <エイリアスまたは完全名> でも起動時に指定できる。エイリアスは sonnet / opus / haiku / fable など。対応モデルでは左右キーで effort level（思考の深さ）も調整できる。難しい設計は高性能モデル、単純作業は軽量モデル、と使い分けるとコストと速度が改善。Option+P / Alt+P でも切替。","/model\nclaude --model sonnet\nclaude --fallback-model sonnet,haiku","Claude|effort level|/effort|--fallback-model");
-
-T("claude","/effort","えふぉーと","/effort|effort|--effort|effort level|エフォート|思考の深さ|ultracode|/effort high|/effort status|effortLevel","思考の深さ（effort level）を設定する。low / medium / high / xhigh / max / auto。",
-"高いほど深く考える（遅く・トークンも増える）。/effort status で現在値、/effort ultracode でultracodeモードのオン/オフ。起動時は claude --effort high。対応はFableモデル、Opus 4.6以降、Sonnet 4.6以降など。以前の「think / ultrathink」キーワードに代わる考え方。","/effort high\n/effort status\nclaude --effort xhigh","effort level|extended thinking|ultrathink|/model");
-
 T("claude","effort level","えふぉーとれべる","effort level|adaptive reasoning|適応的推論|アダプティブ|思考レベル|thinking effort|ultracode|MAX_THINKING_TOKENS|effortLevel","モデルが各ステップでどれだけ深く考えるかを決める設定。","高いほど思考トークンが増えて深い推論、低いほど速く安い。/effort、--effort、/model画面の左右キー、settings の effortLevel で設定。extended thinking（考える過程の表示）は effort で調整し、固定予算のモデルでは MAX_THINKING_TOKENS で上限を決める。","","/effort|extended thinking|推論");
 
 T("claude","ショートカットキー","しょーとかっときー","Shift+Tab|Esc|Esc Esc|Ctrl+C|Ctrl+D|Ctrl+R|Ctrl+O|Ctrl+B|Ctrl+T|Ctrl+G|Ctrl+S|Ctrl+V|Ctrl+L|Ctrl+Z|Option+P|Alt+P|Option+T|Alt+T|Option+O|Alt+O|Tab|@|!|#|?|ショートカット|keyboard shortcuts|キーボードショートカット|入力モード|矢印キー","Claude Codeの入力欄でよく使うキー操作と先頭記号。",
@@ -136,22 +106,9 @@ T("claude","ショートカットキー","しょーとかっときー","Shift+Ta
 Esc          # 中断
 Esc Esc      # 巻き戻し
 @src/app.ts  # ファイルを指定
-!git status  # シェル実行`,"パーミッションモード|/rewind|プランモード|@ファイル参照|/terminal-setup");
+!git status  # シェル実行`,"パーミッションモード|プランモード|@ファイル参照");
 
-T("claude","/terminal-setup","たーみなるせっとあっぷ","/terminal-setup|terminal-setup|Shift+Enter|改行キー設定|shift enter 改行|改行できない|Option as Meta","ターミナルで Shift+Enter による改行などを使えるようにする設定。","VS Code・Cursorなど対応ターミナルにキーバインドを導入する。macOSでは Option キーをMetaとして扱う設定も必要。Vimキーバインドの /vim コマンドはv2.1.92で廃止され、/config の Editor mode で切り替える。","/terminal-setup","ショートカットキー|Vimモード");
-
-T("claude","Vimモード","ぶいあいえむもーど","vim mode|vimモード|vimキーバインド|Editor mode|/vim|NORMAL mode|ノーマルモード|入力欄のVim","入力欄をVimのキー操作（NORMAL/INSERT）で編集できるモード。","/vim コマンドは廃止され、/config → Editor mode で切り替える。Esc でNORMALモード、i/a/o で挿入、h j k l で移動、dd で行削除、ciw等の編集が使える。","/config","/terminal-setup|ショートカットキー|vim");
-
-T("claude","/review","れびゅー","/review|review|/code-review|code-review|コードレビュー|PRレビュー|/security-review|security-review|セキュリティレビュー|/pr-comments|--fix|--comment|--max-findings","現在の差分やPR・ブランチをレビューするコマンド。/review は /code-review の別名。",
-"/review [low|medium|high|xhigh|max|ultra] [--fix] [--comment] [--max-findings n|all] [PR番号|ブランチ|パス] の形。レベルは指摘の網羅度（低=自信のある少数、高=不確実なものも含め多数）。--comment でPRにインラインコメント、--fix で指摘を作業ツリーに反映。/security-review は現在のブランチ変更のセキュリティ観点レビュー。/pr-comments は v2.1.91 で廃止（Claudeに直接頼む）。より深い多エージェントレビューは /ultrareview。","/review high\n/review 1234 --comment\n/security-review","/ultrareview|Pull Request|レビュー|同梱スキル");
-
-T("claude","/ultrareview","うるとられびゅー","/ultrareview|ultrareview|claude ultrareview|ウルトラレビュー|深いコードレビュー|クラウドレビュー","クラウドのサンドボックスで多エージェントが行う、深いコードレビュー。","/ultrareview [PR または ブランチ] で起動。非対話では claude ultrareview 1234 --json、--post でPRに結果をコメント投稿（既定は --no-post）、--timeout で時間制限（既定45分）。","/ultrareview 1234\nclaude ultrareview 1234 --json","/review|クラウドセッション|Pull Request");
-
-T("claude","/agents","えーじぇんつ","/agents|agents|サブエージェント管理|サブエージェント作成|エージェント管理|/list-agents|list-agents","サブエージェントの管理に関するコマンド（版で挙動が変わった）。","新しい版では「Claudeにサブエージェントを作らせる／.claude/agents/ を直接編集する」という案内を表示（v2.1.197以前は管理UIを開く）。/list-agents は、Claudeがメッセージを送れるサブエージェント・チームメイト・他セッションの一覧。ターミナルの claude agents は別機能（エージェントビュー）。","/agents\n/list-agents","サブエージェント|エージェントビュー|.claude/agents");
-
-T("claude","/usage","ゆーさげ","/usage|usage|/cost|cost|/stats|stats|使用量|使用状況|コスト確認|トークン使用量|使用上限の確認|usage limits|プラン上限","セッションのコスト、プランの使用上限、アクティビティ統計を表示する。（/cost と /stats は別名）","Pro・Max・Team・Enterpriseでは、上限に何が計上されているかの内訳も出る。上限に当たったときは /rate-limit-options、追加クレジットは /usage-credits。応答中でも即時実行される。","/usage\n/cost","レート制限|トークン|/context");
-
-T("claude","/rewind","りわいんど","/rewind|rewind|/checkpoint|checkpoint|チェックポイント|Esc Esc|巻き戻し|/undo|undo|変更を取り消す|rewind code","会話やコードの変更を、過去のチェックポイントまで巻き戻す。別名 /checkpoint, /undo。","各プロンプトの開始時に自動でチェックポイントが作られ、編集前にファイルのスナップショットも取られる。Esc を2回(Esc Esc)でも開ける。会話・コード・両方のどれを戻すか、選択メッセージからの要約もできる。ただしBashコマンドによる変更はGitと別管理なので戻らない。Gitのcommitも併用する。","/rewind","Checkpoints|git reset|git commit");
+T("claude","Vimモード","ぶいあいえむもーど","vim mode|vimモード|vimキーバインド|Editor mode|/vim|NORMAL mode|ノーマルモード|入力欄のVim","入力欄をVimのキー操作（NORMAL/INSERT）で編集できるモード。","/vim コマンドは廃止され、/config → Editor mode で切り替える。Esc でNORMALモード、i/a/o で挿入、h j k l で移動、dd で行削除、ciw等の編集が使える。","/config","ショートカットキー|vim");
 
 T("claude","パーミッションモード","ぱーみっしょんもーど","permission mode|permission modes|--permission-mode|default|manual|Manual|acceptEdits|plan|auto|auto mode|dontAsk|bypassPermissions|auto-accept edits|defaultMode|権限モード|自動承認モード|Shift+Tab","Claude Codeが操作をどこまで確認なしで行うかを決めるモード。Shift+Tab で切り替える。",
 "default（画面上はManual）：読み取り以外は毎回確認 ／ acceptEdits：ファイル編集と mkdir・mv・cp などは確認なし ／ plan：調べて計画だけ立て、承認までは編集しない ／ auto：別の分類器モデルが操作を審査し、安全なものは確認なしで実行（v2.1.283以降は対話セッションの既定。危険操作・プロンプトインジェクションはブロック） ／ dontAsk：許可ルールにないものは拒否（質問しない） ／ bypassPermissions：確認を全部省略（非常に危険。隔離環境のみ）。起動時は --permission-mode、設定は defaultMode。",
@@ -203,7 +160,7 @@ claude -p "要約して" --output-format json`,"claude -p|パーミッション�
 
 T("claude","--bare","べあもーど","--bare|bare mode|ベアモード|CLAUDE_CODE_SIMPLE|最小モード|minimal mode","フック・スキル・MCP・CLAUDE.md・メモリなどの自動読み込みを省略して高速・再現的に起動するモード。","スクリプトやCIで、どのマシンでも同じ結果にしたいときに推奨。Bash・ファイル読み書きは使える。--add-dir で渡したフォルダのスキルは読み込む。例：claude --bare -p \"query\"","claude --bare -p \"このPRを要約して\"","claude -p|--safe-mode|CI");
 
-T("claude","--safe-mode","せーふもーど","--safe-mode|safe mode|セーフモード|CLAUDE_CODE_SAFE_MODE|設定を全部無効で起動|トラブルシュート 起動","CLAUDE.md・スキル・プラグイン・フック・MCPなどカスタマイズをすべて無効にして起動するトラブルシューティング用モード。","認証・モデル選択・組み込みツール・権限は通常どおり。設定が原因で壊れていないかの切り分けに使う（--bareとは別物）。","claude --safe-mode","--bare|/doctor|claude doctor");
+T("claude","--safe-mode","せーふもーど","--safe-mode|safe mode|セーフモード|CLAUDE_CODE_SAFE_MODE|設定を全部無効で起動|トラブルシュート 起動","CLAUDE.md・スキル・プラグイン・フック・MCPなどカスタマイズをすべて無効にして起動するトラブルシューティング用モード。","認証・モデル選択・組み込みツール・権限は通常どおり。設定が原因で壊れていないかの切り分けに使う（--bareとは別物）。","claude --safe-mode","--bare|claude doctor");
 
 T("claude","--worktree","わーくつりー","--worktree|-w|claude -w|git worktree claude|worktree isolation|.claude/worktrees|--tmux|ワークツリー隔離|isolation: worktree|WorktreeCreate|WorktreeRemove","隔離したgit worktree（<repo>/.claude/worktrees/名前）でClaudeを起動するオプション。","並列に走らせるセッションが互いのファイルを壊さない。#123 やPRのURLを渡すと、そのPR/MRをoriginから取得してworktreeを作る。--tmux でtmuxセッション付き。サブエージェントは isolation: worktree で同様に隔離できる。","claude -w feature-auth\nclaude -w #123","git worktree|サブエージェント");
 
@@ -221,17 +178,7 @@ T("claude","--fork-session","ふぉーくせっしょん","--fork-session|fork s
 
 T("claude","--from-pr","ふろむぴーあーる","--from-pr|from pr|PRに紐づくセッション|PRからセッション再開","特定のPull Requestに紐づいたセッションを絞り込んで再開するオプション。","PR番号、GitHub/GitHub EnterpriseのPR URL、GitLabのMR、BitbucketのPRのURLを受け取る。ClaudeがPRを作ると自動で紐づく。","claude --from-pr 123","セッション|Pull Request");
 
-T("claude","/plan","ぷらん","/plan|plan|/plan 説明|プランモードに入る|enter plan mode","プロンプトから直接プランモードに入るコマンド。","説明を添えると、そのタスクの計画立案をすぐ開始する。例：/plan ログイン機能を設計して。Shift+Tabでも切り替え可能。","/plan 認証まわりのリファクタ計画を立てて","プランモード|パーミッションモード");
-
-T("claude","/goal","ごーる","/goal|goal|goal clear|ゴール|条件を満たすまで続ける|keep Claude working toward a goal|目標を設定","条件を満たすまで、Claudeがターンをまたいで作業を続けるよう目標を設定するコマンド。","/goal テストがすべて通る のように条件を渡すと、その達成まで（または別の理由で解除されるまで）自律的に進む。引数なしで現在の目標、clear/stop/off/cancel で解除。成否を判定できる検証手段（テスト・ビルド等）が前提。","/goal 全テストが通ってlintエラーがゼロ","verification loop|エージェントループ|/loop");
-
 T("claude","verification loop","べりふぃけーしょんるーぷ","verification loop|検証ループ|検証手段|テストで確認|Claudeが自分で確認|give Claude a way to verify","「本当に終わったか」を、Claude自身が実行して確かめられる仕組み（テスト・ビルド・スクショ比較など）。","検証手段があれば、成功するまで反復できる。/goal・無人実行・動的ワークフローの前提。「完了」の判断をAI任せにしない。指示するときは「テストを実行して通るまで直して」と書くのが基本。","","/goal|テスト|エージェントループ");
-
-T("claude","/loop","るーぷ","/loop|loop|繰り返し実行|定期実行|ループコマンド|定期チェック|self-pace|Run prompts on a schedule","指示を一定間隔で（または自分のペースで）繰り返し実行する同梱スキル。","/loop 5m ... のように間隔を指定。省略するとClaudeが自分で間隔を決める。セッションを開いたままにしておく必要がある。クラウドで動かしたい定期処理は routines（/schedule）。","/loop 5m デプロイの状況を確認して","/schedule|routines|同梱スキル");
-
-T("claude","/schedule","すけじゅーる","/schedule|schedule|routines|routine|ルーティン|ルーチン|クラウドで定期実行|Automate work with routines|定期タスク","クラウド上で動く「ルーティン」（定期・イベント起動の自動作業）を作成・実行するコマンド。","対話しながら設定でき、PCを閉じていても実行される。ローカルで開いたままの繰り返しは /loop。","/schedule 毎朝9時にIssueを要約して","/loop|クラウドセッション|cron");
-
-T("claude","/background","ばっくぐらうんど","/background|/bg|--bg|--background|claude --bg|background agent|バックグラウンドエージェント|バックグラウンドセッション|background session|detach|デタッチ","今のセッションを背景エージェントとして切り離し、ターミナルを空けるコマンド。","claude --bg \"依頼\" で最初から背景で開始。claude agents（エージェントビュー）で一覧・指示、claude attach <id> で再接続、claude logs <id> でログ、claude stop / respawn / rm で停止・再起動・削除。","/background\nclaude --bg \"flaky testを調査して\"\nclaude agents","エージェントビュー|claude attach|サブエージェント");
 
 T("claude","エージェントビュー","えーじぇんとびゅー","agent view|claude agents|claude agents --json|claude attach|claude logs|claude stop|claude kill|claude respawn|claude rm|claude daemon|supervisor|並列セッション管理","複数のバックグラウンドセッションを一覧・監視・指示できる画面（claude agents）。",
 "claude agents で開く（--json でスクリプト用出力、--cwd で絞り込み）。管理コマンド：claude attach <id|名前>（接続）、claude logs（出力表示）、claude stop（停止）、claude respawn（会話を保ったまま再起動）、claude rm（一覧から削除）、claude daemon status/stop（背景を支える監視プロセスの状態確認・停止）。","claude agents\nclaude attach 7c5dcf5d\nclaude logs 7c5dcf5d","/background|サブエージェント");
@@ -246,7 +193,7 @@ T("claude","Remote Control","りもーとこんとろーる","remote control|/re
 T("claude","teleport","てれぽーと","teleport|/teleport|--teleport|テレポート|クラウドセッションを手元に|cloud to terminal","クラウドセッションを手元のターミナルに引き寄せるコマンド（/teleport、claude --teleport）。","Claudeがブランチと会話履歴を取得し、クラウド側の最後の状態から再開する。逆方向（手元→クラウド）は --cloud。","/teleport","クラウドセッション|Remote Control");
 
 T("claude","Plugin マーケットプレイス","ぷらぐいんまーけっとぷれいす","claude plugin|claude plugins|plugin install|plugin marketplace|marketplace|マーケットプレイス|/plugin marketplace add|code-review@claude-plugins-official|--plugin-dir|--plugin-url|/reload-plugins|plugin manifest|plugin.json","プラグイン（スキル・フック・サブエージェント・MCPの詰め合わせ）の配布元と、導入コマンド。",
-"claude plugin install 名前@マーケットプレイス、/plugin（メニュー）、--plugin-dir（そのセッションだけ読込）。プラグインのスキルは plugin名:skill名 で名前空間が分かれる。変更を反映するのは /reload-plugins。信頼できる提供元のものだけ入れる（フックやMCPが実行されるため）。","claude plugin install code-review@claude-plugins-official\n/reload-plugins","/plugin|Skills|hooks|サブエージェント");
+"claude plugin install 名前@マーケットプレイス、/plugin（メニュー）、--plugin-dir（そのセッションだけ読込）。プラグインのスキルは plugin名:skill名 で名前空間が分かれる。変更を反映するのは /reload-plugins。信頼できる提供元のものだけ入れる（フックやMCPが実行されるため）。","claude plugin install code-review@claude-plugins-official\n/reload-plugins","Skills|hooks|サブエージェント");
 
 T("claude","auto memory","おーともめもりー","auto memory|自動メモリ|MEMORY.md|~/.claude/projects|Claudeが自分で書くメモ|メモリ自動","あなたの修正や好みをもとに、Claudeが自分で書き溜める覚え書き。","リポジトリごとに ~/.claude/projects/ 以下に保存され、同じリポジトリのworktreeは共有。MEMORY.md の最初の200行/25KBが毎回読み込まれる。人が書くのが CLAUDE.md、Claudeが書くのが auto memory。/memory で確認・オフ切替。","/memory","CLAUDE.md|/memory|メモリ");
 
@@ -267,44 +214,6 @@ T("claude","system reminder","しすてむりまいんだー","system reminder|s
 T("claude","turn","たーん","turn|ターン|1ターン|max turns|--max-turns|1往復","ユーザーの入力から、Claudeが（ツール呼び出しを挟みつつ）応答し終えるまでの1区切り。","Stopフックは各ターンの終わりに発火する。--max-turns は非対話実行での最大ターン数。1つのセッションは多数のターンで構成される。","","エージェントループ|セッション|--max-turns");
 
 T("claude","transcript","とらんすくりぷと","transcript|トランスクリプト|会話記録|session transcript|.jsonl|~/.claude/projects|Ctrl+O|transcript viewer|会話ログ","セッションの保存記録（既定は ~/.claude/projects/<project>/<session-id>.jsonl）。","再開(resume)はこのファイルを読み戻して行う。画面上のトランスクリプトビューアは Ctrl+O。ログに秘密情報が残りうるので扱いに注意。","","セッション|/resume|.claude ディレクトリ");
-
-T("claude","/tasks","たすくす","/tasks|tasks|/bashes|bashes|バックグラウンドタスク一覧|background tasks|Ctrl+T|task checklist","現在のセッションのバックグラウンド作業（終了済みサブエージェント含む）を表示・管理する。別名 /bashes。","Ctrl+B で実行中コマンドを背景へ、Ctrl+T でClaudeのタスクチェックリストの表示を切り替える。","/tasks","バックグラウンド実行|サブエージェント|/todos");
-
-T("claude","/btw","ばいざうぇい","/btw|btw|side question|サイドクエスチョン|ちょっとした質問|会話に残さず質問","会話の履歴に残さずに、横道の質問をするコマンド。","作業中の文脈を汚さずに「これって何？」と聞ける。","/btw このオプションの意味は？","コンテキスト|/context");
-
-T("claude","/diff","でぃふ","/diff|diff|変更を確認|working tree diff|差分レビュー","作業ツリーの変更（Claudeが加えた編集を含む）を確認するコマンド。","commit前に、何が変わったかを目視確認する習慣づけに。","/diff","git diff|レビュー");
-
-T("claude","/cd","しーでぃー","/cd|cd|作業ディレクトリ移動|working directory 変更|ディレクトリを変える|/add-dir","会話を保ったまま、セッションの作業ディレクトリを移動するコマンド。","別フォルダのファイルも見たいだけなら /add-dir（作業対象に追加）。","/cd ../other-repo","/add-dir|cd");
-
-T("claude","/copy","こぴー","/copy|copy|最後の返答をコピー|応答をクリップボードに","Claudeの直前の返答をクリップボードにコピーする（/copy 2 で2つ前）。","","/copy\n/copy 2","");
-
-T("claude","/exit","えぐじっと","/exit|/quit|quit|exit|終了|Claude Codeを終了","Claude Codeを終了する（別名 /quit）。","接続中のバックグラウンドセッションでは、切り離すだけでセッションは動き続ける。Ctrl+D 2回でも終了。","/exit","ショートカットキー|/background");
-
-T("claude","/skills","すきるず","/skills|skills list|スキル一覧|/reload-skills|/skill-doctor|skill-doctor|スキルを再読み込み","使えるスキルの一覧（/skills）、ディスクの変更の再読込（/reload-skills）、コスト確認（/skill-doctor）。","/skills では t でトークン数順に並べ替え、スキルのオン/オフを切り替えられる。/skill-doctor は各スキルのコンテキスト負担と使用頻度を示し、不要なスキルを見つけられる。","/skills\n/reload-skills\n/skill-doctor","Skills|同梱スキル|コンテキスト");
-
-T("claude","/import","いんぽーと","/import|import|claude import|他のエージェントから設定を移行|import codex|import gemini|import cursor","Codex・Gemini CLI・Cursorの設定（指示ファイル・MCP・コマンド・サブエージェント・スキル）をClaude Codeに取り込む。","--dry-run で書き込まずにプレビュー、--yes で確認を省略。claude import codex --dry-run のようにシェルからも起動できる。","/import codex --dry-run","AGENTS.md|CLAUDE.md|Codex");
-
-T("claude","/sandbox","さんどぼっくす","/sandbox|sandbox|sandboxing|サンドボックスモード|Bashサンドボックス|OS-level isolation","Bashツールを、OSレベルのファイル・ネットワーク隔離の中で動かすサンドボックスのオン/オフ。","境界内なら都度の承認なしで自由に作業できる。権限ルールとは別レイヤーの防御。対応環境のみ。","/sandbox","サンドボックス|権限|permission rule");
-
-T("claude","/chrome","くろーむ","/chrome|chrome|--chrome|--no-chrome|/claude-in-chrome|Claude in Chrome|Chrome連携|ブラウザ自動操作 Claude","Chromeブラウザ連携（Claude in Chrome）。Webページの確認・操作・テストをClaudeに任せる。","claude --chrome で有効化、--no-chrome で無効化。/claude-in-chrome [依頼] は、ブラウザでの作業（ページのテスト、フォーム入力など）を頼む同梱スキル。","claude --chrome","Playwright|MCP|同梱スキル");
-
-T("claude","/advisor","あどばいざー","/advisor|advisor|--advisor|advisor tool|アドバイザーツール|advisorModel","より高性能なモデルに難しい判断だけ相談させる「アドバイザーツール」の設定。","/advisor [model|off]、起動時は --advisor opus など。普段は軽量モデルで走らせ、重要な判断だけ上位モデルに任せるとコストを抑えられる。","/advisor opus","/model|effort level");
-
-T("claude","/theme","てーま","/theme|theme|/color|color|/tui|tui|fullscreen|/focus|focus view|フルスクリーン描画|テーマ変更|プロンプトバーの色","見た目の設定：/theme（配色）、/color（プロンプトバーの色）、/tui（描画方式。fullscreenはちらつきのない全画面）、/focus（最後の入力と結果だけ表示）。","","/theme\n/tui fullscreen\n/color blue","/config|/statusline");
-
-T("claude","/voice","ぼいす","/voice|voice|voice dictation|音声入力|ディクテーション|hold|tap","音声入力（ディクテーション）の切り替え。hold（押している間）/tap（押して開始・停止）/off。","claude.aiアカウントが必要。","/voice tap","/config");
-
-T("claude","/recap","りきゃっぷ","/recap|recap|session recap|セッションの要約|1行サマリー","現在のセッションを1行で要約する。","長時間作業から戻ったとき、どこまで進んだか思い出すのに便利。","/recap","/compact|セッション");
-
-T("claude","/keybindings","きーばいんでぃんぐす","/keybindings|keybindings|keybindings.json|キーバインド設定|ショートカットを変更|customize keyboard shortcuts","キーボードショートカットの設定ファイル（keybindings.json）を開く。","コードで言えば ~/.claude/keybindings.json。コード補完や送信キーなど割り当てを変更できる。","/keybindings","ショートカットキー");
-
-T("claude","/install-slack-app","いんすとーるすらっくあっぷ","/install-slack-app|Slack連携|Claude in Slack|Claude Tag|@Claude Slack|Slackからclaude","Claude Slackアプリをインストールする（ブラウザでOAuthを完了）。","Slack上でClaudeにタスクを依頼し、Claude Codeセッションを起動できる連携。","/install-slack-app","Slack|GitHub App");
-
-T("claude","/autofix-pr","おーとふぃっくすぴーあーる","/autofix-pr|autofix|自動修正|PRを見守って修正|CI失敗を自動修正|Auto-fix pull requests","現在のブランチのPRを監視し、CIが落ちたら自動で修正をpushするクラウドセッションを起動する。","Claude Code on the webの機能。CI失敗への対応をAIに任せる運用。pushされた修正は人間がレビューする。","/autofix-pr","クラウドセッション|CI|Pull Request");
-
-T("claude","/batch","ばっち","/batch|batch|大規模変更を並列|parallel refactor|codebase-wide change","コードベース全体の大規模変更を、調査→分割→並列実行で進める同梱スキル。","","/batch すべてのclassコンポーネントをhooks化して","同梱スキル|サブエージェント|git worktree");
-
-T("claude","/debug","でばっぐ","/debug|debug|デバッグログ|session debug log|debug logging","セッションのデバッグログを有効にし、ログを読んで問題を調査する同梱スキル。","起動時の --debug / --debug-file でもログを出せる（--debug='mcp,startup' のようにカテゴリ指定）。","/debug 起動が遅い","同梱スキル|ログ|--verbose");
 
 T("claude","dynamic workflows","だいなみっくわーくふろー","workflows|/workflows|dynamic workflows|動的ワークフロー|/deep-research|deep-research|/workflow-authoring|ultracode|ワークフロー(Claude Code)","大量のサブエージェントをスクリプトで組織して走らせる仕組み（/workflows で進捗確認・一時停止・保存）。","/deep-research は、Web検索を並列に広げて出典を突き合わせ、レポートを合成する同梱ワークフロー。ultracode は xhigh 相当の思考でワークフローをClaudeに任せるモード。","/workflows","サブエージェント|verification loop|/goal");
 

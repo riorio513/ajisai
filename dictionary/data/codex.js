@@ -79,7 +79,7 @@ T("codex","Codex サブエージェント","こーでっくすさぶえーじぇ
 
 T("codex","Codex スキル","こーでっくすすきる","Codex skills|SKILL.md Codex|skills Codex|~/.codex/skills|.codex/skills|agent skills","SKILL.md（YAML frontmatter＋手順・スクリプト・テンプレート）を置いたフォルダで、Codexに作業手順を追加する仕組み。","/skills で選択・利用。Claude Codeのスキルと同じAgent Skills形式の考え方で、AGENTS.md（常時読込）より“必要なときだけ読む”専門知識に向く。","","Skills|AGENTS.md|frontmatter");
 
-T("codex","Codex プラグイン","こーでっくすぷらぐいん","Codex plugins|/plugins|codex plugin|plugin marketplace Codex|app connectors|アプリコネクタ","スキル・MCPサーバー・アプリ連携・エージェント定義を1つにまとめて配布・導入できる拡張パッケージ（/plugins）。","詳細画面で、そのプラグインが登録するライフサイクルフック一覧を、インストール前に確認できる。","","/plugin|Skills|MCP|hooks");
+T("codex","Codex プラグイン","こーでっくすぷらぐいん","Codex plugins|/plugins|codex plugin|plugin marketplace Codex|app connectors|アプリコネクタ","スキル・MCPサーバー・アプリ連携・エージェント定義を1つにまとめて配布・導入できる拡張パッケージ（/plugins）。","詳細画面で、そのプラグインが登録するライフサイクルフック一覧を、インストール前に確認できる。","","Skills|MCP|hooks");
 
 T("codex","Codex フック","こーでっくすふっく","Codex hooks|lifecycle hooks Codex|allow_managed_hooks_only|requirements.toml|hooks trust|フックを信頼","Codexのライフサイクルフック。設定済みフックの確認、新規・変更フックの信頼、管理外フックの無効化ができる。","組織は requirements.toml の allow_managed_hooks_only = true で、管理者配布のフックだけを許可できる。","","hooks|ガードレール|config.toml");
 

@@ -25,13 +25,13 @@
 
 ## 開発用語辞典（`dictionary/`）
 
-Claude Code・Codex・Git・GitHub・デプロイ・AIエージェント・MCP などの用語やコマンドを、**貼り付けるだけで一発検索**できるデジタル辞典です（約520語）。
+Claude Code・Codex・Git・GitHub・デプロイ・AIエージェント・MCP などの用語やコマンドを、**貼り付けるだけで一発検索**できるデジタル辞典です（約465語）。
 
 - **URL**: https://riorio513.github.io/ajisai/dictionary/ （mainにマージ後、GitHub Pagesで公開）
 - 手元で開く場合は `dictionary/index.html` をブラウザで開くだけ（インストール不要）。
 - 検索しなくても、**五十音順／ABC順／カテゴリ別の索引**から引けます（ジャンプバー付き）。
 - 検索欄にコマンドや用語をそのまま貼り付けると、全角/半角・大文字小文字・カタカナ/ひらがな・ハイフンの有無を無視して検索し、強い一致なら自動で説明を開きます。
-  - 例: `git push origin main` / `/compact` / `--dangerously-skip-permissions` / `$ npm run build` / `プルリク` / `デブロイ`（表記ゆれもOK）
+  - 例: `git push origin main` / `AGENTS.md` / `--dangerously-skip-permissions` / `$ npm run build` / `プルリク` / `デブロイ`（表記ゆれもOK）
 - `https://…/dictionary/#q=git%20push` のように、検索語つきURLで共有できます。
 
 ### 用語を追加・修正するには
