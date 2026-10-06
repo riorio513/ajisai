@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>開発用語辞典 — Claude Code・Codex・Git・GitHub・デプロイ</title>
+<meta name="description" content="Claude Code・Codex・Git・GitHub・デプロイ・AIエージェント・MCPなどの用語やコマンドを、貼り付けるだけで一発検索できるデジタル辞典。">
+<style>
+:root{
+  --bg:#FBF7EE; --bg2:#F5ECD7; --panel:#FFFFFF; --text:#3E2009; --muted:#7A6248;
+  --border:#E0D2B4; --border-s:#C4A882; --main:#587A4D; --main-bg:#E7EFE1;
+  --accent:#75679A; --accent-bg:#EEEAF6; --code-bg:#2B2620; --code-fg:#F3EBDD;
+  --mark:#FFE79A; --shadow:0 3px 12px rgba(62,32,9,.08); --radius:12px;
+  --font:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Hiragino Sans","Noto Sans JP","Yu Gothic UI","Meiryo",sans-serif;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#1B1813; --bg2:#26211A; --panel:#242018; --text:#F1E9DB; --muted:#B7A68C;
+    --border:#3A3326; --border-s:#5A4D38; --main:#9CC48D; --main-bg:#2B3527;
+    --accent:#B7A8DD; --accent-bg:#2E2A3C; --code-bg:#14110D; --code-fg:#F3EBDD;
+    --mark:#6B5A1E; --shadow:0 3px 12px rgba(0,0,0,.35);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#1B1813; --bg2:#26211A; --panel:#242018; --text:#F1E9DB; --muted:#B7A68C;
+  --border:#3A3326; --border-s:#5A4D38; --main:#9CC48D; --main-bg:#2B3527;
+  --accent:#B7A8DD; --accent-bg:#2E2A3C; --code-bg:#14110D; --code-fg:#F3EBDD;
+  --mark:#6B5A1E; --shadow:0 3px 12px rgba(0,0,0,.35);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{scroll-padding-top:84px}
+body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font);font-size:15px;line-height:1.75}
+button{font-family:inherit;cursor:pointer;color:inherit}
+a{color:var(--accent)}
+.wrap{max-width:860px;margin:0 auto;padding:0 16px}
+
+/* header */
+header.top{padding:26px 0 14px}
+.brand{display:flex;align-items:center;gap:10px;justify-content:space-between}
+.brand h1{margin:0;font-size:22px;letter-spacing:.02em}
+.brand h1 small{display:block;font-size:12.5px;font-weight:400;color:var(--muted);letter-spacing:0}
+.theme-btn{border:1px solid var(--border-s);background:var(--panel);border-radius:999px;padding:5px 12px;font-size:13px}
+
+/* search */
+.searchbar{position:sticky;top:0;z-index:20;background:var(--bg);padding:10px 0 8px}
+.belowbar{padding-bottom:10px;border-bottom:1px solid var(--border)}
+.sbox{position:relative}
+.sbox input{
+  width:100%;font-size:17px;padding:14px 92px 14px 46px;border:2px solid var(--border-s);border-radius:14px;
+  background:var(--panel);color:var(--text);outline:none;box-shadow:var(--shadow);font-family:var(--font)
+}
+.sbox input:focus{border-color:var(--main)}
+.sbox input[type=search]{-webkit-appearance:none;appearance:none}
+.sbox input[type=search]::-webkit-search-cancel-button,.sbox input[type=search]::-webkit-search-decoration{-webkit-appearance:none;display:none}
+.sbox .ico{position:absolute;left:15px;top:50%;transform:translateY(-50%);font-size:18px;opacity:.7;pointer-events:none}
+.sbox .clr,.sbox .pst{position:absolute;top:50%;transform:translateY(-50%);border:none;background:var(--bg2);border-radius:8px;font-size:13px;padding:5px 9px}
+.sbox .clr{right:10px;display:none}
+.sbox.has .clr{display:block}
+.sbox .pst{right:10px}
+.sbox.has .pst{display:none}
+.hint{margin:7px 2px 0;font-size:12.5px;color:var(--muted)}
+.hint kbd{font-family:var(--mono);background:var(--bg2);border:1px solid var(--border);border-radius:4px;padding:0 5px;font-size:12px}
+
+.chips{display:flex;flex-wrap:wrap;gap:7px;margin:10px 0 0}
+.chip{border:1px solid var(--border-s);background:var(--panel);border-radius:999px;padding:3px 12px;font-size:13px;line-height:1.7}
+.chip:hover{border-color:var(--main)}
+.chip.on{background:var(--main);color:var(--bg);border-color:var(--main)}
+.chip .n{opacity:.7;font-size:12px;margin-left:3px}
+.chip.more{display:block;margin:10px auto 0;font-size:13px}
+.chip.ex{font-family:var(--mono);font-size:12.5px;background:var(--bg2)}
+
+/* list */
+main{padding:14px 0 50px}
+.status{font-size:13.5px;color:var(--muted);margin:2px 2px 10px}
+.status b{color:var(--text)}
+.tabs{display:flex;gap:4px;margin:12px 0 8px;background:var(--bg2);border-radius:10px;padding:3px}
+.tab{flex:1;border:none;background:none;border-radius:8px;padding:6px 8px;font-size:14px}
+.tab.on{background:var(--panel);box-shadow:0 1px 4px rgba(62,32,9,.15);font-weight:700;color:var(--main)}
+.jump{display:flex;flex-wrap:wrap;gap:5px;margin:0 0 4px}
+.jb{min-width:34px;border:1px solid var(--border-s);background:var(--panel);border-radius:8px;padding:2px 9px;font-size:14px;font-weight:700}
+.jb:hover{border-color:var(--main);color:var(--main)}
+.sec-h{scroll-margin-top:84px;margin:22px 2px 8px;font-size:17px;color:var(--main);font-weight:700;display:flex;gap:8px;align-items:baseline}
+.sec-h span{font-weight:400;color:var(--muted);font-size:12.5px}
+.card{scroll-margin-top:84px;background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);margin:0 0 8px;overflow:hidden}
+.card.open{border-color:var(--main);box-shadow:var(--shadow)}
+.row{display:flex;align-items:stretch}
+.head{flex:1;min-width:0;text-align:left;background:none;border:none;padding:10px 12px 10px 14px;display:block}
+.t1{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.term{font-weight:700;font-size:16px;overflow-wrap:anywhere}
+.badge{font-size:11.5px;border-radius:999px;padding:0 9px;background:var(--accent-bg);color:var(--accent);white-space:nowrap}
+.via{font-size:12px;color:var(--muted)}
+.via code{font-family:var(--mono);background:var(--bg2);padding:0 5px;border-radius:4px}
+.short{display:block;color:var(--muted);font-size:14px;margin-top:1px;overflow-wrap:anywhere}
+.cp{flex:none;border:none;background:none;padding:0 14px;font-size:12.5px;color:var(--muted);border-left:1px dashed var(--border)}
+.cp:hover{color:var(--main);background:var(--main-bg)}
+.body{display:none;padding:2px 16px 16px;border-top:1px solid var(--border)}
+.card.open .body{display:block}
+.reading{font-size:12.5px;color:var(--muted);margin:10px 0 0}
+.body p{margin:8px 0 0;overflow-wrap:anywhere}
+.lbl{font-size:12px;font-weight:700;color:var(--muted);margin:14px 0 4px;letter-spacing:.04em}
+.code{position:relative;margin:4px 0 0}
+.code pre{margin:0;background:var(--code-bg);color:var(--code-fg);border-radius:10px;padding:12px 14px;overflow-x:auto;font-family:var(--mono);font-size:13px;line-height:1.65;white-space:pre}
+.code mark{background:#E8C65A;color:#2B2620}
+.code button{position:absolute;right:7px;top:7px;border:none;background:rgba(255,255,255,.14);color:var(--code-fg);border-radius:6px;font-size:12px;padding:2px 9px}
+.code button:hover{background:rgba(255,255,255,.28)}
+.tags{display:flex;flex-wrap:wrap;gap:6px}
+.tag{border:1px solid var(--border);background:var(--bg2);border-radius:6px;padding:0 8px;font-family:var(--mono);font-size:12.5px;line-height:1.8}
+.tag:hover{border-color:var(--main)}
+.rel{border:1px solid var(--accent);background:var(--accent-bg);color:var(--accent);border-radius:999px;padding:0 11px;font-size:13px;line-height:1.8}
+mark{background:var(--mark);color:inherit;border-radius:3px;padding:0 1px}
+.empty{background:var(--panel);border:1px dashed var(--border-s);border-radius:var(--radius);padding:22px 18px;text-align:center;color:var(--muted)}
+.empty .chips{justify-content:center}
+.toast{position:fixed;left:50%;bottom:22px;transform:translate(-50%,20px);background:var(--text);color:var(--bg);padding:8px 16px;border-radius:999px;font-size:13.5px;opacity:0;pointer-events:none;transition:.2s;z-index:50;max-width:90vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+footer{border-top:1px solid var(--border);padding:18px 0 40px;font-size:12.5px;color:var(--muted)}
+footer ul{display:flex;flex-wrap:wrap;gap:4px 16px;list-style:none;padding:0;margin:8px 0 0}
+@media(max-width:520px){
+  .brand h1{font-size:19px}
+  .sbox input{padding-right:84px}
+  .cp{padding:0 10px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <h1>開発用語辞典<small>Claude Code・Codex・Git・GitHub・デプロイ・AIエージェント…の用語とコマンド</small></h1>
+      <button class="theme-btn" id="theme" type="button" aria-label="表示テーマを切り替え">🌓 テーマ</button>
+    </div>
+  </header>
+
+  <div class="searchbar">
+    <div class="sbox" id="sbox">
+      <span class="ico" aria-hidden="true">🔍</span>
+      <input id="q" type="search" inputmode="search" autocomplete="off" autocapitalize="off" spellcheck="false"
+             placeholder="用語・コマンドを入力、または貼り付け（例: git push -u origin main）" aria-label="用語を検索">
+      <button class="pst" id="paste" type="button" title="クリップボードから貼り付けて検索">貼付</button>
+      <button class="clr" id="clear" type="button" aria-label="入力を消す">✕</button>
+    </div>
+  </div>
+  <div class="belowbar">
+    <p class="hint">コマンドや用語を<b>そのまま貼り付け</b>ればOK（<code>git push origin main</code> / <code>/compact</code> / <code>--dangerously-skip-permissions</code> など）。
+      全角・半角、大文字小文字、カタカナ・ひらがな、ハイフンの有無は区別しません。<kbd>/</kbd>で検索欄へ、<kbd>Enter</kbd>で最上位を開く。</p>
+    <div class="chips" id="cats" role="group" aria-label="カテゴリで絞り込み"></div>
+  </div>
+
+  <main>
+    <div class="status" id="status" aria-live="polite"></div>
+    <div id="results"></div>
+  </main>
+
+  <footer>
+    <div>※ 説明は一般的な内容の要約です。Claude Code・Codexなどは更新が速く、コマンド名やオプション・既定値が変わることがあります。最新は公式ドキュメントで確認してください。</div>
+    <ul>
+      <li><a href="https://code.claude.com/docs" target="_blank" rel="noopener">Claude Code ドキュメント</a></li>
+      <li><a href="https://developers.openai.com/codex" target="_blank" rel="noopener">Codex ドキュメント</a></li>
+      <li><a href="https://git-scm.com/docs" target="_blank" rel="noopener">Git ドキュメント</a></li>
+      <li><a href="https://docs.github.com/ja" target="_blank" rel="noopener">GitHub Docs</a></li>
+      <li><a href="https://modelcontextprotocol.io" target="_blank" rel="noopener">MCP</a></li>
+    </ul>
+  </footer>
+</div>
+<div class="toast" id="toast" role="status"></div>
+<noscript><div class="wrap"><p>この辞典はJavaScriptが必要です。</p></div></noscript>
+
+<script src="data/core.js"></script>
+<script src="data/git.js"></script>
+<script src="data/github.js"></script>
+<script src="data/deploy.js"></script>
+<script src="data/agent.js"></script>
+<script src="data/claude.js"></script>
+<script src="data/codex.js"></script>
+<script src="data/mcp.js"></script>
+<script src="data/term.js"></script>
+<script src="data/dev.js"></script>
+<script>
+(function () {
+  "use strict";
+  var D = window.DICT, CATS = window.CATS;
+  var catName = {};
+  CATS.forEach(function (c) { catName[c[0]] = c[1]; });
+
+  /* ---------- 正規化 ---------- */
+  function hira(s) { return s.replace(/[ァ-ヶ]/g, function (c) { return String.fromCharCode(c.charCodeAt(0) - 0x60); }); }
+  function norm(s) { return hira(String(s).normalize("NFKC").toLowerCase()).replace(/\s+/g, " ").trim(); }
+  var SEP = /[\s\-_・.\/\\"'`“”‘’「」『』()（）\[\]{}:：,，、。;；!！?？]+/g;
+  function squash(n) { var s = n.replace(SEP, ""); return s || n.replace(/\s+/g, ""); }
+
+  /* ---------- 索引 ---------- */
+  D.forEach(function (e, i) {
+    e.id = i;
+    e.keys = [e.term].concat(e.aliases).map(function (k, j) {
+      var n = norm(k); return { raw: k, n: n, s: squash(n), isTerm: j === 0 };
+    }).filter(function (k) { return k.n; });
+    e.rs = squash(norm(e.reading));
+    e.shortS = squash(norm(e.short));
+    e.descS = squash(norm(e.desc));
+    e.useS = squash(norm(e.usage));
+    e.keyS = e.keys.map(function (k) { return k.s; }).join("|") + "|" + e.rs + "|" + e.shortS;
+    e.all = e.keyS + "|" + e.descS + "|" + e.useS;
+  });
+  var keyMap = {};
+  D.forEach(function (e) { var k = e.keys[0]; if (k && !(k.s in keyMap)) keyMap[k.s] = e.id; });
+  D.forEach(function (e) { e.keys.forEach(function (k) { if (!(k.s in keyMap)) keyMap[k.s] = e.id; }); });
+
+  /* ---------- 貼り付けテキストの整形 ---------- */
+  function clean(t) {
+    var lines = String(t).replace(/\r/g, "").split("\n").map(function (s) { return s.trim(); }).filter(Boolean);
+    t = lines.length > 1 ? lines.slice(0, 3).join(" ") : (lines[0] || "");
+    t = t.replace(/^[$＄>＞]\s+/, "")
+         .replace(/^`+|`+$/g, "")
+         .replace(/^["'“”‘’「」『』]+|["'“”‘’「」『』]+$/g, "")
+         .replace(/[。、，．,;；]+$/, "");
+    return t.slice(0, 160).trim();
+  }
+
+  /* ---------- 検索 ---------- */
+  var STRONG = 800;   // これ以上（完全一致・コマンド先頭一致）なら貼り付け時に自動展開
+  function search(raw) {
+    var qn = norm(raw), qs = squash(qn);
+    if (!qn) return [];
+    var toks = qn.split(" ").map(squash).filter(function (t) { return t.length > 1; });
+    var minC = /[^\x00-\x7f]/.test(qs) ? 2 : 3;   // 日本語は2文字から部分一致。英字は3文字から（2文字以下は完全一致のみ）
+    var out = [];
+    D.forEach(function (e) {
+      var best = 0, via = null;
+      function hit(score, k) { if (score > best) { best = score; via = k || null; } }
+      e.keys.forEach(function (k) {
+        if (k.n === qn) { hit(k.isTerm ? 1000 : 950, k); return; }
+        if (k.s === qs) { hit(k.isTerm ? 900 : 850, k); return; }   // 記号・ハイフン・空白を無視すると一致
+        if (k.n.length >= 2 && qn.length > k.n.length && qn.indexOf(k.n) === 0 && /[ =:]/.test(qn.charAt(k.n.length))) { hit(800 + Math.min(k.n.length, 60) / 10, k); return; }
+        if (qs.length < minC) return;
+        if (k.s.indexOf(qs) === 0) hit(600 - Math.min(k.s.length - qs.length, 80) / 2, k);
+        else if (k.s.indexOf(qs) > 0) hit(450 - Math.min(k.s.length - qs.length, 80) / 4, k);
+      });
+      if (qs.length >= minC) {
+        if (e.rs.indexOf(qs) === 0) hit(400); else if (e.rs.indexOf(qs) > 0) hit(350);
+        if (e.shortS.indexOf(qs) >= 0) hit(160);
+        if (e.descS.indexOf(qs) >= 0 || e.useS.indexOf(qs) >= 0) hit(100);
+        if (toks.length > 1) {
+          var inKeys = toks.every(function (t) { return e.keyS.indexOf(t) >= 0; });
+          if (inKeys) hit(380);
+          else if (toks.every(function (t) { return e.all.indexOf(t) >= 0; })) hit(120);
+        }
+      }
+      if (best > 0) out.push({ e: e, score: best, via: via });
+    });
+    out.sort(function (a, b) { return b.score - a.score || a.e.term.length - b.e.term.length || a.e.id - b.e.id; });
+    return out;
+  }
+
+  window.devdictSearch = search;   // デバッグ・動作確認用
+
+  /* 検索結果ゼロのときの「もしかして」（綴りの近いもの） */
+  function lev(a, b, max) {
+    if (Math.abs(a.length - b.length) > max) return max + 1;
+    var prev = [], prev2 = [], cur = [], prevMin = 0, i, j;
+    for (j = 0; j <= b.length; j++) prev[j] = j;
+    for (i = 1; i <= a.length; i++) {
+      cur = [i]; var rowMin = i;
+      for (j = 1; j <= b.length; j++) {
+        cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (a.charAt(i - 1) === b.charAt(j - 1) ? 0 : 1));
+        if (i > 1 && j > 1 && a.charAt(i - 1) === b.charAt(j - 2) && a.charAt(i - 2) === b.charAt(j - 1)) cur[j] = Math.min(cur[j], prev2[j - 2] + 1);
+        if (cur[j] < rowMin) rowMin = cur[j];
+      }
+      if (rowMin > max && prevMin > max) return max + 1;   // 転置は2行前を参照するので、直近2行ともmax超で打ち切る
+      prevMin = rowMin; prev2 = prev; prev = cur;
+    }
+    return prev[b.length];
+  }
+  function suggest(raw) {
+    var qs = squash(norm(raw));
+    if (qs.length < 3) return [];
+    var max = qs.length >= 8 ? 2 : 1, res = [];
+    D.forEach(function (e) {
+      var d = max + 1;
+      e.keys.forEach(function (k) { if (k.s.length >= 3) d = Math.min(d, lev(qs, k.s, max)); });
+      if (d <= max) res.push({ e: e, d: d });
+    });
+    res.sort(function (a, b) { return a.d - b.d; });
+    return res.slice(0, 6).map(function (r) { return r.e; });
+  }
+
+  /* ---------- DOM ヘルパー ---------- */
+  function el(tag, cls, text) {
+    var n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (text != null) n.textContent = text;
+    return n;
+  }
+  function esc(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); }
+  var hlRe = null;
+  function setHl(raw) {
+    var toks = clean(raw).split(/\s+/).filter(Boolean).sort(function (a, b) { return b.length - a.length; });
+    hlRe = toks.length ? new RegExp("(" + toks.map(esc).join("|") + ")", "ig") : null;
+  }
+  function hl(text, parent) {
+    if (!hlRe || !text) { parent.appendChild(document.createTextNode(text || "")); return parent; }
+    var last = 0, m;
+    hlRe.lastIndex = 0;
+    while ((m = hlRe.exec(text))) {
+      if (!m[0]) { hlRe.lastIndex++; continue; }
+      if (m.index > last) parent.appendChild(document.createTextNode(text.slice(last, m.index)));
+      var mk = el("mark", null, m[0]); parent.appendChild(mk);
+      last = m.index + m[0].length;
+    }
+    if (last < text.length) parent.appendChild(document.createTextNode(text.slice(last)));
+    return parent;
+  }
+
+  var toastTimer;
+  function toast(msg) {
+    var t = document.getElementById("toast");
+    t.textContent = msg; t.classList.add("show");
+    clearTimeout(toastTimer); toastTimer = setTimeout(function () { t.classList.remove("show"); }, 1600);
+  }
+  function copy(text, label) {
+    function done() { toast("コピーしました: " + (label || text)); }
+    function fallback() {
+      var ta = el("textarea"); ta.value = text; ta.style.cssText = "position:fixed;opacity:0;top:0";
+      document.body.appendChild(ta); ta.select();
+      try { document.execCommand("copy"); done(); } catch (e) { toast("コピーできませんでした"); }
+      document.body.removeChild(ta);
+    }
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback);
+    else fallback();
+  }
+
+  /* ---------- 状態 ---------- */
+  var typeTimer;
+  var state = { q: "", cat: "", open: {}, more: false, view: "kana" };
+  var WEAK = 350;   // これ未満は「本文・使い方に含まれるだけ」の弱い一致
+  var input = document.getElementById("q");
+  var sbox = document.getElementById("sbox");
+  var resultsEl = document.getElementById("results");
+  var statusEl = document.getElementById("status");
+  var catsEl = document.getElementById("cats");
+
+  /* ---------- カード ---------- */
+  function buildBody(e) {
+    var b = el("div", "body");
+    if (e.reading) b.appendChild(el("div", "reading", "読み: " + e.reading));
+    var p = el("p"); hl(e.desc || e.short, p); b.appendChild(p);
+    if (e.usage) {
+      b.appendChild(el("div", "lbl", "使い方・例"));
+      var c = el("div", "code"), pre = el("pre"), code = el("code");
+      hl(e.usage, code); pre.appendChild(code); c.appendChild(pre);
+      var cb = el("button", null, "コピー"); cb.type = "button";
+      cb.addEventListener("click", function () { copy(e.usage, "コード"); });
+      c.appendChild(cb); b.appendChild(c);
+    }
+    if (e.aliases.length) {
+      b.appendChild(el("div", "lbl", "別名・表記ゆれ・関連コマンド（クリックでコピー）"));
+      var tg = el("div", "tags");
+      e.aliases.forEach(function (a) {
+        var t = el("button", "tag"); t.type = "button"; hl(a, t);
+        t.addEventListener("click", function () { copy(a); });
+        tg.appendChild(t);
+      });
+      b.appendChild(tg);
+    }
+    if (e.related.length) {
+      b.appendChild(el("div", "lbl", "関連用語"));
+      var rl = el("div", "tags");
+      e.related.forEach(function (r) {
+        var t = el("button", "rel", r); t.type = "button";
+        t.addEventListener("click", function () { jump(r); });
+        rl.appendChild(t);
+      });
+      b.appendChild(rl);
+    }
+    return b;
+  }
+
+  function card(r) {
+    var e = r.e, isOpen = !!state.open[e.id];
+    var c = el("div", "card" + (isOpen ? " open" : "")); c.id = "t" + e.id;
+    var row = el("div", "row");
+    var head = el("button", "head"); head.type = "button"; head.setAttribute("aria-expanded", isOpen ? "true" : "false");
+    var t1 = el("div", "t1");
+    var term = el("span", "term"); hl(e.term, term); t1.appendChild(term);
+    t1.appendChild(el("span", "badge", catName[e.cat] || e.cat));
+    if (r.via && !r.via.isTerm && r.score >= 450) {
+      var v = el("span", "via", "一致: "); var code = el("code"); hl(r.via.raw, code); v.appendChild(code); t1.appendChild(v);
+    }
+    head.appendChild(t1);
+    var sh = el("span", "short"); hl(e.short, sh); head.appendChild(sh);
+    row.appendChild(head);
+    var cp = el("button", "cp", "コピー"); cp.type = "button"; cp.title = "用語名「" + e.term + "」をコピー";
+    cp.addEventListener("click", function () { copy(e.term); });
+    row.appendChild(cp);
+    c.appendChild(row);
+    if (isOpen) c.appendChild(buildBody(e));
+    head.addEventListener("click", function () {
+      var open = !c.classList.contains("open");
+      state.open[e.id] = open;
+      c.classList.toggle("open", open);
+      head.setAttribute("aria-expanded", open ? "true" : "false");
+      if (open && !c.querySelector(".body")) c.appendChild(buildBody(e));
+    });
+    return c;
+  }
+
+  /* ---------- 索引（検索しなくても引ける一覧） ---------- */
+  var ROWS = [["あ", "ぁあぃいぅうぇえぉおゔ"], ["か", "かがきぎくぐけげこごゕゖ"], ["さ", "さざしじすずせぜそぞ"],
+              ["た", "ただちぢっつづてでとど"], ["な", "なにぬねの"], ["は", "はばぱひびぴふぶぷへべぺほぼぽ"],
+              ["ま", "まみむめも"], ["や", "ゃやゅゆょよ"], ["ら", "らりるれろ"], ["わ", "ゎわゐゑをん"]];
+  var rowOf = {};
+  ROWS.forEach(function (r) { r[1].split("").forEach(function (ch) { rowOf[ch] = r[0]; }); });
+  function kanaKey(e) {
+    var r = hira(String(e.reading || "").normalize("NFKC"));
+    for (var i = 0; i < r.length; i++) { if (rowOf[r.charAt(i)]) return rowOf[r.charAt(i)] + "行"; }
+    return "その他";
+  }
+  function abcKey(e) {
+    var t = e.term.replace(/^[^A-Za-z0-9\u3040-\u30ff\u4e00-\u9fff]+/, "");
+    var c = t.charAt(0);
+    if (/[A-Za-z]/.test(c)) return c.toUpperCase();
+    if (/[0-9]/.test(c)) return "0-9";
+    return "日本語";
+  }
+  function sortKey(e) { return hira(String(e.reading || e.term).normalize("NFKC")) + "\u0000" + e.term.toLowerCase(); }
+  function groupIndex(items, keyFn, order) {
+    var g = {};
+    items.forEach(function (r) { (g[keyFn(r.e)] = g[keyFn(r.e)] || []).push(r); });
+    Object.keys(g).forEach(function (k) { g[k].sort(function (a, b) { var x = sortKey(a.e), y = sortKey(b.e); return x < y ? -1 : x > y ? 1 : 0; }); });
+    var keys = order.filter(function (k) { return g[k]; });
+    Object.keys(g).forEach(function (k) { if (keys.indexOf(k) < 0) keys.push(k); });
+    return keys.map(function (k) { return { key: k, items: g[k] }; });
+  }
+  var KANA_ORDER = ROWS.map(function (r) { return r[0] + "行"; }).concat(["その他"]);
+  var ABC_ORDER = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").concat(["0-9", "日本語"]);
+  function secLabel(k) {
+    if (k === "日本語") return "日本語名の用語（ABC順では末尾）";
+    if (k === "その他") return "その他";
+    return k;
+  }
+
+  /* ---------- 描画 ---------- */
+  function render() {
+    var q = clean(state.q), list, all;
+    setHl(q);
+    if (q) all = search(q); else all = D.map(function (e) { return { e: e, score: 0 }; });
+
+    /* カテゴリ件数 */
+    var counts = {}; all.forEach(function (r) { counts[r.e.cat] = (counts[r.e.cat] || 0) + 1; });
+    catsEl.textContent = "";
+    function chip(label, val, n) {
+      var b = el("button", "chip" + (state.cat === val ? " on" : ""), label); b.type = "button";
+      b.setAttribute("aria-pressed", state.cat === val ? "true" : "false");
+      b.appendChild(el("span", "n", String(n)));
+      b.addEventListener("click", function () { state.cat = val; render(); });
+      catsEl.appendChild(b);
+    }
+    chip("すべて", "", all.length);
+    CATS.forEach(function (c) { if (counts[c[0]] || !q) chip(c[1], c[0], counts[c[0]] || 0); });
+
+    list = state.cat ? all.filter(function (r) { return r.e.cat === state.cat; }) : all;
+    resultsEl.textContent = "";
+    var frag = document.createDocumentFragment();
+
+    if (!q) {
+      statusEl.textContent = "";
+      statusEl.appendChild(el("span", null, "全 "));
+      statusEl.appendChild(el("b", null, String(list.length)));
+      statusEl.appendChild(el("span", null, " 語を収録。検索しなくても、下の索引（五十音順／ABC順／カテゴリ別）から引けます。"));
+      var ex = el("div", "chips");
+      ["git push", "Pull Request", "デプロイ", "/compact", "CLAUDE.md", "AGENTS.md", "--dangerously-skip-permissions", "MCP", "rebase", "環境変数", "サブエージェント", "codex exec"].forEach(function (s) {
+        var b = el("button", "chip ex", s); b.type = "button";
+        b.addEventListener("click", function () { setQuery(s, true); });
+        ex.appendChild(b);
+      });
+      frag.appendChild(ex);
+      var VIEWS = [["kana", "五十音順"], ["abc", "ABC順"], ["cat", "カテゴリ別"]];
+      var tabs = el("div", "tabs"); tabs.setAttribute("role", "tablist");
+      VIEWS.forEach(function (v) {
+        var b = el("button", "tab" + (state.view === v[0] ? " on" : ""), v[1]); b.type = "button";
+        b.setAttribute("role", "tab"); b.setAttribute("aria-selected", state.view === v[0] ? "true" : "false");
+        b.addEventListener("click", function () { state.view = v[0]; render(); });
+        tabs.appendChild(b);
+      });
+      frag.appendChild(tabs);
+
+      var groups;
+      if (state.view === "kana") groups = groupIndex(list, kanaKey, KANA_ORDER);
+      else if (state.view === "abc") groups = groupIndex(list, abcKey, ABC_ORDER);
+      else groups = CATS.map(function (c) {
+        return { key: c[0], label: c[1], items: list.filter(function (r) { return r.e.cat === c[0]; }) };
+      }).filter(function (g) { return g.items.length; });
+
+      /* ジャンプバー（索引の見出しへ移動） */
+      var jb = el("div", "jump"); jb.setAttribute("aria-label", "索引ジャンプ");
+      groups.forEach(function (g) {
+        var b = el("button", "jb", g.label || g.key.replace("行", "")); b.type = "button";
+        b.title = (g.label || secLabel(g.key)) + "（" + g.items.length + "語）";
+        b.addEventListener("click", function () {
+          var n = document.getElementById("sec-" + g.key);
+          if (n) n.scrollIntoView({ behavior: "smooth", block: "start" });
+        });
+        jb.appendChild(b);
+      });
+      frag.appendChild(jb);
+
+      groups.forEach(function (g) {
+        var h = el("div", "sec-h", g.label || secLabel(g.key)); h.id = "sec-" + g.key;
+        h.appendChild(el("span", null, g.items.length + "語"));
+        frag.appendChild(h);
+        g.items.forEach(function (r) { frag.appendChild(card(r)); });
+      });
+    } else {
+      statusEl.textContent = "";
+      statusEl.appendChild(el("span", null, "「"));
+      statusEl.appendChild(el("b", null, q));
+      var nStrong = list.filter(function (r) { return r.score >= WEAK; }).length;
+      var cntTxt = (nStrong && nStrong < list.length && !state.more) ? nStrong + " 件（ほか弱い一致 " + (list.length - nStrong) + " 件）" : list.length + " 件";
+      statusEl.appendChild(el("span", null, "」の検索結果: " + cntTxt));
+      if (!list.length) {
+        var em = el("div", "empty");
+        em.appendChild(el("p", null, all.length ? "このカテゴリには該当がありません。「すべて」で探してみてください。" : "見つかりませんでした。"));
+        if (!all.length) {
+          var sg = suggest(q);
+          if (sg.length) {
+            em.appendChild(el("p", null, "もしかして:"));
+            var ch = el("div", "chips");
+            sg.forEach(function (e) {
+              var b = el("button", "chip", e.term); b.type = "button";
+              b.addEventListener("click", function () { setQuery(e.term, true); });
+              ch.appendChild(b);
+            });
+            em.appendChild(ch);
+          } else {
+            em.appendChild(el("p", null, "別の言い方（英語・カタカナ・略称・コマンド名）でも試してみてください。"));
+          }
+        }
+        frag.appendChild(em);
+      }
+      var strong = list.filter(function (r) { return r.score >= WEAK; });
+      var weak = list.length - strong.length;
+      var shown = (strong.length && !state.more) ? strong : list;
+      shown.slice(0, 120).forEach(function (r) { frag.appendChild(card(r)); });
+      if (strong.length && weak > 0) {
+        var mb = el("button", "chip more", state.more ? "本文・使い方に含まれるだけの候補を隠す" : "本文・使い方に含まれる候補も表示（" + weak + "件）");
+        mb.type = "button";
+        mb.addEventListener("click", function () { state.more = !state.more; render(); });
+        frag.appendChild(mb);
+      }
+    }
+    resultsEl.appendChild(frag);
+    return list;
+  }
+
+  /* ---------- 入力まわり ---------- */
+  var hashTimer;
+  function syncHash() {
+    clearTimeout(hashTimer);
+    hashTimer = setTimeout(function () {
+      try {
+        var h = state.q ? "#q=" + encodeURIComponent(clean(state.q)) : "";
+        history.replaceState(null, "", location.pathname + location.search + h);
+      } catch (e) { /* file:// などでは無視 */ }
+    }, 300);
+  }
+  /* opts.open: 先頭が強い一致なら自動で展開 */
+  function setQuery(q, autoOpen, fromPaste) {
+    clearTimeout(typeTimer);   // 直前の入力デバウンスが自動展開を打ち消さないように
+    state.q = q; input.value = q; state.more = false;
+    sbox.classList.toggle("has", !!q);
+    state.open = {};
+    var all = q ? search(clean(q)) : [];
+    var top = all[0];
+    if (top && ((autoOpen && top.score >= STRONG) || all.length === 1)) state.open[top.e.id] = true;
+    else if (fromPaste && top && top.score >= STRONG) state.open[top.e.id] = true;
+    var list = render();
+    syncHash();
+    if (q && top && state.open[top.e.id]) {
+      var node = document.getElementById("t" + top.e.id);
+      if (node && (autoOpen || fromPaste)) node.scrollIntoView({ block: "nearest", behavior: "smooth" });
+    }
+    return list;
+  }
+  function jump(term) {
+    var id = keyMap[squash(norm(term))];
+    var q = id != null ? D[id].term : term;
+    state.cat = "";
+    setQuery(q, true);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  input.addEventListener("input", function () {
+    state.q = input.value; state.more = false;
+    sbox.classList.toggle("has", !!input.value);
+    clearTimeout(typeTimer);
+    typeTimer = setTimeout(function () {
+      state.open = {};
+      var all = state.q ? search(clean(state.q)) : [];
+      if (all.length === 1) state.open[all[0].e.id] = true;
+      render(); syncHash();
+    }, 60);
+  });
+  input.addEventListener("paste", function (e) {
+    var cd = e.clipboardData || window.clipboardData;
+    var text = cd && cd.getData("text");
+    if (!text) return;
+    e.preventDefault();
+    var c = clean(text);
+    if (!c) return;
+    var s = input.selectionStart, en = input.selectionEnd, v = input.value;
+    var whole = (s === 0 && en === v.length) || !v.trim();
+    var next = whole ? c : v.slice(0, s) + c + v.slice(en);
+    setQuery(next, true, true);
+    input.setSelectionRange(next.length, next.length);
+  });
+  input.addEventListener("keydown", function (e) {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      var all = state.q ? search(clean(state.q)) : [];
+      if (all.length) {
+        state.open = {}; state.open[all[0].e.id] = true; render();
+        var node = document.getElementById("t" + all[0].e.id);
+        if (node) node.scrollIntoView({ block: "nearest", behavior: "smooth" });
+      }
+    } else if (e.key === "Escape") { setQuery("", false); }
+  });
+  document.getElementById("clear").addEventListener("click", function () { state.cat = ""; setQuery("", false); input.focus(); });
+  document.getElementById("paste").addEventListener("click", function () {
+    if (navigator.clipboard && navigator.clipboard.readText) {
+      navigator.clipboard.readText().then(function (t) {
+        var c = clean(t || ""); if (c) setQuery(c, true, true); else toast("クリップボードが空です");
+      }, function () { toast("貼り付けを許可できませんでした。検索欄に直接貼り付けてください"); input.focus(); });
+    } else { toast("検索欄に直接貼り付けてください（Ctrl/⌘+V）"); input.focus(); }
+  });
+  document.addEventListener("keydown", function (e) {
+    var tag = (e.target && e.target.tagName) || "";
+    if (e.key === "/" && tag !== "INPUT" && tag !== "TEXTAREA" && !e.ctrlKey && !e.metaKey && !e.altKey) {
+      e.preventDefault(); input.focus(); input.select();
+    }
+  });
+
+  /* テーマ切替 */
+  document.getElementById("theme").addEventListener("click", function () {
+    var root = document.documentElement;
+    var dark = root.getAttribute("data-theme") === "dark" ||
+      (!root.getAttribute("data-theme") && window.matchMedia("(prefers-color-scheme: dark)").matches);
+    var next = dark ? "light" : "dark";
+    root.setAttribute("data-theme", next);
+    try { localStorage.setItem("devdict-theme", next); } catch (e) {}
+  });
+  try { var th = localStorage.getItem("devdict-theme"); if (th) document.documentElement.setAttribute("data-theme", th); } catch (e) {}
+
+  /* 起動: #q= で共有された検索を復元 */
+  var init = "";
+  try {
+    var m = /[#&]q=([^&]*)/.exec(location.hash) || /[?&]q=([^&]*)/.exec(location.search);
+    if (m) init = decodeURIComponent(m[1].replace(/\+/g, " "));
+  } catch (e) {}
+  if (init) setQuery(clean(init), true); else render();
+  if (!init) input.focus({ preventScroll: true });
+})();
+</script>
+</body>
+</html>
