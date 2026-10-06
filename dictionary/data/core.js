@@ -10,6 +10,7 @@ window.CATS = [
   ["codex",  "Codex"],
   ["mcp",    "MCP・連携ツール"],
   ["term",   "ターミナル・コマンド"],
+  ["error",  "エラー・メッセージ"],
   ["dev",    "開発一般・Web"]
 ];
 window.DICT = [];

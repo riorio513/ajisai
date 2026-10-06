@@ -195,7 +195,7 @@ T("claude","teleport","てれぽーと","teleport|/teleport|--teleport|テレポ
 T("claude","Plugin マーケットプレイス","ぷらぐいんまーけっとぷれいす","claude plugin|claude plugins|plugin install|plugin marketplace|marketplace|マーケットプレイス|/plugin marketplace add|code-review@claude-plugins-official|--plugin-dir|--plugin-url|/reload-plugins|plugin manifest|plugin.json","プラグイン（スキル・フック・サブエージェント・MCPの詰め合わせ）の配布元と、導入コマンド。",
 "claude plugin install 名前@マーケットプレイス、/plugin（メニュー）、--plugin-dir（そのセッションだけ読込）。プラグインのスキルは plugin名:skill名 で名前空間が分かれる。変更を反映するのは /reload-plugins。信頼できる提供元のものだけ入れる（フックやMCPが実行されるため）。","claude plugin install code-review@claude-plugins-official\n/reload-plugins","Skills|hooks|サブエージェント");
 
-T("claude","auto memory","おーともめもりー","auto memory|自動メモリ|MEMORY.md|~/.claude/projects|Claudeが自分で書くメモ|メモリ自動","あなたの修正や好みをもとに、Claudeが自分で書き溜める覚え書き。","リポジトリごとに ~/.claude/projects/ 以下に保存され、同じリポジトリのworktreeは共有。MEMORY.md の最初の200行/25KBが毎回読み込まれる。人が書くのが CLAUDE.md、Claudeが書くのが auto memory。/memory で確認・オフ切替。","/memory","CLAUDE.md|/memory|メモリ");
+T("claude","auto memory","おーともめもりー","auto memory|自動メモリ|MEMORY.md|~/.claude/projects|Claudeが自分で書くメモ|メモリ自動|autoMemoryEnabled|autoMemoryDirectory","あなたの修正や好みをもとに、Claudeが自分で書き溜める覚え書き。","リポジトリごとに ~/.claude/projects/ 以下に保存され、同じリポジトリのworktreeは共有。MEMORY.md の最初の200行/25KBが毎回読み込まれる。人が書くのが CLAUDE.md、Claudeが書くのが auto memory。/memory で確認・オフ切替。","/memory","CLAUDE.md|/memory|メモリ");
 
 T("claude",".claude/rules","るーるず","rules|.claude/rules|ルールファイル|paths:|パススコープ|path-scoped rules|path scoped","CLAUDE.mdと一緒に読み込まれる、分割した指示ファイル群（.claude/rules/*.md）。","frontmatter の paths: で対象ファイルを限定でき、一致するファイルを読み書きしたときだけ読み込まれるため、コンテキストを節約できる。","","CLAUDE.md|frontmatter|コンテキスト");
 
