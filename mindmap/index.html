@@ -130,6 +130,26 @@ button{font:inherit;color:inherit;cursor:pointer}
   font-size:13px;line-height:1.6;color:var(--note-ink);white-space:pre-wrap;overflow-wrap:anywhere;pointer-events:none
 }
 
+/* ---------- 線のツールバー・曲がりハンドル ---------- */
+#edgeToolbar{
+  position:absolute;z-index:15;display:flex;align-items:center;gap:4px;padding:4px;background:#fff;
+  border:1px solid var(--line);border-radius:10px;box-shadow:0 6px 20px rgba(15,23,42,.16);white-space:nowrap
+}
+#edgeToolbar[hidden]{display:none}
+#edgeToolbar .grp{display:flex;gap:2px}
+#edgeToolbar button{
+  border:0;background:transparent;border-radius:6px;height:28px;min-width:34px;padding:0 7px;
+  display:flex;align-items:center;justify-content:center;color:#475569;font-size:12.5px
+}
+#edgeToolbar button:hover{background:#f1f5f9}
+#edgeToolbar button.on{background:var(--accent-soft);color:var(--accent);font-weight:600}
+#edgeToolbar button.del:hover{background:#fdecec;color:var(--danger)}
+#edgeToolbar svg{width:30px;height:14px;display:block;overflow:visible;stroke:currentColor;fill:currentColor}
+#edgeToolbar .sep{width:1px;height:18px;background:var(--line);margin:0 2px}
+.bend-handle{fill:#fff;stroke:var(--accent);stroke-width:2;vector-effect:non-scaling-stroke;pointer-events:all;cursor:grab}
+.bend-handle:hover{fill:var(--accent)}
+.start-dot{fill:#fff;stroke:var(--accent);stroke-width:2;vector-effect:non-scaling-stroke;pointer-events:none}
+
 /* ---------- 右：パネル ---------- */
 #panel{background:var(--panel);border-left:1px solid var(--line);padding:14px;overflow-y:auto;min-height:0}
 #panel h2{font-size:13px;margin:0 0 8px;color:var(--muted);font-weight:600}
@@ -175,6 +195,21 @@ kbd{font:inherit;font-size:12px;border:1px solid var(--line);border-bottom-width
   </div>
   <div id="emptyHint">作業エリアをダブルクリックして<br>ノードを追加しましょう</div>
   <div id="notePop"></div>
+  <div id="edgeToolbar" hidden>
+    <div class="grp">
+      <button data-arrow="none" title="矢印なし"><svg viewBox="0 0 30 14" aria-hidden="true"><path d="M3 7H27" stroke-width="2" stroke-linecap="round" fill="none"/></svg></button>
+      <button data-arrow="both" title="両方向"><svg viewBox="0 0 30 14" aria-hidden="true"><path d="M8 7H22" stroke-width="2" stroke-linecap="round" fill="none"/><path d="M1 7L9 3V11Z" stroke="none"/><path d="M29 7L21 3V11Z" stroke="none"/></svg></button>
+      <button data-arrow="end" title="右向きのみ（始点 → 終点）"><svg viewBox="0 0 30 14" aria-hidden="true"><path d="M3 7H22" stroke-width="2" stroke-linecap="round" fill="none"/><path d="M29 7L21 3V11Z" stroke="none"/></svg></button>
+      <button data-arrow="start" title="左向きのみ（終点 → 始点）"><svg viewBox="0 0 30 14" aria-hidden="true"><path d="M8 7H27" stroke-width="2" stroke-linecap="round" fill="none"/><path d="M1 7L9 3V11Z" stroke="none"/></svg></button>
+    </div>
+    <span class="sep"></span>
+    <div class="grp">
+      <button data-shape="curve" title="曲線（線の真ん中の丸をドラッグして曲げられます）">曲線</button>
+      <button data-shape="straight" title="直線">直線</button>
+    </div>
+    <span class="sep"></span>
+    <button class="del" data-act="delete" title="この線を削除（Delete）">削除</button>
+  </div>
   <div id="zoombar">
     <button id="zoomOut" title="縮小">−</button>
     <span id="zoomLabel">100%</span>
@@ -699,7 +734,7 @@ function showPopup(id) {
   notePop.style.left = clamp(x, 8, Math.max(8, st.width - w - 8)) + 'px';
   notePop.style.top = y + 'px';
 }
-function onViewChanged() { hidePopup(); }
+function onViewChanged() { hidePopup(); positionToolbar(); }
 
 /* ============================================================
    左サイドバー：シート一覧
@@ -920,11 +955,79 @@ function renderEdgesAndOverlay() {
   for (const [id, el] of edgeEls) if (!seen.has(id)) { el.remove(); edgeEls.delete(id); }
   renderOverlay();
 }
+const bendHandle = svgEl('circle', 'bend-handle'), startDot = svgEl('circle', 'start-dot');
+bendHandle.style.display = startDot.style.display = 'none';
+overlay.append(startDot, bendHandle);
+let bending = false;
+
 function renderOverlay() {
   if (connecting) {
     tempLine.setAttribute('d', `M${connecting.sx} ${connecting.sy}L${f1(connecting.x)} ${f1(connecting.y)}`);
     tempLine.style.display = '';
   } else tempLine.style.display = 'none';
+
+  // 選択中の線：曲線なら真ん中に曲がりハンドル。矢じりのない側の端に「始点」の印
+  const edge = sel && sel.type === 'edge' ? sheet().edges.find(x => x.id === sel.id) : null;
+  const g = edge ? edgeGeoms.get(edge.id) : null, k = view().k;
+  bendHandle.style.display = g && edge.shape === 'curve' ? '' : 'none';
+  if (g) {
+    bendHandle.setAttribute('cx', f1(g.mid.x)); bendHandle.setAttribute('cy', f1(g.mid.y)); bendHandle.setAttribute('r', f1(6.5 / k));
+    const showStart = edge.arrow === 'none' || edge.arrow === 'end';
+    startDot.style.display = showStart ? '' : 'none';
+    startDot.setAttribute('cx', f1(g.p0.x)); startDot.setAttribute('cy', f1(g.p0.y)); startDot.setAttribute('r', f1(4 / k));
+  } else startDot.style.display = 'none';
+  positionToolbar();
+}
+
+/* ---------- 線のツールバー（矢印4種 / 曲線・直線） ---------- */
+const toolbar = $('#edgeToolbar');
+function positionToolbar() {
+  const edge = sel && sel.type === 'edge' ? sheet().edges.find(x => x.id === sel.id) : null;
+  const g = edge ? edgeGeoms.get(edge.id) : null;
+  if (!g || bending) { toolbar.hidden = true; return; }
+  toolbar.hidden = false;
+  for (const b of toolbar.querySelectorAll('[data-arrow]')) b.classList.toggle('on', b.dataset.arrow === edge.arrow);
+  for (const b of toolbar.querySelectorAll('[data-shape]')) b.classList.toggle('on', b.dataset.shape === edge.shape);
+  const v = view(), vw = viewport.clientWidth, vh = viewport.clientHeight;
+  const sx = v.x + g.mid.x * v.k, sy = v.y + g.mid.y * v.k, tw = toolbar.offsetWidth, th = toolbar.offsetHeight;
+  let y = sy - th - 20; if (y < 8) y = sy + 20; // 上に入らなければ下に出す
+  toolbar.style.left = clamp(sx - tw / 2, 8, Math.max(8, vw - tw - 8)) + 'px';
+  toolbar.style.top = clamp(y, 8, Math.max(8, vh - th - 8)) + 'px';
+}
+toolbar.addEventListener('mousedown', e => e.preventDefault()); // フォーカスを奪わない（Deleteキーが効き続ける）
+toolbar.addEventListener('click', e => {
+  const b = e.target.closest('button');
+  const edge = b && sel && sel.type === 'edge' ? sheet().edges.find(x => x.id === sel.id) : null;
+  if (!edge) return;
+  if (b.dataset.arrow) {
+    if (edge.arrow === b.dataset.arrow) return;
+    checkpoint(); edge.arrow = b.dataset.arrow;
+  } else if (b.dataset.shape) {
+    if (edge.shape === b.dataset.shape) return;
+    checkpoint(); edge.shape = b.dataset.shape;
+    if (edge.shape === 'curve' && Math.abs(edge.bend) < 5) edge.bend = 30; // 曲線にしたのに真っすぐ見えないように
+  } else if (b.dataset.act === 'delete') { deleteSelection(); return; }
+  changed(); renderCanvas();
+});
+
+// 曲がりハンドルのドラッグ：ハンドルが常にカーソルの位置に来るよう bend を逆算する
+function startBend(e) {
+  const edge = sheet().edges.find(x => x.id === sel.id);
+  if (!edge) return;
+  let moved = false;
+  busy = true; bending = true; positionToolbar();
+  track(ev => {
+    const g = edgeGeoms.get(edge.id); if (!g) return;
+    const p = toWorld(ev.clientX, ev.clientY);
+    if (!moved) { moved = true; checkpoint(); }
+    const cx = 2 * p.x - (g.p0.x + g.p1.x) / 2, cy = 2 * p.y - (g.p0.y + g.p1.y) / 2; // 制御点
+    edge.bend = Math.round(clamp(((cx - g.mx) * g.nx + (cy - g.my) * g.ny) / 2, -800, 800));
+    renderEdgesAndOverlay();
+  }, () => {
+    busy = false; bending = false;
+    if (moved) changed();
+    positionToolbar();
+  });
 }
 
 function handlePos(n, el, side) {
@@ -972,6 +1075,7 @@ function startConnect(e, nodeEl, side) {
 function onPointerDownExtra(e, t, nodeEl) {
   const handle = t.closest && t.closest('.handle');
   if (handle && nodeEl) { startConnect(e, nodeEl, handle.dataset.side); return true; }
+  if (t.classList && t.classList.contains('bend-handle')) { startBend(e); return true; }
   const g = t.closest && t.closest('g.edge');
   if (g) { select('edge', g.dataset.id); return true; }
   return false;
@@ -1004,7 +1108,6 @@ window.addEventListener('resize', () => { if (typeof onViewChanged === 'function
    起動
    ============================================================ */
 ensureView(); applyView(); renderAll();
-window.__mm = { get db() { return db; } }; // 動作確認用
 
 })();
 </script>
