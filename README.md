@@ -7,6 +7,14 @@
 - データはブラウザ内（localStorage）に保存され、サーバーには送信されません。
 - 本番は Next.js / Supabase / Vercel を想定（このリポジトリはその見本）。
 
+## お問い合わせ入力支援アプリ（`contact-assist/`）
+
+Windows PCで動く、お問い合わせフォームの**半自動化・入力支援**ツールです（ブラウザ版のアジサイとは別物）。
+Excelの企業一覧を読み、企業の調査・営業禁止の確認・職種と文面の選択・フォーム入力値の用意・コピーボタンまでを手伝います。
+**入力・reCAPTCHA・確認／送信は必ず人間が行い、アプリはExcelにもフォームにも書き込みません。**
+
+起動は `contact-assist/start.bat` をダブルクリック。詳しくは [`contact-assist/README.md`](contact-assist/README.md) を見てください。
+
 ## ログイン（体験版）
 
 | ロール | 方法 |
