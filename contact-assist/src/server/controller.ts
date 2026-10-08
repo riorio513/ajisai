@@ -171,6 +171,12 @@ export class Controller {
         for (const [k, c] of Object.entries(s.columns)) suggested[k] = c as number;
       }
     }
+    // 辞書に当たる見出しが2つ未満なら、辞書に頼らず「最初の、2セル以上入っている行」を見出し候補にする
+    if (best.count < 2) {
+      const firstFilled = grid.findIndex((r) => r.filter((c) => c.trim() !== '').length >= 2);
+      best = { row: Math.max(0, firstFilled), count: 0 };
+      Object.keys(suggested).forEach((k) => delete suggested[k]);
+    }
     return { sheet: sheetName, rows, suggestedHeaderRow: best.row, suggested };
   }
 

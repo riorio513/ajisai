@@ -77,21 +77,42 @@ function scanVertical(sheet: RawSheet, labels: LabelCell[]): MasterScan {
   for (const l of labels) {
     if (!labelCols.has(l.c)) continue;
     const row = sheet.rows[l.r];
+    const rights: { c: number; v: string }[] = [];
     for (let c = l.c + 1; c < Math.min(row.length, l.c + 1 + MAX_RIGHT); c++) {
       if (labelCols.has(c)) break; // 次のラベル列に到達
-      if (isBlank(row[c])) continue;
-      entries.push({
-        field: l.info.field,
-        value: row[c],
-        label: l.text,
-        sheet: sheet.name,
-        excelRow: l.r + 1,
-        part: l.info.part,
-        numeric: sheet.meta[`${l.r},${c}`]?.numeric,
+      if (!isBlank(row[c])) rights.push({ c, v: row[c] });
+    }
+    if (rights.length === 0) continue;
+    // 電話番号・郵便番号が「080 | 1234 | 5678」のように複数セルに分かれている場合は、Excelに明示された分割値として読む
+    const f = l.info.field;
+    const groups = rights.map((x) => x.v.normalize('NFKC').trim());
+    const allDigits = groups.every((g) => /^\d{2,5}$/.test(g));
+    if ((f === 'phone' && !l.info.part && groups.length === 3 && allDigits) || (f === 'postal' && !l.info.part && groups.length === 2 && allDigits)) {
+      rights.forEach((x, i) => {
+        entries.push({
+          field: `${f}${i + 1}` as MasterEntry['field'],
+          value: x.v,
+          label: l.text,
+          sheet: sheet.name,
+          excelRow: l.r + 1,
+          part: i + 1,
+          numeric: sheet.meta[`${l.r},${x.c}`]?.numeric,
+        });
       });
       used.add(`${l.r},${l.c}`);
-      break;
+      continue;
     }
+    const first = rights[0];
+    entries.push({
+      field: l.info.field,
+      value: first.v,
+      label: l.text,
+      sheet: sheet.name,
+      excelRow: l.r + 1,
+      part: l.info.part,
+      numeric: sheet.meta[`${l.r},${first.c}`]?.numeric,
+    });
+    used.add(`${l.r},${l.c}`);
   }
 
   // 辞書に無いラベル（参考表示）。ラベル列に値付きで存在するもの

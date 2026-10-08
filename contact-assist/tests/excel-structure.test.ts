@@ -118,6 +118,39 @@ describe('列の削除・文面番号の変更・問い合わせ情報の変更�
   });
 });
 
+describe('問い合わせ情報の書き方いろいろ', () => {
+  it('電話番号・郵便番号が複数セルに分かれていれば、明示された分割値として読む', async () => {
+    const s = buildSampleSheets();
+    for (const r of s[1].rows) {
+      if (r[0] === '電話番号') {
+        r[1] = '080';
+        r.push('1234', '5678');
+      }
+      if (r[0] === '郵便番号') {
+        r[1] = '160';
+        r.push('0023');
+      }
+    }
+    const m = await modelFrom(s);
+    expect(m.master!.values).toMatchObject({ phone1: '080', phone2: '1234', phone3: '5678', postal1: '160', postal2: '0023' });
+    expect(m.master!.values.phone).toBeUndefined();
+    expect(m.master!.conflicts).toEqual([]);
+  });
+  it('ラベルの末尾にコロンや必須表記があっても読める', async () => {
+    const s = buildSampleSheets();
+    s[1].rows = s[1].rows.map((r) => (typeof r[0] === 'string' && r[0] !== '項目' ? [`${r[0]}：（必須）`, r[1]] : r));
+    const m = await modelFrom(s);
+    expect(m.master!.values.email).toBe('taro.yamada@example.co.jp');
+    expect(m.master!.values.companyName).toBe('採用支援テスト株式会社');
+  });
+  it('備考欄が右にあっても、値を取り違えない', async () => {
+    const s = buildSampleSheets();
+    s[1].rows = s[1].rows.map((r) => (r[0] === '電話番号' ? [r[0], r[1], '携帯'] : r));
+    const m = await modelFrom(s);
+    expect(m.master!.values.phone).toBe('080-1234-5678');
+  });
+});
+
 describe('構造が決められない場合は止まる', () => {
   it('文面シートが無い', async () => {
     const sheets = buildSampleSheets().filter((s) => s.name !== '文面');

@@ -116,10 +116,23 @@ class Researcher {
       try {
         const top = await this.visit(excelUrl, 0, 'Excelの企業URL');
         if (top) {
-          const verified = nameAppears(name, [top.info.title, ...top.info.h1, top.info.metaDescription, top.info.text.slice(0, 6000)]);
+          let verified = nameAppears(name, [top.info.title, ...top.info.h1, top.info.metaDescription, top.info.text.slice(0, 6000)]);
+          let how = 'ページ内に企業名を確認しました';
+          if (!verified) {
+            // トップページに社名が無いサイトもあるため、会社概要ページも確認する
+            const abouts = topLinks(top.info.links.map((l) => scoreAboutLink(l, top.url)).filter((x): x is ScoredLink => !!x), 2, this.seen);
+            for (const a of abouts) {
+              const v = await this.visit(a.href, 1, '会社概要（企業名の確認）').catch(() => null);
+              if (v && nameAppears(name, [v.info.title, ...v.info.h1, v.info.text.slice(0, 8000)])) {
+                verified = true;
+                how = '会社概要ページで企業名を確認しました';
+                break;
+              }
+            }
+          }
           const site: SiteInfo = {
             url: top.url, source: 'excel', verified,
-            note: verified ? 'ExcelのURLを開き、ページ内に企業名を確認しました' : 'ExcelのURLを開きましたが、トップページ内に企業名を確認できませんでした（URLはExcelの値を採用）',
+            note: verified ? `ExcelのURLを開き、${how}` : 'ExcelのURLを開きましたが、サイト内に企業名を確認できませんでした（URLはExcelの値を採用。別の企業でないか確認してください）',
           };
           this.ev({ url: top.url, kind: '企業特定', snippet: site.note });
           return { site, top };
