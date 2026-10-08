@@ -449,11 +449,13 @@ export class Controller {
 
   // ───────── 連続調査 ─────────
 
-  startQueue(fromKey: string): void {
+  /** @param limit 先頭から何社だけ調べるか（省略で最後まで） */
+  startQueue(fromKey: string, limit?: number): void {
     const l = this.need();
     if (this.queue.running) throw new UserError('すでに連続調査が動いています');
     const start = Math.max(0, l.model.companies.findIndex((c) => c.key === fromKey));
-    const keys = l.model.companies.slice(start).map((c) => c.key);
+    const n = limit && limit > 0 ? Math.floor(limit) : undefined;
+    const keys = l.model.companies.slice(start, n ? start + n : undefined).map((c) => c.key);
     this.queue = { running: true, current: undefined, done: 0, total: keys.length, stop: false };
     void (async () => {
       for (const key of keys) {

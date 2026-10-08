@@ -19,6 +19,7 @@ export function App() {
   const last = useRef({ state: '', view: '' });
   const [actionBusy, setActionBusy] = useState<string | null>(null);
   const [choosing, setChoosing] = useState(false);
+  const [queueLimit, setQueueLimit] = useState<string>('');
 
   const refresh = useCallback(async () => {
     try {
@@ -169,9 +170,14 @@ export function App() {
                 <button onClick={() => api.stopQueue().then(refresh)}>停止</button>
               </>
             ) : (
-              <button disabled={!selected} onClick={() => selected && act('', () => api.startQueue(selected))} title="この企業から順に、未調査の企業を調査します（失敗しても次へ進みます）">
-                ここから順に連続調査
-              </button>
+              <>
+                <button disabled={!selected} onClick={() => selected && act('', () => api.startQueue(selected, queueLimit === '' ? undefined : Number(queueLimit)))} title="この企業から順に、未調査の企業を調査します（失敗しても次へ進みます）">
+                  ここから順に連続調査
+                </button>
+                <label className="qlimit" title="空欄なら最後まで">
+                  <input type="number" min={1} value={queueLimit} placeholder="全部" onChange={(e) => setQueueLimit(e.target.value)} />社まで
+                </label>
+              </>
             )}
           </div>
           <ul className="company-list">

@@ -65,7 +65,7 @@ export function createApp(ctrl: Controller, port: number) {
     if (!openInDefaultBrowser(String(req.body.url ?? ''))) throw new UserError('URLを開けませんでした');
   }));
 
-  app.post('/api/queue/start', wrap((req) => ctrl.startQueue(key(req))));
+  app.post('/api/queue/start', wrap((req) => ctrl.startQueue(key(req), Number(req.body?.limit) || undefined)));
   app.post('/api/queue/stop', wrap(() => ctrl.stopQueue()));
   app.post('/api/settings/ai', wrap((req) => ctrl.setAiEnabled(req.body.enabled === true)));
   app.get('/api/logs', wrap(async () => {
