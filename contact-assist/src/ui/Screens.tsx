@@ -258,3 +258,28 @@ export function QualityPanel({ state }: { state: AppState }) {
     </div>
   );
 }
+
+/** 問い合わせ情報を、どの項目として・どのセルから読んだかの一覧（Excelの項目のズレに気づくため） */
+export function MasterReading({ state }: { state: AppState }) {
+  if (state.masterReading.length === 0) return null;
+  return (
+    <details className="master-reading">
+      <summary>問い合わせ情報の読み取り結果（どのセルを使ったか）</summary>
+      <p className="hint">Excelの項目がズレていないか確認できます。セル番号がおかしい項目は、Excelを直して「Excelを再読込」してください。</p>
+      <table>
+        <tbody>
+          {state.masterReading.map((r) => (
+            <tr key={r.field}>
+              <th>{r.label}</th>
+              <td className="v">{r.value}</td>
+              <td className="c">{r.cells.join(', ')}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      {state.masterUnclassified.length > 0 && (
+        <p className="hint">読み取り対象にしなかった項目: {state.masterUnclassified.map((u) => u.label).join('、')}</p>
+      )}
+    </details>
+  );
+}

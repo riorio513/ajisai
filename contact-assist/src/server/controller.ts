@@ -6,11 +6,12 @@ import { join } from 'node:path';
 import type { AIProvider } from '../ai';
 import { NullAIProvider, createClaudeCliProvider } from '../ai';
 import type { AppState, CompanyRow, CompanyView, SheetPreview } from '../shared/api';
-import type { RawWorkbook, SheetMappingSpec, UserMapping } from '../shared/types';
+import type { MasterFieldId, RawWorkbook, SheetMappingSpec, UserMapping } from '../shared/types';
 import { STATUS } from '../shared/types';
 import { readWorkbookFromFile } from '../excel/reader';
 import { buildModel, WorkbookModel } from '../schema/model';
 import { buildSpec } from '../schema/analyze';
+import { FIELD_TITLE } from '../master-data/build';
 import { scanHeaderRow, transpose } from '../schema/table';
 import { COMPANY_DICT, TEMPLATE_DICT } from '../schema/dictionary';
 import { analyzeForms } from '../form-analyzer/analyze';
@@ -258,6 +259,7 @@ export class Controller {
       busy: this.busy,
       sheetNames: [],
       masterUnclassified: [],
+      masterReading: [],
       jobs: [],
       recent: settings.lastExcelPath ? [{ path: settings.lastExcelPath }] : [],
       platform: process.platform,
@@ -287,6 +289,12 @@ export class Controller {
       diffMessages: l.diff?.messages ?? [],
       sheetNames: l.raw.sheets.map((s) => s.name),
       masterUnclassified: (l.model.master?.unclassified ?? []).map((u) => ({ label: u.label, value: u.value })),
+      masterReading: Object.entries(l.model.master?.values ?? {}).map(([f, v]) => ({
+        field: f,
+        label: FIELD_TITLE[f as MasterFieldId] ?? f,
+        value: v as string,
+        cells: l.model.master?.sources[f as MasterFieldId] ?? [],
+      })),
       jobs: l.model.jobs.map((j) => ({ label: j.label, templateIds: j.templateIds })),
     };
   }

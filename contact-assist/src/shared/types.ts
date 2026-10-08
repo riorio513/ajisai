@@ -117,6 +117,8 @@ export interface MasterEntry {
   part?: number;
   /** 数値セルとして読めた */
   numeric?: boolean;
+  /** 値を読んだセル（例: C8） */
+  cell?: string;
 }
 
 export interface ConflictCandidate {
@@ -141,6 +143,8 @@ export interface MasterConflict {
 export interface MasterData {
   /** 確定済みの値（矛盾が未解決の項目は含まれない） */
   values: Partial<Record<MasterFieldId, string>>;
+  /** 採用した値を、Excelのどのセルから読んだか（ズレの確認用） */
+  sources: Partial<Record<MasterFieldId, string[]>>;
   /** 同じ項目の表記バリエーション（電話番号の区切り位置の根拠に使う） */
   variants: Partial<Record<MasterFieldId, string[]>>;
   /** 数値セルで読めたため先頭0が欠けている可能性のある項目 */

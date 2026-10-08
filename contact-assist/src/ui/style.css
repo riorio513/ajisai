@@ -177,3 +177,9 @@ pre { margin: 0; font-family: inherit; }
 
 .settings { font-size: 13px; border-top: 1px solid var(--line); padding-top: 6px; }
 .settings button { display: block; margin: 4px 0; }
+
+.master-reading { font-size: 13px; border-top: 1px solid var(--line); padding-top: 6px; }
+.master-reading table { border-collapse: collapse; width: 100%; }
+.master-reading th { text-align: left; color: var(--muted); font-weight: 400; padding: 2px 4px; white-space: nowrap; vertical-align: top; }
+.master-reading td.v { word-break: break-all; padding: 2px 4px; }
+.master-reading td.c { color: var(--primary); white-space: nowrap; padding: 2px 4px; vertical-align: top; }

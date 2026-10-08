@@ -82,6 +82,8 @@ export interface AppState {
   /** Excel構造確認画面で使う、シート一覧 */
   sheetNames: string[];
   masterUnclassified: { label: string; value: string }[];
+  /** 問い合わせ情報を、どの項目としてどのセルから読んだか（ズレの確認用） */
+  masterReading: { field: string; label: string; value: string; cells: string[] }[];
   jobs: { label: string; templateIds: string[] }[];
   recent: { path: string }[];
   platform: string;

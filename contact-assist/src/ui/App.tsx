@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import type { AppState, CompanyRow, CompanyView } from '../shared/api';
 import { STATUS } from '../shared/types';
 import { api } from './api';
-import { LoadScreen, StructureConfirm, ConflictPanel, QualityPanel } from './Screens';
+import { LoadScreen, StructureConfirm, ConflictPanel, QualityPanel, MasterReading } from './Screens';
 import { PlanItemCard, TransferSection } from './Panel';
 import { CopyButton } from './CopyButton';
 
@@ -185,6 +185,7 @@ export function App() {
             ))}
           </ul>
           <QualityPanel state={state} />
+          <MasterReading state={state} />
           <details className="settings">
             <summary>保存済みの設定</summary>
             <p className="hint">Excel構造の確認結果や、矛盾の選択をやり直したいときに使います（元のExcelは変わりません）。</p>

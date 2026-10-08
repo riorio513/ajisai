@@ -17,7 +17,7 @@ export function equivalenceKey(field: MasterFieldId, value: string): string {
   return normalizeKey(value);
 }
 
-const FIELD_TITLE: Partial<Record<MasterFieldId, string>> = {
+export const FIELD_TITLE: Partial<Record<MasterFieldId, string>> = {
   companyName: '会社名', companyKana: '会社名カナ', department: '部署', position: '役職',
   fullName: '氏名', lastName: '姓', firstName: '名', fullKana: 'フリガナ', lastKana: '姓フリガナ', firstKana: '名フリガナ',
   email: 'メールアドレス', phone: '電話番号', phone1: '電話番号①', phone2: '電話番号②', phone3: '電話番号③',
@@ -200,7 +200,13 @@ export function buildMaster(rawEntries: MasterEntry[], unclassified: MasterData[
     if (conflicts.some((c) => c.id.startsWith(`zero:${f}`))) numericSuspect.push(f);
   }
 
-  return { values, variants, numericSuspect, conflicts, resolved, unclassified, sheet };
+  const sources: MasterData['sources'] = {};
+  for (const f of Object.keys(values) as MasterFieldId[]) {
+    const key = equivalenceKey(f, values[f]!);
+    const cells = entries.filter((e) => e.field === f && e.cell && equivalenceKey(f, e.value) === key).map((e) => e.cell!);
+    if (cells.length) sources[f] = [...new Set(cells)];
+  }
+  return { values, variants, numericSuspect, conflicts, resolved, unclassified, sheet, sources };
 }
 
 function isZeroLossSuspect(field: MasterFieldId, value: string): boolean {

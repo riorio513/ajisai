@@ -3,7 +3,7 @@
  * ラベルと値が縦並び（ラベル | 値）でも、横並び（見出し行 + 値の行）でも読める。
  */
 import type { MasterEntry, RawSheet } from '../shared/types';
-import { isBlank } from '../schema/normalize';
+import { cellAddress, isBlank } from '../schema/normalize';
 import { parseMasterLabel, LabelInfo } from './labels';
 import { interpretRow } from './interpret';
 import { kanaScriptOf } from '../transformer';
@@ -94,6 +94,7 @@ function scanVertical(sheet: RawSheet, labels: LabelCell[]): MasterScan {
         excelRow: l.r + 1,
         part: it.part,
         numeric: sheet.meta[`${l.r},${rights[it.idx].c}`]?.numeric,
+        cell: cellAddress(l.r, rights[it.idx].c),
       });
     }
     used.add(`${l.r},${l.c}`);
@@ -146,6 +147,7 @@ function scanHorizontal(sheet: RawSheet, headerLabels: LabelCell[]): MasterScan 
           excelRow: r + 1,
           part: it.part,
           numeric: sheet.meta[`${r},${l.c}`]?.numeric,
+          cell: cellAddress(r, l.c),
         });
       }
     }
