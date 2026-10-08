@@ -112,11 +112,38 @@ button{font:inherit;color:inherit;cursor:pointer}
 .edge .arr{fill:var(--c);stroke:none}
 #tempLine{fill:none;stroke:var(--accent);stroke-width:2;stroke-dasharray:6 5;stroke-linecap:round}
 
+/* ---------- メモ付きノード（付箋の見た目） ---------- */
+.note-badge{position:absolute;right:-10px;top:-11px;width:21px;height:21px;transform:rotate(8deg);display:none;
+  filter:drop-shadow(0 1px 1px rgba(0,0,0,.25));pointer-events:none}
+.node.has-note .note-badge{display:block}
+.node.has-note .box{background:var(--note-bg);border-color:var(--note-border)}
+.node.has-note.selected .box,.node.has-note.editing .box{border-color:var(--accent)}
+.note-preview{
+  position:absolute;left:50%;top:100%;transform:translateX(-50%);margin-top:6px;width:max-content;max-width:220px;
+  font-size:12px;line-height:1.4;color:var(--note-ink);opacity:.55;text-align:center;white-space:pre-wrap;
+  overflow-wrap:anywhere;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;pointer-events:none
+}
+.note-preview:empty{display:none}
+#notePop{
+  position:absolute;z-index:20;display:none;max-width:340px;max-height:280px;overflow:hidden;padding:10px 12px;
+  background:#fffbe3;border:1px solid var(--note-border);border-radius:8px;box-shadow:0 8px 24px rgba(15,23,42,.2);
+  font-size:13px;line-height:1.6;color:var(--note-ink);white-space:pre-wrap;overflow-wrap:anywhere;pointer-events:none
+}
+
 /* ---------- 右：パネル ---------- */
 #panel{background:var(--panel);border-left:1px solid var(--line);padding:14px;overflow-y:auto;min-height:0}
 #panel h2{font-size:13px;margin:0 0 8px;color:var(--muted);font-weight:600}
-#panel .help{margin:0;padding-left:1.2em;line-height:1.9;color:#374151}
+#panel .help{margin:0;padding-left:1.2em;line-height:1.8;color:#374151;font-size:13px}
 #panel .help li{margin-bottom:2px}
+#panel .node-title{font-size:14px;font-weight:600;line-height:1.5;margin-bottom:14px;padding:8px 10px;background:#f3f4f6;border-radius:6px;
+  white-space:pre-wrap;overflow-wrap:anywhere;max-height:5.5em;overflow:hidden}
+#panel .field-label{display:flex;justify-content:space-between;font-size:13px;color:var(--muted);font-weight:600;margin-bottom:6px}
+#panel .field-label span{font-weight:400}
+#noteArea{width:100%;min-height:220px;resize:vertical;font:inherit;line-height:1.6;padding:9px 10px;border:1px solid var(--line);
+  border-radius:6px;background:#fffdf0;outline:none}
+#noteArea:focus{border-color:var(--note-border);box-shadow:0 0 0 3px rgba(217,164,0,.18)}
+#panel .sub{margin:8px 0 12px;font-size:12px;color:var(--muted);line-height:1.6}
+#panel p{margin:0 0 8px;line-height:1.7}
 kbd{font:inherit;font-size:12px;border:1px solid var(--line);border-bottom-width:2px;border-radius:4px;padding:0 5px;background:#f9fafb}
 </style>
 </head>
@@ -147,6 +174,7 @@ kbd{font:inherit;font-size:12px;border:1px solid var(--line);border-bottom-width
     </div>
   </div>
   <div id="emptyHint">作業エリアをダブルクリックして<br>ノードを追加しましょう</div>
+  <div id="notePop"></div>
   <div id="zoombar">
     <button id="zoomOut" title="縮小">−</button>
     <span id="zoomLabel">100%</span>
@@ -156,6 +184,19 @@ kbd{font:inherit;font-size:12px;border:1px solid var(--line);border-bottom-width
 </main>
 
 <aside id="panel">
+  <div id="panelNode" hidden>
+    <h2>選択中のノード</h2>
+    <div id="panelNodeTitle" class="node-title"></div>
+    <label class="field-label" for="noteArea">メモ<span id="noteCount"></span></label>
+    <textarea id="noteArea" placeholder="ここにメモを書くと、ノードが付箋の見た目になります（複数行OK）"></textarea>
+    <div class="sub">メモのあるノードは黄色になり、角に付箋マークが付きます。マウスを乗せると全文が見られます。</div>
+    <button id="noteClear" class="btn">メモを消す</button>
+  </div>
+  <div id="panelEdge" hidden>
+    <h2>選択中の線</h2>
+    <p>線のそばに出るツールバーで、矢印の向きと線の形を変えられます。</p>
+    <p class="sub"><kbd>Delete</kbd> で線を削除します。</p>
+  </div>
   <div id="panelHelp">
     <h2>使い方</h2>
     <ul class="help">
@@ -376,8 +417,13 @@ const nodeEls = new Map();
 function createNodeEl(n) {
   const el = document.createElement('div');
   el.className = 'node'; el.dataset.id = n.id;
-  el.innerHTML = '<div class="box"><div class="label"></div></div>';
-  el._box = el.firstChild; el._label = el._box.firstChild;
+  el.innerHTML = '<div class="box">'
+    + '<svg class="note-badge" viewBox="0 0 20 20" aria-hidden="true"><path d="M2 2h16v11l-5 5H2z" fill="#ffd23f" stroke="#b88700" stroke-width="1.2" stroke-linejoin="round"/>'
+    + '<path d="M18 13h-5v5z" fill="#e0a800"/><path d="M5 7h10M5 10.5h6" stroke="#8a6500" stroke-width="1.3" stroke-linecap="round"/></svg>'
+    + '<div class="label"></div></div><div class="note-preview"></div>';
+  el._box = el.firstChild; el._label = el._box.querySelector('.label'); el._preview = el.lastChild;
+  el.addEventListener('pointerenter', () => schedulePopup(n.id));
+  el.addEventListener('pointerleave', hidePopup);
   el._label.addEventListener('keydown', onLabelKeydown);
   el._label.addEventListener('blur', () => commitEdit());
   if (typeof onNodeCreated === 'function') onNodeCreated(el);
@@ -596,7 +642,64 @@ $('#zoomFit').addEventListener('click', fitView);
 /* ============================================================
    右パネル（段階が進むとメモ欄が入る）
    ============================================================ */
-function renderPanel() {}
+const panelNode = $('#panelNode'), panelEdge = $('#panelEdge'), panelHelp = $('#panelHelp');
+const noteArea = $('#noteArea'), noteCount = $('#noteCount'), panelNodeTitle = $('#panelNodeTitle'), noteClear = $('#noteClear');
+let panelNodeId = null;
+function renderPanel() {
+  const n = sel && sel.type === 'node' ? nodeById(sel.id) : null;
+  panelNode.hidden = !n; panelEdge.hidden = !(sel && sel.type === 'edge'); panelHelp.hidden = !!sel;
+  if (!n) { panelNodeId = null; return; }
+  panelNodeTitle.textContent = n.text || '（テキストなし）';
+  // 入力中のテキストエリアは書き換えない（カーソルや標準のUndoを壊さない）
+  if (panelNodeId !== n.id || document.activeElement !== noteArea) noteArea.value = n.note;
+  panelNodeId = n.id;
+  noteCount.textContent = n.note ? `${n.note.length}文字` : '';
+  noteClear.disabled = !n.note;
+}
+noteArea.addEventListener('input', () => {
+  const n = sel && sel.type === 'node' ? nodeById(sel.id) : null;
+  if (!n) return;
+  checkpoint('note:' + n.id); // 入力中の変更は、フォーカスを外すまで1回分のUndoにまとめる
+  n.note = noteArea.value;
+  noteCount.textContent = n.note ? `${n.note.length}文字` : '';
+  noteClear.disabled = !n.note;
+  changed(); renderCanvas();
+});
+noteArea.addEventListener('blur', endCoalesce);
+noteArea.addEventListener('keydown', e => { if (e.key === 'Escape' && !composing(e)) noteArea.blur(); });
+noteClear.addEventListener('click', () => {
+  const n = sel && sel.type === 'node' ? nodeById(sel.id) : null;
+  if (!n || !n.note) return;
+  checkpoint(); n.note = ''; noteArea.value = '';
+  changed(); renderAll();
+});
+
+/* ============================================================
+   メモ付きノードの見た目 / ホバーでメモ全文
+   ============================================================ */
+function onNodeSynced(el, n) {
+  const has = n.note.trim() !== '';
+  el.classList.toggle('has-note', has);
+  const pv = has ? n.note.split(/\r?\n/).map(l => l.trim()).filter(Boolean).slice(0, 2).join('\n') : '';
+  if (el._preview.textContent !== pv) el._preview.textContent = pv;
+}
+const notePop = $('#notePop');
+let popTimer = 0;
+function hidePopup() { clearTimeout(popTimer); notePop.style.display = 'none'; }
+function schedulePopup(id) { clearTimeout(popTimer); popTimer = setTimeout(() => showPopup(id), 250); }
+function showPopup(id) {
+  const n = nodeById(id), el = nodeEls.get(id);
+  if (busy || editing || !n || !el || n.note.trim() === '') return;
+  notePop.textContent = n.note.trim();
+  notePop.style.display = 'block';
+  const st = $('#stage').getBoundingClientRect(), b = el._box.getBoundingClientRect();
+  const w = notePop.offsetWidth, h = notePop.offsetHeight;
+  let x = b.left + b.width / 2 - w / 2 - st.left, y = b.bottom + 10 - st.top;
+  if (y + h > st.height - 8) y = Math.max(8, b.top - st.top - 10 - h); // 下に入らなければ上に出す
+  notePop.style.left = clamp(x, 8, Math.max(8, st.width - w - 8)) + 'px';
+  notePop.style.top = y + 'px';
+}
+function onViewChanged() { hidePopup(); }
 
 /* ============================================================
    左サイドバー：シート一覧
@@ -891,7 +994,6 @@ window.addEventListener('keydown', e => {
   if (e.key === 'Escape') select();
 });
 
-function hidePopup() {}
 function renderAll() { renderSidebar(); renderCanvas(); renderPanel(); }
 
 window.addEventListener('beforeunload', () => { commitEdit(); if (saveTimer) saveNow(); });
