@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>マインドマップ</title>
+<style>
+/* ============================================================
+   マインドマップ（自由配置型）
+   このファイル1つで動きます（インストール不要）。
+   データは localStorage（キー: mindmap.v1）に JSON で自動保存されます。
+   ============================================================ */
+:root{
+  --bg:#f3f4f6; --panel:#ffffff; --line:#dfe3e8; --text:#1f2937; --muted:#6b7280;
+  --accent:#2f6fed; --accent-soft:rgba(47,111,237,.16);
+  --edge:#64748b; --edge-hover:#334155;
+  --note-bg:#fff0a8; --note-border:#d9a400; --note-ink:#5b4300;
+  --danger:#d64545;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{
+  font-family:"Hiragino Sans","Hiragino Kaku Gothic ProN","Noto Sans JP","Yu Gothic UI","Yu Gothic",Meiryo,sans-serif;
+  color:var(--text);background:var(--bg);overflow:hidden;font-size:14px;
+  display:grid;grid-template-columns:240px minmax(0,1fr) 280px;
+}
+button{font:inherit;color:inherit;cursor:pointer}
+.btn{border:1px solid var(--line);background:#fff;border-radius:6px;padding:6px 10px}
+.btn:hover{background:#f3f4f6}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.primary:hover{filter:brightness(.94)}
+.btn:disabled{opacity:.45;cursor:default}
+
+/* ---------- 左：シート一覧 ---------- */
+#sidebar{background:var(--panel);border-right:1px solid var(--line);display:flex;flex-direction:column;min-height:0}
+.side-head{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:14px 12px 10px}
+.side-head h1{font-size:15px;margin:0}
+#sheetList{list-style:none;margin:0;padding:4px 8px;flex:1;overflow-y:auto}
+.sheet{display:flex;align-items:center;gap:2px;padding:7px 6px 7px 10px;border-radius:6px;cursor:pointer;margin-bottom:2px}
+.sheet:hover{background:#f3f4f6}
+.sheet.active{background:var(--accent-soft);font-weight:600}
+.sheet .name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sheet .icon{border:0;background:transparent;width:24px;height:24px;border-radius:4px;color:var(--muted);padding:0;display:none;font-size:13px}
+.sheet:hover .icon,.sheet.active .icon{display:block}
+.sheet .icon:hover{background:rgba(0,0,0,.08);color:var(--text)}
+.sheet .icon.del:hover{color:var(--danger)}
+.sheet input{flex:1;min-width:0;font:inherit;padding:3px 6px;border:1.5px solid var(--accent);border-radius:4px;outline:none}
+.side-foot{padding:10px 12px 12px;border-top:1px solid var(--line)}
+.side-foot .row{display:flex;gap:6px}
+.side-foot .row .btn{flex:1}
+.status{margin-top:8px;font-size:12px;color:var(--muted);min-height:1.2em}
+.status.err{color:var(--danger)}
+
+/* ---------- 中央：作業エリア ---------- */
+#stage{position:relative;min-width:0;min-height:0;overflow:hidden}
+#viewport{
+  position:absolute;inset:0;overflow:hidden;background-color:#fafafb;
+  background-image:radial-gradient(circle,#c9ced6 1px,transparent 1.6px);
+  background-size:24px 24px;cursor:grab;user-select:none;-webkit-user-select:none;touch-action:none;
+}
+#viewport.panning{cursor:grabbing}
+#world{position:absolute;left:0;top:0;width:0;height:0;transform-origin:0 0}
+#nodeLayer{position:absolute;left:0;top:0}
+#edgeLayer,#overlay{position:absolute;left:0;top:0;width:1px;height:1px;overflow:visible;pointer-events:none}
+#emptyHint{
+  position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);color:#9aa1ad;font-size:15px;
+  pointer-events:none;text-align:center;line-height:1.8
+}
+#zoombar{
+  position:absolute;right:12px;bottom:12px;display:flex;align-items:center;gap:2px;background:#fff;
+  border:1px solid var(--line);border-radius:8px;padding:3px;box-shadow:0 2px 8px rgba(15,23,42,.08)
+}
+#zoombar button{border:0;background:transparent;border-radius:5px;height:28px;min-width:28px;padding:0 6px}
+#zoombar button:hover{background:#f3f4f6}
+#zoomLabel{min-width:46px;text-align:center;font-size:12px;color:var(--muted)}
+
+/* ---------- ノード ---------- */
+.node{position:absolute;transform:translate(-50%,-50%);z-index:1}
+.node.selected,.node.dragging{z-index:2}
+.node .box{
+  position:relative;width:max-content;min-width:56px;max-width:260px;padding:9px 14px;
+  background:#fff;border:1.5px solid #9aa5b4;border-radius:10px;
+  box-shadow:0 1px 3px rgba(15,23,42,.1);font-size:15px;line-height:1.5;cursor:grab;
+}
+.node .label{white-space:pre-wrap;overflow-wrap:anywhere;text-align:center;outline:none;min-height:1.5em}
+.node .label:empty::before{content:"テキスト";color:#a9b0bb}
+.node.selected .box{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.node.editing .box{cursor:text;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.node.editing .label{user-select:text;-webkit-user-select:text;cursor:text}
+
+/* ---------- 右：パネル ---------- */
+#panel{background:var(--panel);border-left:1px solid var(--line);padding:14px;overflow-y:auto;min-height:0}
+#panel h2{font-size:13px;margin:0 0 8px;color:var(--muted);font-weight:600}
+#panel .help{margin:0;padding-left:1.2em;line-height:1.9;color:#374151}
+#panel .help li{margin-bottom:2px}
+kbd{font:inherit;font-size:12px;border:1px solid var(--line);border-bottom-width:2px;border-radius:4px;padding:0 5px;background:#f9fafb}
+</style>
+</head>
+<body>
+
+<aside id="sidebar">
+  <div class="side-head">
+    <h1>マインドマップ</h1>
+    <button id="btnNewSheet" class="btn primary" title="新しいシートを作る">＋ 新規</button>
+  </div>
+  <ul id="sheetList"></ul>
+  <div class="side-foot">
+    <div class="row">
+      <button id="btnExport" class="btn" title="全シートをJSONファイルに書き出す">書き出し</button>
+      <button id="btnImport" class="btn" title="JSONファイルから読み込む">読み込み</button>
+    </div>
+    <div id="saveStatus" class="status"></div>
+    <input type="file" id="fileInput" accept=".json,application/json" hidden>
+  </div>
+</aside>
+
+<main id="stage">
+  <div id="viewport">
+    <div id="world">
+      <svg id="edgeLayer"></svg>
+      <div id="nodeLayer"></div>
+      <svg id="overlay"></svg>
+    </div>
+  </div>
+  <div id="emptyHint">作業エリアをダブルクリックして<br>ノードを追加しましょう</div>
+  <div id="zoombar">
+    <button id="zoomOut" title="縮小">−</button>
+    <span id="zoomLabel">100%</span>
+    <button id="zoomIn" title="拡大">＋</button>
+    <button id="zoomFit" title="全体を表示">全体</button>
+  </div>
+</main>
+
+<aside id="panel">
+  <div id="panelHelp">
+    <h2>使い方</h2>
+    <ul class="help">
+      <li>空きをダブルクリック：ノード追加</li>
+      <li>ノードをダブルクリック：文字を編集<br>（<kbd>Enter</kbd>で確定、<kbd>Shift</kbd>+<kbd>Enter</kbd>で改行）</li>
+      <li>ドラッグ：ノードの移動 / 空きをドラッグで画面移動</li>
+      <li><kbd>Ctrl</kbd>+ホイール：拡大縮小</li>
+      <li><kbd>Delete</kbd>：選択を削除</li>
+      <li><kbd>Ctrl</kbd>+<kbd>Z</kbd> / <kbd>Ctrl</kbd>+<kbd>Y</kbd>：元に戻す / やり直し</li>
+    </ul>
+  </div>
+</aside>
+
+<script>
+(() => {
+'use strict';
+
+/* ============================================================
+   定数・ユーティリティ
+   ============================================================ */
+const STORAGE_KEY = 'mindmap.v1';
+const MIN_K = 0.2, MAX_K = 3;
+
+const $ = (s, r = document) => r.querySelector(s);
+const uid = p => p + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+const num = (v, d = 0) => (typeof v === 'number' || typeof v === 'string') && v !== '' && Number.isFinite(+v) ? +v : d;
+const str = v => (typeof v === 'string' ? v : '');
+const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
+// IME変換中のキー（変換確定のEnterなど）かどうか
+const composing = e => e.isComposing || e.keyCode === 229;
+
+/* ============================================================
+   保存先（ここを差し替えればSupabaseなどに載せ替えできる）
+   load() → データ or null / save(data) → 失敗時は例外
+   ============================================================ */
+const Store = {
+  load() {
+    try { const raw = localStorage.getItem(STORAGE_KEY); return raw ? JSON.parse(raw) : null; }
+    catch { return null; }
+  },
+  save(data) { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); },
+};
+
+/* ============================================================
+   データの正規化（読み込み・インポート時に壊れたデータを弾く）
+   sheets: [{ id, name, nodes:[{id,x,y,text,note}], edges:[{id,from,to,arrow,shape,bend}], view }]
+   ============================================================ */
+function normalizeSheet(s, usedIds) {
+  if (!s || typeof s !== 'object') return null;
+  let id = str(s.id) || uid('s');
+  if (usedIds.has(id)) id = uid('s');
+  usedIds.add(id);
+
+  const nodes = [], nodeIds = new Set();
+  for (const n of Array.isArray(s.nodes) ? s.nodes : []) {
+    if (!n || typeof n !== 'object') continue;
+    let nid = str(n.id) || uid('n');
+    if (nodeIds.has(nid)) nid = uid('n');
+    nodeIds.add(nid);
+    nodes.push({ id: nid, x: num(n.x), y: num(n.y), text: str(n.text), note: str(n.note) });
+  }
+
+  const edges = [], edgeIds = new Set();
+  for (const e of Array.isArray(s.edges) ? s.edges : []) {
+    if (!e || typeof e !== 'object') continue;
+    if (!nodeIds.has(e.from) || !nodeIds.has(e.to) || e.from === e.to) continue;
+    let eid = str(e.id) || uid('e');
+    if (edgeIds.has(eid)) eid = uid('e');
+    edgeIds.add(eid);
+    edges.push({
+      id: eid, from: e.from, to: e.to,
+      arrow: ['none', 'both', 'end', 'start'].includes(e.arrow) ? e.arrow : 'end',
+      shape: ['curve', 'straight'].includes(e.shape) ? e.shape : 'curve',
+      bend: num(e.bend, 30),
+    });
+  }
+
+  let view = null;
+  if (s.view && typeof s.view === 'object' && Number.isFinite(+s.view.x) && Number.isFinite(+s.view.y)) {
+    view = { x: +s.view.x, y: +s.view.y, k: clamp(num(s.view.k, 1), MIN_K, MAX_K) };
+  }
+  return { id, name: str(s.name).trim() || '無題', nodes, edges, view };
+}
+
+function normalizeDb(raw) {
+  if (!raw || typeof raw !== 'object') return null;
+  const list = Array.isArray(raw) ? raw : raw.sheets;
+  if (!Array.isArray(list)) return null;
+  const used = new Set();
+  const sheets = list.map(s => normalizeSheet(s, used)).filter(Boolean);
+  if (!sheets.length) return null;
+  const cur = !Array.isArray(raw) && sheets.some(s => s.id === raw.currentId) ? raw.currentId : sheets[0].id;
+  return { version: 1, currentId: cur, sheets };
+}
+
+const newSheet = name => ({ id: uid('s'), name, nodes: [], edges: [], view: null });
+
+/* ============================================================
+   状態
+   ============================================================ */
+let db = normalizeDb(Store.load());
+if (!db) { const s = newSheet('マップ 1'); db = { version: 1, currentId: s.id, sheets: [s] }; }
+
+let sel = null;        // { type:'node'|'edge', id }
+let editing = null;    // { id, isNew }  ノードの文字編集中
+let renamingId = null; // サイドバーで名前変更中のシートID
+let busy = false;      // ドラッグ等の操作中（Undoを止める）
+
+const sheet = () => db.sheets.find(s => s.id === db.currentId);
+const nodeById = id => sheet().nodes.find(n => n.id === id);
+
+/* ---------- 要素 ---------- */
+const sheetList = $('#sheetList'), saveStatus = $('#saveStatus'), fileInput = $('#fileInput');
+const viewport = $('#viewport'), world = $('#world'), nodeLayer = $('#nodeLayer');
+const emptyHint = $('#emptyHint'), zoomLabel = $('#zoomLabel');
+
+/* ============================================================
+   自動保存
+   ============================================================ */
+let saveTimer = null;
+function setStatus(kind) {
+  saveStatus.classList.toggle('err', kind === 'error');
+  saveStatus.textContent = kind === 'pending' ? '保存中…' : kind === 'saved' ? '✓ 自動保存済み'
+    : kind === 'error' ? '保存できませんでした（容量不足？）' : '';
+}
+function scheduleSave(quiet) {
+  if (!quiet) setStatus('pending');
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(saveNow, 300);
+}
+function saveNow() {
+  clearTimeout(saveTimer); saveTimer = null;
+  try { Store.save(db); setStatus('saved'); } catch { setStatus('error'); }
+}
+const changed = () => scheduleSave(false);
+
+/* ============================================================
+   元に戻す / やり直し（シートごと・ノードと線の全編集が対象）
+   ============================================================ */
+const histories = new Map();
+let lastKey = null; // 同じキーの連続編集（メモ入力など）を1回分にまとめる
+const H = () => { if (!histories.has(db.currentId)) histories.set(db.currentId, { undo: [], redo: [] }); return histories.get(db.currentId); };
+const snap = () => { const s = sheet(); return JSON.stringify({ nodes: s.nodes, edges: s.edges }); };
+function checkpoint(key = null) {
+  if (key && key === lastKey) return;
+  lastKey = key;
+  const h = H();
+  h.undo.push(snap());
+  if (h.undo.length > 200) h.undo.shift();
+  h.redo.length = 0;
+}
+const endCoalesce = () => { lastKey = null; };
+function restore(json) {
+  const d = JSON.parse(json), s = sheet();
+  s.nodes = d.nodes; s.edges = d.edges;
+  if (sel && !(sel.type === 'node' ? nodeById(sel.id) : s.edges.find(e => e.id === sel.id))) sel = null;
+  lastKey = null;
+  changed(); renderAll();
+}
+function undo() {
+  if (busy) return;
+  const h = H(); if (!h.undo.length) return;
+  h.redo.push(snap()); restore(h.undo.pop());
+}
+function redo() {
+  if (busy) return;
+  const h = H(); if (!h.redo.length) return;
+  h.undo.push(snap()); restore(h.redo.pop());
+}
+
+/* ============================================================
+   画面（パン・ズーム）
+   ============================================================ */
+const view = () => sheet().view;
+function ensureView() {
+  const s = sheet();
+  if (!s.view) { const r = viewport.getBoundingClientRect(); s.view = { x: Math.round(r.width / 2), y: Math.round(r.height / 2), k: 1 }; }
+}
+function applyView() {
+  const v = view();
+  world.style.transform = `translate(${v.x}px,${v.y}px) scale(${v.k})`;
+  world.style.setProperty('--inv', clamp(1 / v.k, 1, 2.5).toFixed(3));
+  let size = 24 * v.k; while (size < 14) size *= 2;
+  viewport.style.backgroundSize = `${size}px ${size}px`;
+  viewport.style.backgroundPosition = `${v.x}px ${v.y}px`;
+  zoomLabel.textContent = Math.round(v.k * 100) + '%';
+  if (typeof onViewChanged === 'function') onViewChanged();
+}
+function toWorld(clientX, clientY) {
+  const r = viewport.getBoundingClientRect(), v = view();
+  return { x: (clientX - r.left - v.x) / v.k, y: (clientY - r.top - v.y) / v.k };
+}
+function zoomAt(cx, cy, factor) {
+  const v = view(), nk = clamp(v.k * factor, MIN_K, MAX_K), f = nk / v.k;
+  v.x = cx - (cx - v.x) * f; v.y = cy - (cy - v.y) * f; v.k = nk;
+  applyView(); scheduleSave(true);
+}
+function fitView() {
+  const s = sheet(), r = viewport.getBoundingClientRect(), v = view();
+  if (!s.nodes.length) { v.x = r.width / 2; v.y = r.height / 2; v.k = 1; applyView(); scheduleSave(true); return; }
+  let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+  for (const n of s.nodes) {
+    const el = nodeEls.get(n.id), hw = (el ? el.offsetWidth : 80) / 2, hh = (el ? el.offsetHeight : 40) / 2;
+    x0 = Math.min(x0, n.x - hw); x1 = Math.max(x1, n.x + hw); y0 = Math.min(y0, n.y - hh); y1 = Math.max(y1, n.y + hh + 30);
+  }
+  const pad = 70, w = Math.max(1, x1 - x0), h = Math.max(1, y1 - y0);
+  v.k = clamp(Math.min((r.width - pad * 2) / w, (r.height - pad * 2) / h, 1.2), MIN_K, MAX_K);
+  v.x = r.width / 2 - ((x0 + x1) / 2) * v.k; v.y = r.height / 2 - ((y0 + y1) / 2) * v.k;
+  applyView(); scheduleSave(true);
+}
+
+/* ============================================================
+   描画：ノード
+   ============================================================ */
+const nodeEls = new Map();
+
+function createNodeEl(n) {
+  const el = document.createElement('div');
+  el.className = 'node'; el.dataset.id = n.id;
+  el.innerHTML = '<div class="box"><div class="label"></div></div>';
+  el._box = el.firstChild; el._label = el._box.firstChild;
+  el._label.addEventListener('keydown', onLabelKeydown);
+  el._label.addEventListener('blur', () => commitEdit());
+  if (typeof onNodeCreated === 'function') onNodeCreated(el);
+  return el;
+}
+function syncNode(el, n) {
+  el.style.left = n.x + 'px'; el.style.top = n.y + 'px';
+  el.classList.toggle('selected', !!sel && sel.type === 'node' && sel.id === n.id);
+  const isEditing = !!editing && editing.id === n.id;
+  el.classList.toggle('editing', isEditing);
+  if (!isEditing && el._label.textContent !== n.text) el._label.textContent = n.text;
+  if (typeof onNodeSynced === 'function') onNodeSynced(el, n);
+}
+function renderNodes() {
+  const s = sheet(), seen = new Set();
+  for (const n of s.nodes) {
+    let el = nodeEls.get(n.id);
+    if (!el) { el = createNodeEl(n); nodeEls.set(n.id, el); nodeLayer.appendChild(el); }
+    syncNode(el, n); seen.add(n.id);
+  }
+  for (const [id, el] of nodeEls) if (!seen.has(id)) { el.remove(); nodeEls.delete(id); if (typeof onNodeRemoved === 'function') onNodeRemoved(el); }
+}
+function renderCanvas() {
+  renderNodes();
+  emptyHint.style.display = sheet().nodes.length ? 'none' : '';
+  if (typeof renderEdgesAndOverlay === 'function') renderEdgesAndOverlay();
+}
+
+/* ============================================================
+   選択
+   ============================================================ */
+function select(type = null, id = null) {
+  if (!type) { if (!sel) return; sel = null; }
+  else if (sel && sel.type === type && sel.id === id) return;
+  else sel = { type, id };
+  endCoalesce();
+  renderCanvas(); renderPanel();
+}
+
+/* ============================================================
+   ノード操作
+   ============================================================ */
+function addNode(x, y) {
+  commitEdit();
+  checkpoint();
+  const n = { id: uid('n'), x: Math.round(x), y: Math.round(y), text: '', note: '' };
+  sheet().nodes.push(n);
+  sel = { type: 'node', id: n.id };
+  changed(); renderAll();
+  startEdit(n.id, true);
+}
+function deleteSelection() {
+  if (!sel) return;
+  const s = sheet();
+  checkpoint();
+  if (sel.type === 'node') {
+    s.nodes = s.nodes.filter(n => n.id !== sel.id);
+    s.edges = s.edges.filter(e => e.from !== sel.id && e.to !== sel.id);
+  } else {
+    s.edges = s.edges.filter(e => e.id !== sel.id);
+  }
+  sel = null;
+  changed(); renderAll();
+}
+
+/* ---------- 文字編集 ---------- */
+function startEdit(id, isNew = false) {
+  commitEdit();
+  const el = nodeEls.get(id), n = nodeById(id);
+  if (!el || !n) return;
+  hidePopup();
+  editing = { id, isNew };
+  el.classList.add('editing');
+  const label = el._label;
+  label.contentEditable = 'plaintext-only';
+  label.focus();
+  const r = document.createRange(); r.selectNodeContents(label); r.collapse(false); // キャレットは末尾
+  const g = getSelection(); g.removeAllRanges(); g.addRange(r);
+}
+function commitEdit() {
+  if (!editing) return;
+  const { id, isNew } = editing;
+  editing = null;
+  const el = nodeEls.get(id), n = nodeById(id);
+  if (!el) return;
+  const label = el._label;
+  const text = label.innerText.replace(/\r\n?/g, '\n').replace(/ /g, ' ').trim();
+  label.contentEditable = 'false';
+  el.classList.remove('editing');
+  if (document.activeElement === label) label.blur();
+  if (!n) return;
+  if (isNew && text === '') {
+    // 追加しただけで何も入力しなかったノードは破棄（追加時のUndo記録も取り消す）
+    const s = sheet();
+    s.nodes = s.nodes.filter(x => x.id !== id);
+    if (sel && sel.id === id) sel = null;
+    const h = H(); h.undo.pop(); lastKey = null;
+    changed(); renderAll();
+    return;
+  }
+  if (text !== n.text) {
+    if (!isNew) checkpoint();
+    n.text = text;
+    changed();
+  }
+  renderAll();
+}
+function cancelEdit() { // 編集内容を捨てる（新規で空なら破棄）
+  if (!editing) return;
+  const n = nodeById(editing.id);
+  if (n) nodeEls.get(n.id)._label.textContent = n.text;
+  commitEdit();
+}
+function onLabelKeydown(e) {
+  if (!editing) return;
+  if (composing(e)) return; // IME変換中は一切反応しない
+  e.stopPropagation();
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); commitEdit(); }
+  else if (e.key === 'Escape') { e.preventDefault(); commitEdit(); }
+}
+
+/* ============================================================
+   ポインタ操作（ドラッグ移動・パン）
+   ============================================================ */
+function track(onMove, onUp) {
+  const mv = ev => onMove(ev);
+  const up = ev => {
+    window.removeEventListener('pointermove', mv);
+    window.removeEventListener('pointerup', up);
+    window.removeEventListener('pointercancel', up);
+    onUp(ev);
+  };
+  window.addEventListener('pointermove', mv);
+  window.addEventListener('pointerup', up);
+  window.addEventListener('pointercancel', up);
+}
+
+viewport.addEventListener('pointerdown', e => {
+  hidePopup();
+  const t = e.target;
+  const nodeEl = t.closest ? t.closest('.node') : null;
+  if (editing && nodeEl && nodeEl.dataset.id === editing.id) return; // 編集中ノード内：文字選択を優先
+  if (editing) commitEdit();
+  if (e.button === 1) { e.preventDefault(); startPan(e, false); return; }
+  if (e.button !== 0) return;
+  if (typeof onPointerDownExtra === 'function' && onPointerDownExtra(e, t, nodeEl)) return;
+  if (nodeEl) { startNodeDrag(e, nodeEl); return; }
+  startPan(e, true);
+});
+
+function startPan(e, clearOnClick) {
+  const v = view(), sx = e.clientX, sy = e.clientY, ox = v.x, oy = v.y;
+  let moved = false;
+  busy = true;
+  viewport.classList.add('panning');
+  track(ev => {
+    const dx = ev.clientX - sx, dy = ev.clientY - sy;
+    if (!moved && Math.hypot(dx, dy) < 3) return;
+    moved = true; v.x = ox + dx; v.y = oy + dy; applyView();
+  }, () => {
+    busy = false;
+    viewport.classList.remove('panning');
+    if (moved) scheduleSave(true); else if (clearOnClick) select();
+  });
+}
+
+function startNodeDrag(e, nodeEl) {
+  const id = nodeEl.dataset.id, n = nodeById(id);
+  select('node', id);
+  const v = view(), sx = e.clientX, sy = e.clientY, ox = n.x, oy = n.y;
+  let moved = false;
+  busy = true;
+  track(ev => {
+    const dx = ev.clientX - sx, dy = ev.clientY - sy;
+    if (!moved) {
+      if (Math.hypot(dx, dy) < 4) return;
+      moved = true; checkpoint(); hidePopup(); nodeEl.classList.add('dragging');
+    }
+    n.x = Math.round(ox + dx / v.k); n.y = Math.round(oy + dy / v.k);
+    renderCanvas();
+  }, () => {
+    busy = false;
+    nodeEl.classList.remove('dragging');
+    if (moved) changed();
+  });
+}
+
+viewport.addEventListener('dblclick', e => {
+  const t = e.target;
+  if (t.closest && t.closest('g.edge, .bend-handle')) return;
+  const nodeEl = t.closest ? t.closest('.node') : null;
+  if (nodeEl) {
+    if (t.closest('.handle')) return;
+    if (!editing || editing.id !== nodeEl.dataset.id) startEdit(nodeEl.dataset.id);
+    return;
+  }
+  const p = toWorld(e.clientX, e.clientY);
+  addNode(p.x, p.y);
+});
+
+viewport.addEventListener('wheel', e => {
+  e.preventDefault();
+  const unit = e.deltaMode === 1 ? 16 : 1;
+  if (e.ctrlKey) {
+    const r = viewport.getBoundingClientRect();
+    zoomAt(e.clientX - r.left, e.clientY - r.top, Math.exp(-e.deltaY * unit * 0.0015));
+  } else {
+    const v = view(); v.x -= e.deltaX * unit; v.y -= e.deltaY * unit; applyView(); scheduleSave(true);
+  }
+}, { passive: false });
+
+$('#zoomIn').addEventListener('click', () => { const r = viewport.getBoundingClientRect(); zoomAt(r.width / 2, r.height / 2, 1.2); });
+$('#zoomOut').addEventListener('click', () => { const r = viewport.getBoundingClientRect(); zoomAt(r.width / 2, r.height / 2, 1 / 1.2); });
+$('#zoomFit').addEventListener('click', fitView);
+
+/* ============================================================
+   右パネル（段階が進むとメモ欄が入る）
+   ============================================================ */
+function renderPanel() {}
+
+/* ============================================================
+   左サイドバー：シート一覧
+   ============================================================ */
+function renderSidebar() {
+  sheetList.textContent = '';
+  let focusEl = null;
+  for (const s of db.sheets) {
+    const li = document.createElement('li');
+    li.className = 'sheet' + (s.id === db.currentId ? ' active' : '');
+    li.dataset.id = s.id;
+    if (renamingId === s.id) {
+      const input = document.createElement('input');
+      input.value = s.name; input.maxLength = 60;
+      input.addEventListener('keydown', e => {
+        if (composing(e)) return;
+        if (e.key === 'Enter') { e.preventDefault(); finishRename(true, input.value); }
+        else if (e.key === 'Escape') { e.preventDefault(); finishRename(false); }
+      });
+      input.addEventListener('blur', () => finishRename(true, input.value));
+      li.appendChild(input);
+      sheetList.appendChild(li);
+      focusEl = input;
+      continue;
+    }
+    li.innerHTML = '<span class="name"></span>'
+      + '<button class="icon" data-act="rename" title="名前を変更">✎</button>'
+      + '<button class="icon del" data-act="delete" title="削除">✕</button>';
+    li.firstChild.textContent = s.name; li.firstChild.title = s.name;
+    sheetList.appendChild(li);
+  }
+  if (focusEl) { focusEl.focus(); focusEl.select(); }
+}
+function finishRename(commit, value) {
+  if (!renamingId) return;
+  const s = db.sheets.find(x => x.id === renamingId);
+  renamingId = null;
+  const name = (value || '').trim();
+  if (commit && s && name && name !== s.name) { s.name = name; changed(); }
+  renderSidebar();
+}
+sheetList.addEventListener('click', e => {
+  const li = e.target.closest('.sheet'); if (!li || renamingId) return;
+  const act = e.target.closest('[data-act]');
+  if (act && act.dataset.act === 'rename') { e.stopPropagation(); renamingId = li.dataset.id; renderSidebar(); return; }
+  if (act && act.dataset.act === 'delete') { e.stopPropagation(); deleteSheet(li.dataset.id); return; }
+  switchSheet(li.dataset.id);
+});
+sheetList.addEventListener('dblclick', e => {
+  const li = e.target.closest('.sheet');
+  if (!li || renamingId || e.target.closest('[data-act]')) return;
+  renamingId = li.dataset.id; renderSidebar();
+});
+
+function switchSheet(id) {
+  if (id === db.currentId) return;
+  commitEdit();
+  db.currentId = id; sel = null;
+  resetCanvas();
+  changed(); renderAll();
+}
+function resetCanvas() {
+  for (const [, el] of nodeEls) { el.remove(); if (typeof onNodeRemoved === 'function') onNodeRemoved(el); }
+  nodeEls.clear();
+  ensureView(); applyView();
+}
+$('#btnNewSheet').addEventListener('click', () => {
+  commitEdit();
+  const s = newSheet(`マップ ${db.sheets.length + 1}`);
+  db.sheets.push(s); db.currentId = s.id; sel = null;
+  resetCanvas();
+  changed(); renderAll();
+  renamingId = s.id; renderSidebar();
+  sheetList.lastElementChild && sheetList.lastElementChild.scrollIntoView({ block: 'nearest' });
+});
+function deleteSheet(id) {
+  const s = db.sheets.find(x => x.id === id); if (!s) return;
+  if (!confirm(`「${s.name}」を削除しますか？\nこの操作は元に戻せません。`)) return;
+  commitEdit();
+  const i = db.sheets.indexOf(s);
+  db.sheets.splice(i, 1);
+  histories.delete(id);
+  if (!db.sheets.length) db.sheets.push(newSheet('マップ 1'));
+  if (db.currentId === id) {
+    db.currentId = db.sheets[Math.min(i, db.sheets.length - 1)].id; sel = null;
+    resetCanvas();
+  }
+  changed(); renderAll();
+}
+
+/* ============================================================
+   書き出し / 読み込み（バックアップ）
+   ============================================================ */
+$('#btnExport').addEventListener('click', () => {
+  commitEdit(); saveNow();
+  const data = { app: 'mindmap', version: 1, exportedAt: new Date().toISOString(), currentId: db.currentId, sheets: db.sheets };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const d = new Date(), p = n => String(n).padStart(2, '0');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `mindmap-backup-${d.getFullYear()}${p(d.getMonth() + 1)}${p(d.getDate())}-${p(d.getHours())}${p(d.getMinutes())}.json`;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+});
+$('#btnImport').addEventListener('click', () => { fileInput.value = ''; fileInput.click(); });
+fileInput.addEventListener('change', async () => {
+  const f = fileInput.files && fileInput.files[0]; if (!f) return;
+  let next = null;
+  try { next = normalizeDb(JSON.parse(await f.text())); } catch { /* 下で通知 */ }
+  if (!next) { alert('読み込めませんでした。このアプリで書き出したJSONファイルを選んでください。'); return; }
+  if (!confirm(`${next.sheets.length}枚のシートを読み込みます。\n現在のシートはすべて置き換えられます。よろしいですか？`)) return;
+  commitEdit();
+  try { localStorage.setItem(STORAGE_KEY + '.beforeImport', JSON.stringify(db)); } catch { /* 容量不足なら諦める */ }
+  db = next; sel = null; histories.clear(); lastKey = null; renamingId = null;
+  resetCanvas();
+  changed(); renderAll();
+});
+
+/* ============================================================
+   キーボード
+   ============================================================ */
+window.addEventListener('keydown', e => {
+  if (composing(e)) return;
+  const t = e.target;
+  const typing = t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName));
+  const mod = e.ctrlKey || e.metaKey, k = e.key.toLowerCase();
+  if (typing) return; // 入力中はブラウザ標準の動作（文字単位のUndoなど）に任せる
+  if (mod && k === 'z') { e.preventDefault(); e.shiftKey ? redo() : undo(); return; }
+  if (mod && k === 'y') { e.preventDefault(); redo(); return; }
+  if (mod || e.altKey) return;
+  if (e.key === 'Delete' || e.key === 'Backspace') { if (sel) { e.preventDefault(); deleteSelection(); } return; }
+  if ((e.key === 'Enter' || e.key === 'F2') && sel && sel.type === 'node') { e.preventDefault(); startEdit(sel.id); return; }
+  if (e.key === 'Escape') select();
+});
+
+function hidePopup() {}
+function renderAll() { renderSidebar(); renderCanvas(); renderPanel(); }
+
+window.addEventListener('beforeunload', () => { commitEdit(); if (saveTimer) saveNow(); });
+document.addEventListener('visibilitychange', () => { if (document.hidden && saveTimer) saveNow(); });
+window.addEventListener('resize', () => { if (typeof onViewChanged === 'function') onViewChanged(); });
+
+/* ============================================================
+   起動
+   ============================================================ */
+ensureView(); applyView(); renderAll();
+window.__mm = { get db() { return db; } }; // 動作確認用
+
+})();
+</script>
+</body>
+</html>
