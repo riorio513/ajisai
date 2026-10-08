@@ -17,6 +17,25 @@ function numberFormatDigits(fmt: string | undefined): number | null {
   return m ? m[0].length : null;
 }
 
+/**
+ * セルの値から文字列を取り出す。リッチテキスト・リンク付き・数式結果など入れ子の形にも対応する。
+ * （リンク付きセルの text 自体がリッチテキストになっている実ファイルがある）
+ */
+function valueToText(v: unknown): string {
+  if (v === null || v === undefined) return '';
+  if (typeof v === 'string') return v;
+  if (typeof v === 'number' || typeof v === 'boolean') return String(v);
+  if (v instanceof Date) return v.toISOString();
+  if (typeof v === 'object') {
+    const o = v as Record<string, unknown>;
+    if (Array.isArray(o.richText)) return (o.richText as { text?: unknown }[]).map((r) => valueToText(r.text)).join('');
+    if ('text' in o) return valueToText(o.text);
+    if ('result' in o) return valueToText(o.result);
+    if ('error' in o) return valueToText(o.error);
+  }
+  return '';
+}
+
 function cellText(cell: ExcelJS.Cell): { text: string; meta?: CellMeta } {
   const v = cell.value as unknown;
   if (v === null || v === undefined) return { text: '' };
@@ -40,9 +59,10 @@ function cellText(cell: ExcelJS.Cell): { text: string; meta?: CellMeta } {
   }
   let text = '';
   try {
-    text = cell.text ?? '';
+    const t: unknown = cell.text;
+    text = typeof t === 'string' ? t : valueToText(v);
   } catch {
-    text = '';
+    text = valueToText(v);
   }
   return { text, meta };
 }

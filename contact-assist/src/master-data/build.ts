@@ -4,7 +4,7 @@
  */
 import type { ConflictCandidate, MasterConflict, MasterData, MasterEntry, MasterFieldId } from '../shared/types';
 import { hashString } from '../schema/normalize';
-import { digitsOf, hiraToKata, normalizeKey } from '../transformer';
+import { digitsOf, hiraToKata, normalizeKey, splitPrefecture } from '../transformer';
 
 const KANA_FIELDS = new Set<MasterFieldId>(['companyKana', 'fullKana', 'lastKana', 'firstKana']);
 const DIGIT_FIELDS = new Set<MasterFieldId>(['phone', 'phone1', 'phone2', 'phone3', 'postal', 'postal1', 'postal2']);
@@ -169,6 +169,31 @@ export function buildMaster(rawEntries: MasterEntry[], unclassified: MasterData[
     (v) => digitsOf(v.join('')), digitsOf, (v) => v.join('-'));
   cross('cross:postal', '郵便番号と、分割された郵便番号が一致しません', 'postal', ['postal1', 'postal2'],
     (v) => digitsOf(v.join('')), digitsOf, (v) => v.join('-'));
+
+  // 住所: 全文と、分割された住所（都道府県・市区町村・町域・番地・建物）が食い違っていないか
+  {
+    const pieces: MasterFieldId[] = ['prefecture', 'city', 'town', 'street', 'building'];
+    const full = values.address;
+    const present = pieces.filter((p) => values[p] !== undefined);
+    if (full !== undefined && present.includes('city') && present.length >= 2) {
+      // 分割側に都道府県が無いときは、全文の先頭の都道府県名を補って比べる（機械的な補完）
+      const derivedPref = values.prefecture === undefined ? splitPrefecture(full)?.prefecture : undefined;
+      const joined = (derivedPref ?? '') + present.map((p) => values[p]).join('');
+      if (nameKey(full) !== nameKey(joined)) {
+        const pieceApply = Object.fromEntries(present.map((p) => [p, values[p]!]));
+        if (derivedPref) pieceApply.prefecture = derivedPref;
+        const cands: ConflictCandidate[] = [
+          { apply: { address: full } as Record<string, string>, drop: pieces, label: '住所（全文）の欄', display: full },
+          { apply: pieceApply, drop: ['address'] as MasterFieldId[], label: '分割された住所の欄', display: joined },
+        ].map((c) => ({ ...c, id: candidateId(c.apply, c.drop) }));
+        const chosen = settle(makeConflict('cross:address', '住所（全文）と、分割された住所が一致しません', cands));
+        if (chosen) {
+          for (const d of chosen.drop ?? []) delete values[d];
+          for (const [k, v] of Object.entries(chosen.apply)) values[k as MasterFieldId] = v;
+        }
+      }
+    }
+  }
 
   // 数値セルの先頭0欠落疑いは、分割値には適用しない（分割値は短いのが普通）
   for (const f of Object.keys(values) as MasterFieldId[]) {

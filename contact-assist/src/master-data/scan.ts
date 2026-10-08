@@ -5,6 +5,8 @@
 import type { MasterEntry, RawSheet } from '../shared/types';
 import { isBlank } from '../schema/normalize';
 import { parseMasterLabel, LabelInfo } from './labels';
+import { interpretRow } from './interpret';
+import { kanaScriptOf } from '../transformer';
 
 export interface MasterScan {
   score: number;
@@ -83,37 +85,20 @@ function scanVertical(sheet: RawSheet, labels: LabelCell[]): MasterScan {
       if (!isBlank(row[c])) rights.push({ c, v: row[c] });
     }
     if (rights.length === 0) continue;
-    // 電話番号・郵便番号が「080 | 1234 | 5678」のように複数セルに分かれている場合は、Excelに明示された分割値として読む
-    const f = l.info.field;
-    const groups = rights.map((x) => x.v.normalize('NFKC').trim());
-    const allDigits = groups.every((g) => /^\d{2,5}$/.test(g));
-    if ((f === 'phone' && !l.info.part && groups.length === 3 && allDigits) || (f === 'postal' && !l.info.part && groups.length === 2 && allDigits)) {
-      rights.forEach((x, i) => {
-        entries.push({
-          field: `${f}${i + 1}` as MasterEntry['field'],
-          value: x.v,
-          label: l.text,
-          sheet: sheet.name,
-          excelRow: l.r + 1,
-          part: i + 1,
-          numeric: sheet.meta[`${l.r},${x.c}`]?.numeric,
-        });
+    for (const it of interpretRow(l.info, rights.map((x) => x.v))) {
+      entries.push({
+        field: it.field,
+        value: it.value,
+        label: l.text,
+        sheet: sheet.name,
+        excelRow: l.r + 1,
+        part: it.part,
+        numeric: sheet.meta[`${l.r},${rights[it.idx].c}`]?.numeric,
       });
-      used.add(`${l.r},${l.c}`);
-      continue;
     }
-    const first = rights[0];
-    entries.push({
-      field: l.info.field,
-      value: first.v,
-      label: l.text,
-      sheet: sheet.name,
-      excelRow: l.r + 1,
-      part: l.info.part,
-      numeric: sheet.meta[`${l.r},${first.c}`]?.numeric,
-    });
     used.add(`${l.r},${l.c}`);
   }
+  rerouteKanaOnlyNames(entries);
 
   // 辞書に無いラベル（参考表示）。ラベル列に値付きで存在するもの
   const unclassified: MasterScan['unclassified'] = [];
@@ -152,18 +137,34 @@ function scanHorizontal(sheet: RawSheet, headerLabels: LabelCell[]): MasterScan 
     for (const l of headerLabels) {
       const v = sheet.rows[r][l.c];
       if (isBlank(v)) continue;
-      entries.push({
-        field: l.info.field,
-        value: v,
-        label: l.text,
-        sheet: sheet.name,
-        excelRow: r + 1,
-        part: l.info.part,
-        numeric: sheet.meta[`${r},${l.c}`]?.numeric,
-      });
+      for (const it of interpretRow(l.info, [v])) {
+        entries.push({
+          field: it.field,
+          value: it.value,
+          label: l.text,
+          sheet: sheet.name,
+          excelRow: r + 1,
+          part: it.part,
+          numeric: sheet.meta[`${r},${l.c}`]?.numeric,
+        });
+      }
     }
+    rerouteKanaOnlyNames(entries);
   }
   const fields = new Set(entries.map((e) => e.field));
   const score = fields.size * 2 + (fields.has('phone') ? 1.5 : 0) + (fields.has('email') ? 1.5 : 0);
   return { score: fields.size >= 3 ? score : 0, layout: 'horizontal', entries, unclassified: [], distinctFields: fields.size, problem };
+}
+
+/**
+ * 「名前」の行にかなしか無い（漢字の氏名がどこにも無い）場合は、かなの氏名をそのまま氏名として使う。
+ * （漢字の氏名が別にあるときは、かなの行は「フリガナ」として扱ったままにする）
+ */
+function rerouteKanaOnlyNames(entries: MasterEntry[]): void {
+  const hasKanjiName = entries.some((e) => ['fullName', 'lastName', 'firstName'].includes(e.field) && kanaScriptOf(e.value) === 'other');
+  if (hasKanjiName) return;
+  const map: Record<string, MasterEntry['field']> = { fullKana: 'fullName', lastKana: 'lastName', firstKana: 'firstName' };
+  for (const e of [...entries]) {
+    if (map[e.field] && /^(名前|なまえ|お名前|氏名|ご氏名)/.test(e.label.normalize('NFKC'))) entries.push({ ...e, field: map[e.field] });
+  }
 }
