@@ -88,6 +88,30 @@ button{font:inherit;color:inherit;cursor:pointer}
 .node.editing .box{cursor:text;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
 .node.editing .label{user-select:text;-webkit-user-select:text;cursor:text}
 
+/* ---------- ハンドル（線を引く起点） ---------- */
+.handle{
+  position:absolute;width:12px;height:12px;border-radius:50%;background:#fff;border:2px solid var(--accent);
+  opacity:0;pointer-events:none;cursor:crosshair;z-index:3;transition:opacity .12s;
+  transform:translate(-50%,-50%) scale(var(--inv,1));
+}
+.node:hover .handle,.node.selected .handle{opacity:1;pointer-events:auto}
+.node.editing .handle{display:none}
+.handle:hover{background:var(--accent)}
+.handle.t{left:50%;top:0}.handle.b{left:50%;top:100%}.handle.l{left:0;top:50%}.handle.r{left:100%;top:50%}
+.node.drop .box{border-color:var(--accent);box-shadow:0 0 0 4px var(--accent-soft)}
+#viewport.connecting,#viewport.connecting *{cursor:crosshair!important}
+
+/* ---------- 線 ---------- */
+#overlay{z-index:5}
+.edge{--c:var(--edge)}
+.edge:hover{--c:var(--edge-hover)}
+.edge.selected{--c:var(--accent)}
+.edge .hit{fill:none;stroke:transparent;stroke-width:var(--hit,14px);pointer-events:stroke;cursor:pointer}
+.edge .line{fill:none;stroke:var(--c);stroke-width:2;stroke-linecap:round}
+.edge.selected .line{stroke-width:2.6}
+.edge .arr{fill:var(--c);stroke:none}
+#tempLine{fill:none;stroke:var(--accent);stroke-width:2;stroke-dasharray:6 5;stroke-linecap:round}
+
 /* ---------- 右：パネル ---------- */
 #panel{background:var(--panel);border-left:1px solid var(--line);padding:14px;overflow-y:auto;min-height:0}
 #panel h2{font-size:13px;margin:0 0 8px;color:var(--muted);font-weight:600}
@@ -314,6 +338,7 @@ function applyView() {
   const v = view();
   world.style.transform = `translate(${v.x}px,${v.y}px) scale(${v.k})`;
   world.style.setProperty('--inv', clamp(1 / v.k, 1, 2.5).toFixed(3));
+  world.style.setProperty('--hit', Math.max(14, 12 / v.k).toFixed(1) + 'px');
   let size = 24 * v.k; while (size < 14) size *= 2;
   viewport.style.backgroundSize = `${size}px ${size}px`;
   viewport.style.backgroundPosition = `${v.x}px ${v.y}px`;
@@ -689,6 +714,165 @@ fileInput.addEventListener('change', async () => {
   resetCanvas();
   changed(); renderAll();
 });
+
+/* ============================================================
+   線（エッジ）
+   形：curve は二次ベジェ。bend は「線の中点が、2ノード中心を結ぶ直線から垂直方向にずれる距離(px)」
+   ============================================================ */
+const SVGNS = 'http://www.w3.org/2000/svg';
+const edgeLayer = $('#edgeLayer'), overlay = $('#overlay');
+const GAP = 3, ARROW_LEN = 12, ARROW_HALF = 5;
+const edgeEls = new Map(), edgeGeoms = new Map();
+let connecting = null; // 線を引いている最中 { sx, sy, x, y }
+
+const svgEl = (tag, cls) => { const e = document.createElementNS(SVGNS, tag); if (cls) e.setAttribute('class', cls); return e; };
+const tempLine = svgEl('path'); tempLine.id = 'tempLine'; tempLine.style.display = 'none';
+overlay.appendChild(tempLine);
+
+// ノードの大きさが変わったら（文字が増えた等）線を引き直す
+let edgeRaf = 0;
+const ro = new ResizeObserver(() => {
+  if (edgeRaf) return;
+  edgeRaf = requestAnimationFrame(() => { edgeRaf = 0; renderEdgesAndOverlay(); });
+});
+function onNodeCreated(el) {
+  for (const side of ['t', 'r', 'b', 'l']) {
+    const h = document.createElement('div');
+    h.className = 'handle ' + side; h.dataset.side = side; el.appendChild(h);
+  }
+  ro.observe(el);
+}
+function onNodeRemoved(el) { ro.unobserve(el); }
+
+function boxOf(n) {
+  const el = nodeEls.get(n.id);
+  return { cx: n.x, cy: n.y, hw: (el ? el.offsetWidth : 60) / 2, hh: (el ? el.offsetHeight : 30) / 2 };
+}
+// 箱の中心から (tx,ty) 方向へ進んで、箱の縁に当たる点
+function clipToBox(b, tx, ty) {
+  const dx = tx - b.cx, dy = ty - b.cy;
+  if (Math.hypot(dx, dy) < 1e-6) return null;
+  const k = 1 / Math.max(Math.abs(dx) / (b.hw + GAP), Math.abs(dy) / (b.hh + GAP));
+  return { x: b.cx + dx * k, y: b.cy + dy * k };
+}
+const unit = (x, y) => { const l = Math.hypot(x, y) || 1; return { x: x / l, y: y / l }; };
+const f1 = v => Math.round(v * 100) / 100;
+function arrowPath(tip, dir) {
+  const bx = tip.x - dir.x * ARROW_LEN, by = tip.y - dir.y * ARROW_LEN, nx = -dir.y * ARROW_HALF, ny = dir.x * ARROW_HALF;
+  return `M${f1(tip.x)} ${f1(tip.y)}L${f1(bx + nx)} ${f1(by + ny)}L${f1(bx - nx)} ${f1(by - ny)}Z`;
+}
+function edgeGeom(e, a, b) {
+  const A = boxOf(a), B = boxOf(b);
+  const dx = B.cx - A.cx, dy = B.cy - A.cy, len = Math.hypot(dx, dy);
+  if (len < 1) return null;
+  const nx = -dy / len, ny = dx / len, mx = (A.cx + B.cx) / 2, my = (A.cy + B.cy) / 2;
+  const curve = e.shape === 'curve';
+  const c = { x: mx + (curve ? nx * e.bend * 2 : 0), y: my + (curve ? ny * e.bend * 2 : 0) };
+  const p0 = clipToBox(A, c.x, c.y), p1 = clipToBox(B, c.x, c.y);
+  if (!p0 || !p1) return null;
+  if ((p1.x - p0.x) * dx + (p1.y - p0.y) * dy <= 0) return null; // ノード同士が重なっている
+  const t0 = unit(p0.x - c.x, p0.y - c.y), t1 = unit(p1.x - c.x, p1.y - c.y); // 始点で外向き / 終点で進行方向
+  const showA0 = e.arrow === 'both' || e.arrow === 'start', showA1 = e.arrow === 'both' || e.arrow === 'end';
+  const L = ARROW_LEN * 0.8; // 矢じりの先から線がはみ出さないよう少し短くする
+  const s0 = showA0 ? { x: p0.x - t0.x * L, y: p0.y - t0.y * L } : p0;
+  const s1 = showA1 ? { x: p1.x - t1.x * L, y: p1.y - t1.y * L } : p1;
+  const d = curve
+    ? `M${f1(s0.x)} ${f1(s0.y)}Q${f1(c.x)} ${f1(c.y)} ${f1(s1.x)} ${f1(s1.y)}`
+    : `M${f1(s0.x)} ${f1(s0.y)}L${f1(s1.x)} ${f1(s1.y)}`;
+  const mid = curve
+    ? { x: p0.x / 4 + c.x / 2 + p1.x / 4, y: p0.y / 4 + c.y / 2 + p1.y / 4 }
+    : { x: (p0.x + p1.x) / 2, y: (p0.y + p1.y) / 2 };
+  return {
+    d, p0, p1, c, mid, mx, my, nx, ny,
+    a0: showA0 ? arrowPath(p0, t0) : '', a1: showA1 ? arrowPath(p1, t1) : '',
+  };
+}
+
+function createEdgeEl(e) {
+  const g = svgEl('g', 'edge'); g.dataset.id = e.id;
+  g._hit = svgEl('path', 'hit'); g._line = svgEl('path', 'line');
+  g._a0 = svgEl('path', 'arr'); g._a1 = svgEl('path', 'arr');
+  g.append(g._hit, g._line, g._a0, g._a1);
+  return g;
+}
+function renderEdgesAndOverlay() {
+  const s = sheet(), byId = new Map(s.nodes.map(n => [n.id, n])), seen = new Set();
+  edgeGeoms.clear();
+  for (const e of s.edges) {
+    const a = byId.get(e.from), b = byId.get(e.to);
+    if (!a || !b) continue;
+    let el = edgeEls.get(e.id);
+    if (!el) { el = createEdgeEl(e); edgeEls.set(e.id, el); edgeLayer.appendChild(el); }
+    seen.add(e.id);
+    const g = edgeGeom(e, a, b);
+    if (!g) { el.style.display = 'none'; continue; }
+    el.style.display = '';
+    edgeGeoms.set(e.id, g);
+    el._hit.setAttribute('d', g.d); el._line.setAttribute('d', g.d);
+    el._a0.setAttribute('d', g.a0); el._a1.setAttribute('d', g.a1);
+    const isSel = !!sel && sel.type === 'edge' && sel.id === e.id;
+    el.classList.toggle('selected', isSel);
+    if (isSel && el !== edgeLayer.lastChild) edgeLayer.appendChild(el); // 選択中の線を手前へ
+  }
+  for (const [id, el] of edgeEls) if (!seen.has(id)) { el.remove(); edgeEls.delete(id); }
+  renderOverlay();
+}
+function renderOverlay() {
+  if (connecting) {
+    tempLine.setAttribute('d', `M${connecting.sx} ${connecting.sy}L${f1(connecting.x)} ${f1(connecting.y)}`);
+    tempLine.style.display = '';
+  } else tempLine.style.display = 'none';
+}
+
+function handlePos(n, el, side) {
+  const hw = el.offsetWidth / 2, hh = el.offsetHeight / 2;
+  return side === 't' ? { x: n.x, y: n.y - hh } : side === 'b' ? { x: n.x, y: n.y + hh }
+    : side === 'l' ? { x: n.x - hw, y: n.y } : { x: n.x + hw, y: n.y };
+}
+function setDrop(id) { for (const [nid, el] of nodeEls) el.classList.toggle('drop', nid === id); }
+function nodeIdAt(x, y, exceptId) {
+  const el = document.elementFromPoint(x, y), nel = el && el.closest ? el.closest('.node') : null;
+  return nel && nel.dataset.id !== exceptId ? nel.dataset.id : null;
+}
+
+// ノードの小さい丸から、別のノードへドラッグして線を引く
+function startConnect(e, nodeEl, side) {
+  const from = nodeEl.dataset.id, st = handlePos(nodeById(from), nodeEl, side);
+  connecting = { sx: st.x, sy: st.y, x: st.x, y: st.y };
+  busy = true;
+  viewport.classList.add('connecting');
+  track(ev => {
+    const p = toWorld(ev.clientX, ev.clientY);
+    connecting.x = p.x; connecting.y = p.y;
+    setDrop(nodeIdAt(ev.clientX, ev.clientY, from));
+    renderOverlay();
+  }, ev => {
+    const to = nodeIdAt(ev.clientX, ev.clientY, from);
+    connecting = null; busy = false; setDrop(null);
+    viewport.classList.remove('connecting');
+    if (to && ev.type === 'pointerup') {
+      const s = sheet(), dup = s.edges.find(x => x.from === from && x.to === to);
+      if (dup) select('edge', dup.id);
+      else {
+        checkpoint();
+        const edge = { id: uid('e'), from, to, arrow: 'end', shape: 'curve', bend: 30 };
+        s.edges.push(edge);
+        sel = { type: 'edge', id: edge.id };
+        changed(); renderAll();
+        return;
+      }
+    }
+    renderOverlay();
+  });
+}
+
+function onPointerDownExtra(e, t, nodeEl) {
+  const handle = t.closest && t.closest('.handle');
+  if (handle && nodeEl) { startConnect(e, nodeEl, handle.dataset.side); return true; }
+  const g = t.closest && t.closest('g.edge');
+  if (g) { select('edge', g.dataset.id); return true; }
+  return false;
+}
 
 /* ============================================================
    キーボード
