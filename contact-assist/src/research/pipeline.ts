@@ -52,7 +52,14 @@ function excerptAround(text: string, re: RegExp, len: number): string {
   return text.slice(Math.max(0, m.index - 200), m.index - 200 + len);
 }
 
+/** 「AI判定だけ再実行」用に、直近の調査で読んだ文章をメモリ上だけに保持する（ディスクには保存しない） */
+export interface ResearchMemory {
+  passages: Passage[];
+  jobDocs: EvidenceDoc[];
+}
+
 class Researcher {
+  memory: ResearchMemory = { passages: [], jobDocs: [] };
   private readonly steps: string[] = [];
   private readonly evidence: Evidence[] = [];
   private readonly visited = new Map<string, Visited>();
@@ -233,15 +240,18 @@ class Researcher {
     let visits = 1;
     const enough = () => candidates.some((c) => c.eligibility.kind === 'general') && visits >= 2 && queue.every((q) => q.score < 10);
 
-    while (queue.length > 0 && visits < maxPages && !enough() && !this.cancelled()) {
-      queue.sort((a, b) => b.score - a.score);
-      const next = queue.shift()!;
-      if (this.seen.has(normUrl(next.url)) || next.depth > 3) continue;
-      const v = await this.visit(next.url, next.depth, next.via).catch(() => null);
-      if (!v) continue;
-      visits++;
-      await consider(v);
-    }
+    const drain = async (limit: number) => {
+      while (queue.length > 0 && visits < limit && !enough() && !this.cancelled()) {
+        queue.sort((a, b) => b.score - a.score);
+        const next = queue.shift()!;
+        if (this.seen.has(normUrl(next.url)) || next.depth > 3) continue;
+        const v = await this.visit(next.url, next.depth, next.via).catch(() => null);
+        if (!v) continue;
+        visits++;
+        await consider(v);
+      }
+    };
+    await drain(maxPages);
 
     // リンクから見つからなかったときの代表的なパス
     if (candidates.length === 0 && !this.cancelled()) {
@@ -255,6 +265,23 @@ class Researcher {
         if (!v) continue;
         visits++;
         await consider(v);
+        if (candidates.length > 0) break;
+      }
+    }
+    // それでも無ければサイトマップ・ページ内のリンクをたどる
+    if (candidates.length === 0 && !this.cancelled()) {
+      const maps = [...new Set(this.visited.values())]
+        .flatMap((v) => v.info.links)
+        .filter((l) => /サイトマップ|sitemap|site map/i.test(`${l.text} ${l.href}`) && sameSite(site.url, l.href) && !/\.xml($|\?)/i.test(l.href));
+      for (const m of maps.slice(0, 2)) {
+        const v = await this.visit(m.href, 2, 'サイトマップ').catch(() => null);
+        if (!v) continue;
+        visits++;
+        // サイトマップ上の全リンクからお問い合わせ系を拾う
+        for (const l of topLinks(v.info.links.map((x) => scoreContactLink(x, site.url)).filter((x): x is ScoredLink => !!x), 6, this.seen)) {
+          queue.push({ url: l.href, score: l.score, depth: 3, via: `サイトマップ: ${l.text}` });
+        }
+        await drain(maxPages + 8);
         if (candidates.length > 0) break;
       }
     }
@@ -275,6 +302,7 @@ class Researcher {
     if (chosen) {
       add(chosen.visited.url, 'フォーム', chosen.analysis.noticeText);
       for (const f of chosen.visited.raw.forms) add(f.frameUrl, 'フォーム', f.text);
+      if (chosen.visited.raw.pageText) add(chosen.visited.url + '#iframe', 'フォーム', chosen.visited.raw.pageText);
     }
     // 規約・注意事項ページ
     const noticeLinks: ScoredLink[] = [];
@@ -288,6 +316,7 @@ class Researcher {
       if (v) add(v.url, '利用規約・注意事項', v.info.text);
     }
 
+    this.memory.passages = passages;
     const checkedUrls = [...new Set(passages.map((p) => p.url))];
     this.step(`営業禁止の確認: ${checkedUrls.length}ページの文章を確認`);
     const rule = detectSolicitation(passages);
@@ -348,6 +377,7 @@ class Researcher {
       if (v) docs.push({ kind: '事業内容', url: v.url, text: v.info.text });
     }
     docs.push({ kind: '事業内容', url: top.url, text: top.info.text });
+    this.memory.jobDocs = docs;
     this.step(`職種調査: 採用ページ${docs.filter((d) => d.kind === '採用ページ').length}件・事業内容${docs.filter((d) => d.kind === '事業内容').length}件を確認`);
 
     const cands = this.jobs.map((j, i) => ({ id: `j${i}`, label: j.label }));
@@ -489,8 +519,17 @@ export async function refineFormWithAI(form: FormAnalysis, ai: AIProvider): Prom
   return form;
 }
 
-export async function researchCompany(deps: ResearchDeps, company: Company, jobs: JobOption[]): Promise<ResearchResult> {
+export async function researchCompanyWithMemory(deps: ResearchDeps, company: Company, jobs: JobOption[]): Promise<{ result: ResearchResult; memory: ResearchMemory }> {
   const r = new Researcher(deps, company, jobs);
+  const result = await runSafely(r, deps);
+  return { result, memory: r.memory };
+}
+
+export async function researchCompany(deps: ResearchDeps, company: Company, jobs: JobOption[]): Promise<ResearchResult> {
+  return (await researchCompanyWithMemory(deps, company, jobs)).result;
+}
+
+async function runSafely(r: Researcher, deps: ResearchDeps): Promise<ResearchResult> {
   try {
     return await r.run();
   } catch (e) {
@@ -518,4 +557,63 @@ export async function reanalyzeForm(page: ReadOnlyPage, ai: AIProvider, opts: { 
   const raw = await page.readForms();
   const a = analyzeForms(raw, { formIndex: opts.formIndex });
   return a ? refineFormWithAI(a, ai) : null;
+}
+
+/**
+ * AI判定だけをやり直す（ページの再取得はしない）。メモリ上の直近の調査内容を使う。
+ * 営業禁止が「要確認」だった場合の再判定、職種の再選択、不明な入力項目の再分類を行う。
+ */
+export async function rerunAiJudgments(
+  ai: AIProvider,
+  company: Company,
+  jobs: JobOption[],
+  prev: ResearchResult,
+  memory: ResearchMemory,
+  now: () => Date = () => new Date(),
+): Promise<ResearchResult> {
+  const result: ResearchResult = { ...prev, evidence: [...prev.evidence], steps: [...prev.steps, 'AI判定を再実行'] };
+  if (!(await ai.isAvailable())) {
+    result.steps.push('AIが利用できないため、再判定できません');
+    return result;
+  }
+  const at = now().toISOString();
+  if (prev.solicitation.verdict === 'unclear') {
+    const rule = detectSolicitation(memory.passages);
+    const related = rule.findings.map((f) => ({ url: f.url, text: f.sentence }));
+    const r = await ai.judgeSolicitation({ company: company.name, passages: related.length ? related : memory.passages.slice(0, 4) });
+    if (r.verdict === 'banned' && r.quote) {
+      result.solicitation = { ...prev.solicitation, verdict: 'banned', by: 'ai' };
+      result.evidence.push({ url: r.url ?? prev.solicitation.checkedUrls[0] ?? '', kind: '営業禁止', snippet: r.quote, at });
+      result.code = STATUS.NO_SALES;
+      result.message = '営業目的の問い合わせが禁止されているため、この企業では問い合わせ作業を行わないでください';
+    } else if (r.verdict === 'allowed') {
+      result.solicitation = { ...prev.solicitation, verdict: 'none', by: 'ai' };
+      result.evidence.push({ url: r.url ?? prev.solicitation.checkedUrls[0] ?? '', kind: '営業禁止確認', snippet: `AI判定: 営業禁止の記載ではありません（${r.reason}）`, at });
+      if (result.code === STATUS.SALES_UNCLEAR) {
+        result.code = STATUS.OK;
+        result.message = '調査完了';
+      }
+    }
+  }
+  if (memory.jobDocs.length > 0 && jobs.length > 0) {
+    const cands = jobs.map((j, i) => ({ id: `j${i}`, label: j.label }));
+    const evidence = memory.jobDocs
+      .map((d) => ({ url: d.url, kind: d.kind, text: d.kind === '採用ページ' ? excerptAround(d.text, /募集職種|募集要項|職種|求人/, 1500) : clip(d.text, 1200) }))
+      .slice(0, 6);
+    const r = await ai.pickJob({ company: company.name, industryHint: company.industry || undefined, evidence, jobs: cands });
+    if (r.jobId) {
+      const j = jobs[Number(r.jobId.slice(1))];
+      if (j) {
+        result.job = { label: j.label, templateIds: j.templateIds, exact: r.exact, by: 'ai', reason: `AIが採用情報から選択: ${r.reason}${r.exact ? '' : '（近似職種）'}` };
+        result.evidence.push({ url: memory.jobDocs[0].url, kind: r.exact ? '職種' : '近似職種', snippet: r.reason, at });
+        if (result.code === STATUS.JOB_UNCLEAR) {
+          result.code = STATUS.OK;
+          result.message = '調査完了';
+        }
+      }
+    }
+  }
+  if (result.form) result.form = await refineFormWithAI(result.form, ai);
+  result.researchedAt = at;
+  return result;
 }

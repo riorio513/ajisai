@@ -62,6 +62,62 @@ describe('Excel変更への追従', () => {
   });
 });
 
+describe('列の削除・文面番号の変更・問い合わせ情報の変更・職種の増減', () => {
+  it('任意の列を削除しても動く（業界/memo/文面番号/判定、想定ターゲット/採用単価）', async () => {
+    const s = buildSampleSheets();
+    const drop = (rows: (string | number | null)[][], idxs: number[]) => rows.map((r) => r.filter((_, i) => !idxs.includes(i)));
+    s[0].rows = drop(s[0].rows, [2, 4, 5, 6]); // 企業名, 企業HP, 職種
+    s[2].rows = drop(s[2].rows, [2, 3]); // No, 職種, 件名, 本文
+    const m = await modelFrom(s);
+    expect(m.structure.status).toBe('ok');
+    expect(m.companies.length).toBe(SAMPLE_COMPANIES.length);
+    expect(m.templates.length).toBe(SAMPLE_TEMPLATES.length);
+    expect(m.templates[0].target).toBe('');
+  });
+  it('文面番号を付け替えても、その時点のExcelの番号が使われる', async () => {
+    const s = buildSampleSheets();
+    s[2].rows.slice(1).forEach((r, i) => (r[0] = `T-${String(i + 1).padStart(2, '0')}`));
+    const m = await modelFrom(s);
+    expect(m.templates.map((t) => t.number)).toEqual(['T-01', 'T-02', 'T-03', 'T-04', 'T-05']);
+    expect(m.templates[0].id).toBe('T-01');
+  });
+  it('問い合わせ情報の変更（送信者・電話・メール）が反映される', async () => {
+    const s = buildSampleSheets();
+    for (const r of s[1].rows) {
+      if (r[0] === '電話番号') r[1] = '090-1111-2222';
+      if (r[0] === 'メールアドレス') r[1] = 'new@example.org';
+      if (r[0] === '氏名') r[1] = '佐藤 花子';
+      if (r[0] === '姓') r[1] = '佐藤';
+      if (r[0] === '名') r[1] = '花子';
+    }
+    const m = await modelFrom(s);
+    expect(m.master!.values.phone).toBe('090-1111-2222');
+    expect(m.master!.values.email).toBe('new@example.org');
+    expect(m.master!.values.fullName).toBe('佐藤 花子');
+    expect(m.master!.conflicts).toEqual([]);
+  });
+  it('項目の追加・削除（役職を入れる / 部署を消す）', async () => {
+    const s = buildSampleSheets();
+    for (const r of s[1].rows) if (r[0] === '役職') r[1] = '部長';
+    s[1].rows = s[1].rows.filter((r) => r[0] !== '部署');
+    const m = await modelFrom(s);
+    expect(m.master!.values.position).toBe('部長');
+    expect(m.master!.values.department).toBeUndefined();
+  });
+  it('職種が18→30種類に増えても使える / 職種を減らしても使える', async () => {
+    const m30 = await sampleModel({ extraTemplates: 25 });
+    expect(m30.jobs.length).toBe(30);
+    const s = buildSampleSheets();
+    s[2].rows = s[2].rows.slice(0, 3);
+    const m2 = await modelFrom(s);
+    expect(m2.jobs.map((j) => j.label)).toEqual([SAMPLE_TEMPLATES[0].job, SAMPLE_TEMPLATES[1].job]);
+  });
+  it('企業のURLは原文のまま', async () => {
+    const m = await sampleModel();
+    expect(m.companies.map((c) => c.url)).toEqual(SAMPLE_COMPANIES.map((c) => c[1]));
+  });
+});
+
 describe('構造が決められない場合は止まる', () => {
   it('文面シートが無い', async () => {
     const sheets = buildSampleSheets().filter((s) => s.name !== '文面');

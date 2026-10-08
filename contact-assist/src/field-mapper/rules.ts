@@ -37,6 +37,7 @@ const RULES: Rule[] = [
   // 電話
   { std: 'phone', src: 'L', re: /電話|でんわ|携帯|tel\b|phone|ｔｅｌ|連絡先番号/, w: 6 },
   { std: 'phone', src: 'N', re: /_(tel|telephone|phone|mobile|fon|denwa|tel\d?|phone\d?)_/, w: 5 },
+  { std: 'phone', src: 'L', re: /市外局番|局番|加入者番号/, w: 6 },
   { std: 'fax', src: 'L', re: /fax|ファックス|ファクス/, w: 9 },
   { std: 'fax', src: 'N', re: /_fax\d?_/, w: 8 },
   // 郵便番号
@@ -240,7 +241,9 @@ export function groupSplitFields(
       const ok = (c.std === std || (extra?.(fields[i], c) ?? false)) && controlKindOf(fields[i]) === 'text';
       if (ok) {
         // 同じラベルの連続だけを1つのグループとみなす
-        if (cur.length && labelKey(fields[cur[0]]) !== labelKey(fields[i]) && labelKey(fields[i]) !== '' && labelKey(fields[cur[0]]) !== '') {
+        // 別の欄の完全なラベル（例:「携帯電話」と「電話番号」）なら別グループ。「市外局番」などの部分ラベルは同じグループ
+        const fullLabel = /電話|tel|携帯|phone|郵便|〒|zip/i.test(labelKey(fields[i]));
+        if (cur.length && fullLabel && labelKey(fields[cur[0]]) !== labelKey(fields[i]) && labelKey(fields[i]) !== '' && labelKey(fields[cur[0]]) !== '') {
           runs.push(cur);
           cur = [];
         }

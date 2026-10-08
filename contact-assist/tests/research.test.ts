@@ -63,6 +63,17 @@ describe('企業調査パイプライン（ダミーサイト）', () => {
     expect(ev.url).toContain('/site-ban/contact.html');
   });
 
+  it('フォーム自身のページにある営業禁止文言も検出する', async () => {
+    const r = await researchCompany(deps(), company('架空建設株式会社', server.base + '/site-ban2/index.html'), jobs);
+    expect(r.code).toBe(STATUS.NO_SALES);
+    expect(r.evidence.find((e) => e.kind === '営業禁止')?.snippet).toContain('営業目的');
+  });
+
+  it('サイトマップからお問い合わせフォームを見つける', async () => {
+    const r = await researchCompany(deps(), company('サイトマップ経由株式会社', server.base + '/site-sitemap/index.html'), jobs);
+    expect(r.contactUrl).toContain('/forms/form-d.html');
+  });
+
   it('フォームが無いサイト', async () => {
     const r = await researchCompany(deps(), company('テスト製作所有限会社', server.base + '/site-noform/index.html'), jobs);
     expect(r.code).toBe(STATUS.NO_FORM);

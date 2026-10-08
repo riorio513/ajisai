@@ -118,6 +118,7 @@ export class ReadOnlyPage {
     const frames = this.page.frames().map((f) => guardFrame(f));
     const forms: RawFormInfo[] = [];
     const captchaKinds = new Set<string>();
+    const frameTexts: string[] = [];
     let title = '';
     let url = this.page.url();
     for (const [i, frame] of frames.entries()) {
@@ -126,6 +127,8 @@ export class ReadOnlyPage {
         if (i === 0) {
           title = r.title;
           url = r.url;
+        } else if (r.pageText) {
+          frameTexts.push(r.pageText); // iframe 内の文章（注意書きなど）
         }
         for (const f of r.forms) forms.push({ ...f, index: forms.length });
         r.captcha.kinds.forEach((k) => captchaKinds.add(k));
@@ -134,7 +137,7 @@ export class ReadOnlyPage {
       }
     }
     const captcha: CaptchaInfo = { present: captchaKinds.size > 0, kinds: [...captchaKinds] };
-    return { url, title, forms, captcha, pageText: '' };
+    return { url, title, forms, captcha, pageText: frameTexts.join('\n') };
   }
 }
 
@@ -145,7 +148,17 @@ export interface LaunchOptions {
 }
 
 export class BrowserSession {
-  private constructor(private readonly ctx: BrowserContext, readonly browserName: string) {}
+  private closed = false;
+  private constructor(private readonly ctx: BrowserContext, readonly browserName: string) {
+    ctx.on('close', () => {
+      this.closed = true;
+    });
+  }
+
+  /** ユーザーがブラウザを閉じていないか */
+  get isOpen(): boolean {
+    return !this.closed;
+  }
 
   static async launch(opts: LaunchOptions): Promise<BrowserSession> {
     const headless = opts.headless ?? process.env.ASSIST_HEADLESS === '1';

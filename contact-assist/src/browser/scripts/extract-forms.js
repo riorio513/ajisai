@@ -382,6 +382,6 @@
     title: document.title || '',
     forms,
     captcha: { present: kinds.length > 0, kinds: Array.from(new Set(kinds)) },
-    pageText: '',
+    pageText: document.body ? clean(document.body.innerText || '').slice(0, 30000) : '',
   };
 })()

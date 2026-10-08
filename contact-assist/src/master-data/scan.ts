@@ -100,7 +100,7 @@ function scanVertical(sheet: RawSheet, labels: LabelCell[]): MasterScan {
   sheet.rows.forEach((row, r) => {
     for (const c of labelCols) {
       const cell = row[c];
-      if (isBlank(cell) || recognized.has(`${r},${c}`) || cell.length > 40) continue;
+      if (isBlank(cell) || recognized.has(`${r},${c}`) || cell.length > 40 || /^(項目|項目名|内容|値|名称|ラベル|item|value)$/i.test(cell.trim())) continue;
       for (let cc = c + 1; cc < Math.min(row.length, c + 1 + MAX_RIGHT); cc++) {
         if (labelCols.has(cc)) break;
         if (isBlank(row[cc])) continue;
