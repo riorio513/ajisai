@@ -32,6 +32,7 @@ export const api = {
   openUrl: (url: string) => call<void>('POST', '/api/open-url', { url }),
   startQueue: (key: string, limit?: number) => call<void>('POST', `/api/queue/start?${q(key)}`, { limit }),
   stopQueue: () => call<void>('POST', '/api/queue/stop'),
+  ignore: (op: { add?: string; remove?: string }) => call<void>('POST', '/api/settings/ignore', op),
   setAi: (enabled: boolean) => call<void>('POST', '/api/settings/ai', { enabled }),
   logs: () => call<{ file: string; lines: string[] }>('GET', '/api/logs'),
 };

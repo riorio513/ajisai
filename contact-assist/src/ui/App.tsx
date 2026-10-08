@@ -195,6 +195,14 @@ export function App() {
           <details className="settings">
             <summary>保存済みの設定</summary>
             <p className="hint">Excel構造の確認結果や、矛盾の選択をやり直したいときに使います（元のExcelは変わりません）。</p>
+            {state.ignoreKeywords.length > 0 && (
+              <div className="ignore-list">
+                <div>無視する項目名:</div>
+                {state.ignoreKeywords.map((k) => (
+                  <span key={k} className="chip">{k} <button className="x" onClick={() => act('', () => api.ignore({ remove: k }))} title="無視をやめる">×</button></span>
+                ))}
+              </div>
+            )}
             <button onClick={() => window.confirm('保存済みの列の対応づけを消して、自動判定からやり直します。よろしいですか？') && act('', () => api.clearMapping())}>列の対応づけをリセット</button>
             <button onClick={() => window.confirm('「マスターデータ矛盾」で選んだ内容を消します。よろしいですか？') && act('', () => api.clearConflictChoices())}>矛盾の選択をリセット</button>
           </details>
@@ -352,7 +360,7 @@ function CompanyPanel({ view: v, state, ctx, busy, onPrev, onNext, act, flash }:
               <section className="card form-panel">
                 <h3>フォーム入力 <small>（フォームと同じ順番です。コピー → フォームで Ctrl+V の繰り返し）</small></h3>
                 {v.plan.warnings.map((w) => <div key={w} className="warn-line">⚠ {w}</div>)}
-                {v.plan.items.map((it) => <PlanItemCard key={it.id} item={it} ctx={ctx} />)}
+                {v.plan.items.map((it) => <PlanItemCard key={it.id} item={it} ctx={ctx} onIgnore={(label) => act('', () => api.ignore({ add: label }))} />)}
                 <div className="end-note">
                   送信・確認ボタン・reCAPTCHAは人間が操作します。{v.plan.submitLabels.length ? `（フォームのボタン: ${v.plan.submitLabels.join(' / ')}）` : ''}
                 </div>

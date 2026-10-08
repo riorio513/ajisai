@@ -56,6 +56,7 @@ export class Controller {
   private cancel = { cancelled: false };
   /** 状態が変わるたびに増やす。一覧の再計算を、変化があったときだけにする */
   private rev = 0;
+  private ignoreKeywords: string[] = [];
   private rowsCache: { key: string; rows: CompanyRow[] } | null = null;
 
   constructor(private readonly opts: { headless?: boolean } = {}) {}
@@ -80,6 +81,20 @@ export class Controller {
   /** AIが無効/使えないときは NullAIProvider を使う */
   private currentAi(): AIProvider {
     return this.aiAvailable ? this.ai : new NullAIProvider();
+  }
+
+  /** 「この項目は無視する」の追加・削除 */
+  async setIgnoreKeyword(op: { add?: string; remove?: string }): Promise<void> {
+    const kw = (op.add ?? op.remove ?? '').trim();
+    if (!kw) throw new UserError('項目名が空です');
+    const s = await this.settings.update((st) => {
+      const list = new Set(st.ignoreKeywords ?? []);
+      if (op.add) list.add(kw);
+      else list.delete(kw);
+      st.ignoreKeywords = [...list];
+    });
+    this.ignoreKeywords = s.ignoreKeywords;
+    this.rev++;
   }
 
   async setAiEnabled(enabled: boolean): Promise<void> {
@@ -124,6 +139,7 @@ export class Controller {
     }
     await this.refreshAi();
     const settings = await this.settings.get();
+    this.ignoreKeywords = settings.ignoreKeywords ?? [];
     const wk = workbookKey(path);
     const model = buildModel(raw, { mapping: settings.mappings[wk], masterOverrides: settings.masterOverrides[wk] });
     const progress = new ProgressStore(wk, path);
@@ -240,6 +256,7 @@ export class Controller {
       stored: l.progress.current.companies[key],
       model: l.model,
       running: this.running.has(key),
+      ignore: this.ignoreKeywords,
     });
   }
 
@@ -254,6 +271,7 @@ export class Controller {
       companies: [],
       diffMessages: [],
       ai: { name: this.ai.name, available: this.aiAvailable, enabled: settings.aiEnabled && process.env.ASSIST_AI !== 'off' },
+      ignoreKeywords: settings.ignoreKeywords ?? [],
       browser: { running: !!this.browser && this.browser.isOpen, name: this.browser?.browserName, error: this.browserError },
       queue: { running: this.queue.running, current: this.queue.current, done: this.queue.done, total: this.queue.total },
       busy: this.busy,
@@ -271,7 +289,7 @@ export class Controller {
       this.rowsCache = {
         key: cacheKey,
         rows: l.model.companies.map((c) => {
-          const v = buildCompanyView({ company: c, total: l.model.companies.length, stored: l.progress.current.companies[c.key], model: l.model, running: this.running.has(c.key) });
+          const v = buildCompanyView({ company: c, total: l.model.companies.length, stored: l.progress.current.companies[c.key], model: l.model, running: this.running.has(c.key), ignore: this.ignoreKeywords });
           return { key: c.key, order: c.order, name: c.name, stage: v.stage, status: v.status, severity: v.severity };
         }),
       };

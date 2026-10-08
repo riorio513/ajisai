@@ -30,6 +30,7 @@ export interface ViewContext {
   stored?: StoredCompany;
   model: WorkbookModel;
   running: boolean;
+  ignore?: string[];
 }
 
 interface Resolved {
@@ -144,7 +145,7 @@ export function buildCompanyView(ctx: ViewContext): CompanyView {
   }
 
   if (form && model.master && res.template && !ERROR_STATUSES.has(status) && status !== STATUS.SALES_UNCLEAR) {
-    plan = buildPlan({ analysis: form, master: model.master, companyName: company.name, template: res.template });
+    plan = buildPlan({ analysis: form, master: model.master, companyName: company.name, template: res.template, ignore: ctx.ignore });
     if (status === STATUS.OK) {
       const codes = new Set(plan.errors.map((e) => e.code));
       const first = PLAN_PRIORITY.find((c) => codes.has(c));

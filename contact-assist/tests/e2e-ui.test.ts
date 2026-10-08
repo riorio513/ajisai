@@ -147,3 +147,16 @@ describe('マスターデータ矛盾の画面操作', () => {
     await ctx.close();
   });
 });
+
+describe('「この項目は無視する」の保存', () => {
+  it('追加と取り消しができ、再起動しても残る', async () => {
+    expect((await app.post('/api/settings/ignore', { add: 'ご利用台数' })).status).toBe(200);
+    expect((await app.get<AppState>('/api/state')).ignoreKeywords).toEqual(['ご利用台数']);
+    await app.stop();
+    app = await startTestApp(join(dir, 'data'));
+    expect((await app.get<AppState>('/api/state')).ignoreKeywords).toEqual(['ご利用台数']);
+    await app.post('/api/settings/ignore', { remove: 'ご利用台数' });
+    expect((await app.get<AppState>('/api/state')).ignoreKeywords).toEqual([]);
+    expect((await app.post('/api/settings/ignore', { add: '  ' })).status).toBe(400);
+  });
+});

@@ -67,6 +67,7 @@ export function createApp(ctrl: Controller, port: number) {
 
   app.post('/api/queue/start', wrap((req) => ctrl.startQueue(key(req), Number(req.body?.limit) || undefined)));
   app.post('/api/queue/stop', wrap(() => ctrl.stopQueue()));
+  app.post('/api/settings/ignore', wrap((req) => ctrl.setIgnoreKeyword({ add: req.body.add, remove: req.body.remove })));
   app.post('/api/settings/ai', wrap((req) => ctrl.setAiEnabled(req.body.enabled === true)));
   app.get('/api/logs', wrap(async () => {
     const dir = subDir('logs');

@@ -15,6 +15,7 @@ import type { JobOption } from '../templates/extract';
 import { toNavigableUrl } from '../excel/url';
 import { analyzeForms, looksLikeContactForm } from '../form-analyzer/analyze';
 import { classifyEligibility } from './restricted';
+import { isIgnored } from '../clipboard/ignore';
 import { detectSolicitation, evidenceFrom, Passage } from './solicitation';
 import {
   COMMON_CONTACT_PATHS, ScoredLink, sameSite, scoreAboutLink, scoreCareerLink, scoreContactLink, scoreNoticeLink, topLinks,
@@ -517,6 +518,7 @@ export async function refineFormWithAI(form: FormAnalysis, ai: AIProvider): Prom
   for (const f of form.fields) {
     if (budget <= 0) break;
     if (f.std !== 'unknown' || !['text', 'textarea', 'select', 'radio'].includes(f.control)) continue;
+    if (isIgnored(f)) continue; // 作業に関係ない項目はAIに聞かない
     budget--;
     const r = await ai.classifyField({
       control: f.control, label: f.raw.label || f.raw.groupLabel, name: f.raw.name, id: f.raw.id, placeholder: f.raw.placeholder,

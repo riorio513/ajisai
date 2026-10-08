@@ -76,6 +76,8 @@ export interface AppState {
   companies: CompanyRow[];
   diffMessages: string[];
   ai: { name: string; available: boolean; enabled: boolean };
+  /** 利用者が追加した「無視する項目名」 */
+  ignoreKeywords: string[];
   browser: { running: boolean; name?: string; error?: string };
   queue: { running: boolean; current?: string; done: number; total: number };
   busy?: string;

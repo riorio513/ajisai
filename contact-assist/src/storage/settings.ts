@@ -9,13 +9,15 @@ export interface Settings {
   version: 1;
   lastExcelPath?: string;
   aiEnabled: boolean;
+  /** 「この項目は無視する」で追加した項目名キーワード（フォームの項目名にこの文字が含まれていれば無視） */
+  ignoreKeywords: string[];
   /** Excelごとの保存済みマッピング（見出し文字列で保持。読込のたびに再検証する） */
   mappings: Record<string, UserMapping>;
   /** Excelごとの「矛盾の解決」選択 conflictId -> candidateId */
   masterOverrides: Record<string, Record<string, string>>;
 }
 
-const DEFAULTS: Settings = { version: 1, aiEnabled: true, mappings: {}, masterOverrides: {} };
+const DEFAULTS: Settings = { version: 1, aiEnabled: true, ignoreKeywords: [], mappings: {}, masterOverrides: {} };
 
 export function workbookKey(path: string): string {
   return hashString(path.replace(/\\/g, '/').toLowerCase());

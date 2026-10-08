@@ -187,3 +187,30 @@ describe('入力支援パネル: 不足・不明・分割不能', () => {
     expect(p.errors.map((e) => e.code)).toContain(STATUS.ADDRESS_SPLIT);
   });
 });
+
+describe('作業に関係ない項目は無視する（エラーにしない）', () => {
+  it('「職種」と「確認したらチェック」は、必須でも無視して、エラーにならない', async () => {
+    const p = await plan('/forms/form-k-ignore.html');
+    const ignored = p.items.filter((i) => i.status === 'ignored').map((i) => i.label);
+    expect(ignored.length).toBe(2);
+    expect(ignored.join('')).toContain('職種');
+    expect(ignored.join('')).toContain('確認');
+    expect(p.errors).toEqual([]);
+    expect(p.items.filter((i) => i.status === 'ignored').every((i) => i.value === undefined && !i.choice)).toBe(true);
+    // 他の項目は通常どおり
+    expect(byStd(p, 'company')[0].status).toBe('ok');
+    expect(byStd(p, 'body')[0].status).toBe('ok');
+  });
+  it('利用者が「無視する」と決めた項目名も、エラーにしない', async () => {
+    const a = await analysisOf('/forms/form-j-unknown.html');
+    const before = buildPlan({ analysis: a, master, companyName: COMPANY, template });
+    expect(before.errors.map((e) => e.code)).toContain(STATUS.FORM_UNCLEAR);
+    const after = buildPlan({ analysis: a, master, companyName: COMPANY, template, ignore: ['ご利用台数'] });
+    expect(after.errors).toEqual([]);
+    expect(after.items.find((i) => i.label.includes('ご利用台数'))?.status).toBe('ignored');
+  });
+  it('メール等の分類済みの項目は、無視ルールの影響を受けない', async () => {
+    const p = await plan('/forms/form-a.html');
+    expect(p.items.filter((i) => i.status === 'ignored')).toEqual([]);
+  });
+});

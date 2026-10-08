@@ -14,6 +14,7 @@ import {
 } from '../transformer';
 import { composeBody } from '../templates/compose';
 import { isAddrField, resolveAddress } from './address';
+import { DEFAULT_IGNORE_NOTE, isIgnored } from './ignore';
 
 export interface PlanInput {
   analysis: FormAnalysis;
@@ -21,6 +22,8 @@ export interface PlanInput {
   /** Excelの企業名（本文の先頭に入る対象企業名） */
   companyName: string;
   template: Template | null;
+  /** 利用者が「無視する」と決めた項目名のキーワード */
+  ignore?: string[];
 }
 
 // ───────── 補助 ─────────
@@ -210,6 +213,7 @@ function pickOption(options: string[], desired: string): string | undefined {
 
 export function buildPlan(input: PlanInput): InputPlan {
   const { analysis, master, companyName, template } = input;
+  const ignore = input.ignore ?? [];
   const v = master.values;
   const items: PlanItem[] = [];
   const errors: PlanError[] = [];
@@ -245,6 +249,14 @@ export function buildPlan(input: PlanInput): InputPlan {
     const item = skeleton(f, idx);
     items.push(item);
     const std = f.std;
+
+    // 作業に関係ない項目は、エラーにせず薄く表示するだけ
+    if (isIgnored(f, ignore)) {
+      item.status = 'ignored';
+      item.required = f.conditions.required;
+      item.note = DEFAULT_IGNORE_NOTE;
+      return;
+    }
 
     // 選択・添付など、コピー＆ペーストできない欄
     if (f.control === 'file') {

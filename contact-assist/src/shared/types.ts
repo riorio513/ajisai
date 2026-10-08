@@ -414,7 +414,8 @@ export type PlanItemStatus =
   | 'unknown-field' // 不明な入力項目
   | 'need-confirm' //  人間の確認が必要（分割できない等）
   | 'choose' //        選択肢の操作（人間が選ぶ）
-  | 'info'; //         情報のみ（添付欄など）
+  | 'info' //          情報のみ（添付欄など）
+  | 'ignored'; //      作業に関係ない項目として無視（エラーにしない）
 
 export interface PlanItem {
   id: string;

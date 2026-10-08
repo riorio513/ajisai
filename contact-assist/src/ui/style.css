@@ -186,3 +186,9 @@ pre { margin: 0; font-family: inherit; }
 
 .qlimit { font-size: 13px; white-space: nowrap; }
 .qlimit input { width: 64px; padding: 4px 6px; }
+
+.item.st-ignored { opacity: .55; background: #fafafa; border-left-color: #bbb; }
+.ignored-note { color: var(--muted); font-size: 13px; }
+.ignore-btn { margin-left: 10px; font-size: 13px; padding: 2px 8px; }
+.ignore-list { margin: 6px 0; font-size: 13px; }
+.chip .x { border: none; background: none; padding: 0 2px; cursor: pointer; }

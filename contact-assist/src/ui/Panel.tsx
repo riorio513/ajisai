@@ -29,7 +29,7 @@ function Candidate({ c, ctx, itemId }: { c: PlanCandidate; ctx: CopyCtx; itemId:
   );
 }
 
-export function PlanItemCard({ item, ctx }: { item: PlanItem; ctx: CopyCtx }) {
+export function PlanItemCard({ item, ctx, onIgnore }: { item: PlanItem; ctx: CopyCtx; onIgnore?: (label: string) => void }) {
   const isBody = item.std === 'body';
   const cls = ['item', `st-${item.status}`, item.issue ? 'has-issue' : '', item.lowConfidence ? 'low' : ''].join(' ');
   return (
@@ -101,7 +101,13 @@ export function PlanItemCard({ item, ctx }: { item: PlanItem; ctx: CopyCtx }) {
       )}
 
       {item.status === 'missing' && <div className="missing">{item.note}</div>}
-      {item.status === 'unknown-field' && <div className="unknown-note">{item.note}</div>}
+      {item.status === 'unknown-field' && (
+        <div className="unknown-note">
+          {item.note}
+          {onIgnore && <button className="ignore-btn" onClick={() => onIgnore(item.label)}>この項目は無視する</button>}
+        </div>
+      )}
+      {item.status === 'ignored' && <div className="ignored-note">{item.note}</div>}
       {item.status === 'info' && <div className="info-note">{item.note}</div>}
 
       {item.charCheck && (
