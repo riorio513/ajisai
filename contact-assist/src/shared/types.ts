@@ -392,3 +392,105 @@ export interface FormAnalysis {
   noticeText: string;
   analyzedAt: string;
 }
+
+// ───────── 入力支援パネル ─────────
+
+export interface PlanCandidate {
+  id: string;
+  label: string;
+  value: string;
+  /** 根拠がある場合のみ true。根拠が無ければ推奨を付けない */
+  recommended: boolean;
+}
+
+export type PlanItemStatus =
+  | 'ok' //            そのまま貼り付けられる値が確定
+  | 'candidates' //    形式を確定できず複数候補（推奨なし or 根拠つき推奨）
+  | 'missing' //       対応するデータが無い（項目なし）
+  | 'unknown-field' // 不明な入力項目
+  | 'need-confirm' //  人間の確認が必要（分割できない等）
+  | 'choose' //        選択肢の操作（人間が選ぶ）
+  | 'info'; //         情報のみ（添付欄など）
+
+export interface PlanItem {
+  id: string;
+  order: number;
+  label: string;
+  std: StdField;
+  stdLabel: string;
+  stdReason: string;
+  required: boolean | 'unknown';
+  control: ControlKind;
+  /** 入力条件のチップ表示（例: 半角, ハイフンなし） */
+  conditionChips: string[];
+  status: PlanItemStatus;
+  /** status=ok のときの貼り付け値（表示値＝コピー値） */
+  value?: string;
+  candidates?: PlanCandidate[];
+  note?: string;
+  warnings: string[];
+  /** select/radio/checkbox の操作指示 */
+  choice?: { action: string; options: string[]; matched?: string };
+  lowConfidence?: boolean;
+  /** この欄が原因で全体に付くエラー */
+  issue?: StatusCode;
+  /** 文字数チェック（件名・本文） */
+  charCheck?: { count: number; countCrlf: number; limit: number | null; limitSource: string; ok: boolean; crlfWarning: boolean };
+}
+
+export interface PlanError {
+  code: StatusCode;
+  message: string;
+}
+
+export interface InputPlan {
+  items: PlanItem[];
+  errors: PlanError[];
+  warnings: string[];
+  captcha: CaptchaInfo;
+  submitLabels: string[];
+}
+
+// ───────── 調査結果（ローカル保存の対象。Excelの文面・本文・個人情報は含めない）─────────
+
+export interface SiteInfo {
+  url: string;
+  source: 'excel' | 'search' | 'manual';
+  /** ページ内容から企業名の一致を確認できたか */
+  verified: boolean;
+  note: string;
+}
+
+export interface JobDecision {
+  /** Excel上の職種名（表示用。文面本文は含まない） */
+  label?: string;
+  /** 対応する文面の識別子（複数ならユーザー選択が必要） */
+  templateIds?: string[];
+  exact?: boolean;
+  by: 'rule' | 'ai' | 'manual' | 'none';
+  reason: string;
+}
+
+export interface ContactPageCandidate {
+  url: string;
+  title: string;
+  eligibility: 'general' | 'restricted' | 'unclear';
+  reason: string;
+  fieldCount: number;
+}
+
+export interface ResearchResult {
+  /** 調査段階での結論（最終ステータスは入力プランのエラーと合わせて計算する） */
+  code: StatusCode;
+  message: string;
+  site?: SiteInfo;
+  contactUrl?: string;
+  contactCandidates: ContactPageCandidate[];
+  /** 営業禁止の判定 */
+  solicitation: { verdict: 'none' | 'banned' | 'unclear'; checkedUrls: string[]; by: 'rule' | 'ai' | 'none' };
+  job: JobDecision;
+  form?: FormAnalysis;
+  evidence: Evidence[];
+  steps: string[];
+  researchedAt: string;
+}

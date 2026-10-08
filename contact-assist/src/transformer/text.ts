@@ -153,3 +153,16 @@ export function isAllHalfAscii(s: string): boolean {
 export function hasFullWidthAscii(s: string): boolean {
   return /[！-～　]/.test(s);
 }
+
+/**
+ * かなを指定の文字種へ機械的に変換する。元がかなでない（漢字・英字を含む）場合は null。
+ * @param halfKana true なら半角カタカナ（script=katakana のときのみ）
+ */
+export function convertKana(value: string, script: 'hiragana' | 'katakana', halfKana = false): string | null {
+  const kind = kanaScriptOf(value);
+  if (kind === 'other') return null;
+  const full = halfKanaToFull(value);
+  if (script === 'hiragana') return kataToHira(full);
+  const kata = hiraToKata(full);
+  return halfKana ? fullKanaToHalf(kata) : kata;
+}

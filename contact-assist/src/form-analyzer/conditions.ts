@@ -94,9 +94,9 @@ export function parseConditions(f: RawField): FieldConditions {
     } else if (phScript === 'hiragana') {
       kanaScript = 'hiragana';
       evidence.push('入力例がひらがな');
-    } else if (/フリガナ|ふりがな/.test(f.label)) {
-      kanaScript = /ふりがな/.test(f.label) ? 'hiragana' : 'katakana';
-      evidence.push('ラベルの表記（' + (/ふりがな/.test(f.label) ? 'ふりがな' : 'フリガナ') + '）');
+    } else if (/フリガナ|ふりがな|カナ|かな/.test(f.label)) {
+      kanaScript = /ふりがな|かな/.test(f.label) ? 'hiragana' : 'katakana';
+      evidence.push('ラベルの表記（' + (kanaScript === 'hiragana' ? 'ひらがな表記' : 'カタカナ表記') + '）');
     } else if (/hira/.test(f.name + f.id)) {
       kanaScript = 'hiragana';
       evidence.push('name属性にhira');

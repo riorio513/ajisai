@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 
 const dir = join(dirname(fileURLToPath(import.meta.url)), 'scripts');
 
-export const SCRIPT_NAMES = ['extract-forms', 'extract-page', 'scroll-page'] as const;
+export const SCRIPT_NAMES = ['extract-forms', 'extract-page', 'scroll-page', 'read-probe'] as const;
 export type ScriptName = (typeof SCRIPT_NAMES)[number];
 
 const cache = new Map<ScriptName, string>();

@@ -99,6 +99,20 @@ export class ReadOnlyPage {
     return this.run<PageInfo>(this.page, 'extract-page');
   }
 
+  /** 診断用: テスト用ダミーページが記録した操作履歴を読む（ダミーページ以外では null） */
+  async readProbe(): Promise<{ events: string[]; mutations: string[]; values: string | null }[]> {
+    const out: { events: string[]; mutations: string[]; values: string | null }[] = [];
+    for (const frame of this.page.frames().map((f) => guardFrame(f))) {
+      try {
+        const r = await this.run<{ events: string[]; mutations: string[]; values: string | null } | null>(frame, 'read-probe');
+        if (r) out.push(r);
+      } catch {
+        /* 読めないフレームは無視 */
+      }
+    }
+    return out;
+  }
+
   /** 全フレーム（iframe 含む）の入力フォーム構造を読み取る */
   async readForms(): Promise<RawPageForms> {
     const frames = this.page.frames().map((f) => guardFrame(f));
